@@ -1,7 +1,7 @@
 #include <functional>
 #include <iostream>
 
-#include <docopt/docopt.h>
+#include <docopt.h>
 #include <spdlog/spdlog.h>
 
 // This file will be generated automatically when you run the CMake configuration step.

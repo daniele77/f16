@@ -1,8 +1,6 @@
 # A fuzz test runs until it finds an error. This particular one is going to rely on libFuzzer.
 #
 
-find_package(fmt)
-
 add_executable(fuzz_tester fuzz_tester.cpp)
 target_link_libraries(
   fuzz_tester
