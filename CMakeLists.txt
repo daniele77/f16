@@ -20,12 +20,24 @@ set(ENABLE_DEVELOPER_MODE
 # Change this to false if you want to disable warnings_as_errors in developer mode
 set(OPT_WARNINGS_AS_ERRORS_DEVELOPER_DEFAULT TRUE)
 
+
+# Set the project name and language
+project(
+  f16
+  VERSION 0.0.1
+  DESCRIPTION "f16 C++ web server"
+  HOMEPAGE_URL "%%github.com/daniele77/f16%%"
+  LANGUAGES CXX)
+
+
 # FetchContent added in CMake 3.11, downloads during the configure step
 include(FetchContent)
 # FetchContent_MakeAvailable was not added until CMake 3.14; use our shim
-if(${CMAKE_VERSION} VERSION_LESS 3.14)
+# NOTE: always use our version of MakeAvailable, because
+#       it contains exclusion of cppcheck and clang-tidy for external libraries
+# if(${CMAKE_VERSION} VERSION_LESS 3.14)
 include(cmake/add_FetchContent_MakeAvailable.cmake)
-endif()
+# endif()
 
 set(FETCHCONTENT_UPDATES_DISCONNECTED
     ON
@@ -51,6 +63,9 @@ FetchContent_Declare(
   GIT_TAG 8.1.1
 )
 FetchContent_MakeAvailable(fmt)
+### here is what makes all include directories -isystem
+get_target_property(FMT_IID fmt INTERFACE_INCLUDE_DIRECTORIES)
+set_target_properties(fmt PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${FMT_IID}")
 
 # docopt
 FetchContent_Declare(
@@ -63,18 +78,26 @@ FetchContent_MakeAvailable(docopt)
 get_target_property(DOCOPT_IID docopt INTERFACE_INCLUDE_DIRECTORIES)
 set_target_properties(docopt PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${DOCOPT_IID}")
 
+FetchContent_Declare(
+  asio
+  GIT_REPOSITORY https://github.com/chriskohlhoff/asio.git
+  GIT_TAG asio-1-20-0
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND "")
+FetchContent_GetProperties(asio)
+if(NOT asio_POPULATED)
+  FetchContent_Populate(asio)
+endif()
+
+add_library(asio INTERFACE)
+target_include_directories(asio SYSTEM INTERFACE ${asio_SOURCE_DIR}/asio/include)
+find_package(Threads)
+target_link_libraries(asio INTERFACE Threads::Threads)
+
 
 # uncomment to enable vcpkg:
 # # Setup vcpkg - should be called before defining project()
 # run_vcpkg()
-
-# Set the project name and language
-project(
-  f16
-  VERSION 0.0.1
-  DESCRIPTION "f16 C++ web server"
-  HOMEPAGE_URL "%%github.com/daniele77/f16%%"
-  LANGUAGES CXX)
 
 set(GIT_SHA
     "Unknown"

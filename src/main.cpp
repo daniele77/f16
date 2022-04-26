@@ -10,15 +10,15 @@
 #include <internal_use_only/config.hpp>
 
 static constexpr auto USAGE =
-  R"(Naval Fate.
+  R"(F16.
 
     Usage:
-          naval_fate ship new <name>...
-          naval_fate ship <name> move <x> <y> [--speed=<kn>]
-          naval_fate ship shoot <x> <y>
-          naval_fate mine (set|remove) <x> <y> [--moored | --drifting]
-          naval_fate (-h | --help)
-          naval_fate --version
+          f16 ship new <name>...
+          f16 ship <name> move <x> <y> [--speed=<kn>]
+          f16 ship shoot <x> <y>
+          f16 mine (set|remove) <x> <y> [--moored | --drifting]
+          f16 (-h | --help)
+          f16 --version
  Options:
           -h --help     Show this screen.
           --version     Show version.
