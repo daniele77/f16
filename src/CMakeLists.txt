@@ -5,7 +5,7 @@ target_link_libraries(
           project_warnings
           # docopt::docopt
           docopt
-          fmt::fmt
+          # fmt::fmt  already in spdlog
           spdlog::spdlog)
 
 target_include_directories(f16 PRIVATE "${CMAKE_BINARY_DIR}/configured_files/include")
