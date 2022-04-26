@@ -69,14 +69,14 @@ set_target_properties(fmt PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${FMT
 
 # docopt
 FetchContent_Declare(
-  docopt
+  docopt_s
   GIT_REPOSITORY https://github.com/docopt/docopt.cpp.git
   GIT_TAG v0.6.3
 )
-FetchContent_MakeAvailable_NoChecks(docopt)
+FetchContent_MakeAvailable_NoChecks(docopt_s)
 ### here is what makes all include directories -isystem
-get_target_property(DOCOPT_IID docopt INTERFACE_INCLUDE_DIRECTORIES)
-set_target_properties(docopt PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${DOCOPT_IID}")
+get_target_property(DOCOPT_IID docopt_s INTERFACE_INCLUDE_DIRECTORIES)
+set_target_properties(docopt_s PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${DOCOPT_IID}")
 
 FetchContent_Declare(
   asio

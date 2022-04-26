@@ -4,7 +4,7 @@ target_link_libraries(
   PRIVATE project_options
           project_warnings
           # docopt::docopt
-          docopt
+          docopt_s
           # fmt::fmt  already in spdlog
           spdlog::spdlog)
 
