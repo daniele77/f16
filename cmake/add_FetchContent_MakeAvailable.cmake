@@ -1,4 +1,4 @@
-macro(FetchContent_MakeAvailable NAME)
+macro(FetchContent_MakeAvailable_NoChecks NAME)
   FetchContent_GetProperties(${NAME})
   if(NOT ${NAME}_POPULATED)
     FetchContent_Populate(${NAME})

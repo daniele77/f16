@@ -32,7 +32,7 @@ function(enable_doxygen DOXYGEN_THEME)
     # https://github.com/jothepro/doxygen-awesome-css v1.6.1
     FetchContent_Declare(_doxygen_theme
                          URL https://github.com/jothepro/doxygen-awesome-css/archive/refs/tags/v1.6.1.zip)
-    FetchContent_MakeAvailable(_doxygen_theme)
+    FetchContent_MakeAvailable_NoChecks(_doxygen_theme)
     if("${DOXYGEN_THEME}" STREQUAL "awesome" OR "${DOXYGEN_THEME}" STREQUAL "awesome-sidebar")
       set(DOXYGEN_HTML_EXTRA_STYLESHEET "${_doxygen_theme_SOURCE_DIR}/doxygen-awesome.css")
     endif()

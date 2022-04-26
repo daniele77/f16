@@ -32,7 +32,7 @@ project(
 
 # FetchContent added in CMake 3.11, downloads during the configure step
 include(FetchContent)
-# FetchContent_MakeAvailable was not added until CMake 3.14; use our shim
+# FetchContent_MakeAvailable_NoChecks was not added until CMake 3.14; use our shim
 # NOTE: always use our version of MakeAvailable, because
 #       it contains exclusion of cppcheck and clang-tidy for external libraries
 # if(${CMAKE_VERSION} VERSION_LESS 3.14)
@@ -51,7 +51,7 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/gabime/spdlog.git
   GIT_TAG v1.9.2
 )
-FetchContent_MakeAvailable(spdlog)
+FetchContent_MakeAvailable_NoChecks(spdlog)
 ### here is what makes all include directories -isystem
 get_target_property(SPDLOG_IID spdlog INTERFACE_INCLUDE_DIRECTORIES)
 set_target_properties(spdlog PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${SPDLOG_IID}")
@@ -62,7 +62,7 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/fmtlib/fmt.git
   GIT_TAG 8.1.1
 )
-FetchContent_MakeAvailable(fmt)
+FetchContent_MakeAvailable_NoChecks(fmt)
 ### here is what makes all include directories -isystem
 get_target_property(FMT_IID fmt INTERFACE_INCLUDE_DIRECTORIES)
 set_target_properties(fmt PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${FMT_IID}")
@@ -73,7 +73,7 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/docopt/docopt.cpp.git
   GIT_TAG v0.6.3
 )
-FetchContent_MakeAvailable(docopt)
+FetchContent_MakeAvailable_NoChecks(docopt)
 ### here is what makes all include directories -isystem
 get_target_property(DOCOPT_IID docopt INTERFACE_INCLUDE_DIRECTORIES)
 set_target_properties(docopt PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${DOCOPT_IID}")

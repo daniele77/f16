@@ -6,7 +6,7 @@ FetchContent_Declare(
 )
 # Adds Catch2::Catch2
 
-FetchContent_MakeAvailable(catch2)
+FetchContent_MakeAvailable_NoChecks(catch2)
 
 ### here is what makes all include directories -isystem
 get_target_property(CATCH2_IID Catch2 INTERFACE_INCLUDE_DIRECTORIES)
