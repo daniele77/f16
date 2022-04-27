@@ -5,20 +5,20 @@
 #include <spdlog/spdlog.h>
 
 // This file will be generated automatically when you run the CMake configuration step.
-// It creates a namespace called `myproject`.
+// It creates a namespace called `f16`.
 // You can modify the source template at `configured_files/config.hpp.in`.
 #include <internal_use_only/config.hpp>
 
 static constexpr auto USAGE =
-  R"(Naval Fate.
+  R"(F16.
 
     Usage:
-          naval_fate ship new <name>...
-          naval_fate ship <name> move <x> <y> [--speed=<kn>]
-          naval_fate ship shoot <x> <y>
-          naval_fate mine (set|remove) <x> <y> [--moored | --drifting]
-          naval_fate (-h | --help)
-          naval_fate --version
+          f16 ship new <name>...
+          f16 ship <name> move <x> <y> [--speed=<kn>]
+          f16 ship shoot <x> <y>
+          f16 mine (set|remove) <x> <y> [--moored | --drifting]
+          f16 (-h | --help)
+          f16 --version
  Options:
           -h --help     Show this screen.
           --version     Show version.
@@ -34,8 +34,8 @@ int main(int argc, const char **argv)
       { std::next(argv), std::next(argv, argc) },
       true,// show help if requested
       fmt::format("{} {}",
-        myproject::cmake::project_name,
-        myproject::cmake::project_version));// version string, acquired from config.hpp via CMake
+        f16::cmake::project_name,
+        f16::cmake::project_version));// version string, acquired from config.hpp via CMake
 
     for (auto const &arg : args) { std::cout << arg.first << "=" << arg.second << '\n'; }
 
