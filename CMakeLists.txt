@@ -44,7 +44,7 @@ project(
   f16
   VERSION 0.0.1
   DESCRIPTION "f16 C++ web server"
-  HOMEPAGE_URL "%%github.com/daniele77/f16%%"
+  HOMEPAGE_URL "github.com/daniele77/f16"
   LANGUAGES CXX)
 
 set(GIT_SHA
@@ -139,7 +139,7 @@ endif()
 # set the startup project for the "play" button in MSVC
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT f16)
 
-# Add other targets that you want installed here, be default we just package the one executable
+# Add other targets that you want installed here, by default we just package the one executable
 # we know we want to ship
 # package_project(TARGETS f16)
 

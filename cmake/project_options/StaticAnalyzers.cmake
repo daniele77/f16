@@ -18,6 +18,8 @@ macro(enable_cppcheck CPPCHECK_OPTIONS)
           --inline-suppr
           # We cannot act on a bug/missing feature of cppcheck
           --suppress=internalAstError
+          # these just annoying
+          --suppress=uninitMemberVar
           # if a file does not have an internalAstError, we get an unmatchedSuppression error
           --suppress=unmatchedSuppression
           --inconclusive)
