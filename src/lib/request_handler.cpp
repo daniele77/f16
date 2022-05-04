@@ -75,7 +75,7 @@ void request_handler::handle_request(const request& req, reply& rep)
         rep.headers[1].name = "Content-Type";
         rep.headers[1].value = mime_types::extension_to_type("html");
     }
-    catch(const std::exception& e)
+    catch(const std::exception&)
     {
       rep = reply::stock_reply(reply::not_found);
     }
