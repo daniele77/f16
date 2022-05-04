@@ -10,9 +10,7 @@
 #include <unordered_map>
 #include <functional>
 
-namespace f16 {
-namespace http {
-namespace server {
+namespace f16::http::server {
 
 struct reply;
 struct request;
@@ -46,8 +44,6 @@ private:
   static bool url_decode(const std::string& in, std::string& out);
 };
 
-} // namespace server
-} // namespace http
-} // namespace f16
+} // namespace f16::http::server
 
 #endif // F16_HTTP_REQUEST_HANDLER_HPP

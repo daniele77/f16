@@ -7,12 +7,9 @@
 #include <csignal>
 #include <utility>
 
-namespace f16 {
-namespace http {
-namespace server {
+namespace f16::http::server {
 
-server::server(asio::io_context& ioc, const std::string& address, const std::string& port,
-    const std::string& doc_root)
+server::server(asio::io_context& ioc, const std::string& doc_root)
   : io_context_(ioc),
     signals_(io_context_),
     acceptor_(io_context_),
@@ -28,7 +25,10 @@ server::server(asio::io_context& ioc, const std::string& address, const std::str
 #endif // defined(SIGQUIT)
 
   do_await_stop();
+}
 
+void server::listen(const std::string& port, const std::string& address)
+{
   // Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
   asio::ip::tcp::resolver resolver(io_context_);
   asio::ip::tcp::endpoint endpoint =
@@ -91,6 +91,4 @@ void server::do_await_stop()
       });
 }
 
-} // namespace server
-} // namespace http
-} // namespace f16
+} // namespace f16::http::server

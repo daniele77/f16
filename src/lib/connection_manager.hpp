@@ -9,9 +9,7 @@
 #include <set>
 #include "connection.hpp"
 
-namespace f16 {
-namespace http {
-namespace server {
+namespace f16::http::server {
 
 /// Manages open connections so that they may be cleanly stopped when the server
 /// needs to shut down.
@@ -38,8 +36,6 @@ private:
   std::set<connection_ptr> connections_;
 };
 
-} // namespace server
-} // namespace http
-} // namespace f16
+} // namespace f16::http::server
 
 #endif // F16_HTTP_CONNECTION_MANAGER_HPP

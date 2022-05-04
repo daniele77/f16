@@ -8,9 +8,7 @@
 
 #include <tuple>
 
-namespace f16 {
-namespace http {
-namespace server {
+namespace f16::http::server {
 
 struct request;
 
@@ -86,8 +84,6 @@ private:
   } state_;
 };
 
-} // namespace server
-} // namespace http
-} // namespace f16
+} // namespace f16::http::server
 
 #endif // F16_HTTP_REQUEST_PARSER_HPP

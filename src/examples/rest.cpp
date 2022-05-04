@@ -13,7 +13,7 @@ int main()
   {
     asio::io_context ioc;
 
-    f16::http::server::server http_server(ioc, "0.0.0.0", "7000", ".");
+    f16::http::server::server http_server(ioc, ".");
     http_server.add_handler("/version", [](std::ostream& os)
       {
           os << "1.0.0\n";
@@ -22,6 +22,7 @@ int main()
       {
           os << "Hello, world!\n";
       });
+    http_server.listen("7000", "0.0.0.0");
 
     while(true)
     {

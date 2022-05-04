@@ -6,9 +6,7 @@
 #include "reply.hpp"
 #include <string>
 
-namespace f16 {
-namespace http {
-namespace server {
+namespace f16::http::server {
 
 namespace status_strings {
 
@@ -246,6 +244,4 @@ reply reply::stock_reply(reply::status_type status)
   return rep;
 }
 
-} // namespace server
-} // namespace http
-} // namespace f16
+} // namespace f16::http::server

@@ -14,9 +14,7 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-namespace f16 {
-namespace http {
-namespace server {
+namespace f16::http::server {
 
 request_handler::request_handler(std::string doc_root)
   : doc_root_(std::move(doc_root))
@@ -181,6 +179,4 @@ void request_handler::add_handler(const std::string& url, const std::function<vo
   handlers[url] = h;
 }
 
-} // namespace server
-} // namespace http
-} // namespace f16
+} // namespace f16::http::server
