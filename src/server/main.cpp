@@ -59,12 +59,13 @@ int main(int argc, const char **argv)
 
     const std::string root_doc = args["<root_doc>"].asString();
     spdlog::info("Serving root doc {} on {}:{}", root_doc, address, port);
-    f16::http::server::server http_server(ioc, address, port, root_doc);
+    f16::http::server::server http_server(ioc, root_doc);
     http_server.add_handler("/demo", [](std::ostream& os)
         {
             os << "DEMO!\n";
             os << "hello, world!\n";
         });
+    http_server.listen(port, address);
       
     //  start app
 

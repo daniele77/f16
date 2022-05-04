@@ -8,9 +8,7 @@
 
 #include <string>
 
-namespace f16 {
-namespace http {
-namespace server {
+namespace f16::http::server {
 
 struct header
 {
@@ -18,8 +16,6 @@ struct header
   std::string value;
 };
 
-} // namespace server
-} // namespace http
-} // namespace f16
+} // namespace f16::http::server
 
 #endif // F16_HTTP_HEADER_HPP

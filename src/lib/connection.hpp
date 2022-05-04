@@ -14,9 +14,7 @@
 #include "request_handler.hpp"
 #include "request_parser.hpp"
 
-namespace f16 {
-namespace http {
-namespace server {
+namespace f16::http::server {
 
 class connection_manager;
 
@@ -69,8 +67,6 @@ private:
 
 typedef std::shared_ptr<connection> connection_ptr;
 
-} // namespace server
-} // namespace http
-} // namespace f16
+} // namespace f16::http::server
 
 #endif // F16_HTTP_CONNECTION_HPP

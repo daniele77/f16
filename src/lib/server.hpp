@@ -12,9 +12,7 @@
 #include "connection_manager.hpp"
 #include "request_handler.hpp"
 
-namespace f16 {
-namespace http {
-namespace server {
+namespace f16::http::server {
 
 /// The top-level class of the HTTP server.
 class server
@@ -27,8 +25,9 @@ public:
   /// serve up files from the given directory.
   /// For IPv4, try address: 0.0.0.0
   /// For IPv6, try address: 0::0
-  explicit server(asio::io_context& ioc, const std::string& address, const std::string& port,
-      const std::string& doc_root);
+  explicit server(asio::io_context& ioc, const std::string& doc_root);
+
+  void listen(const std::string& port = "80", const std::string& address = "0.0.0.0");
 
   /// Run the server's io_context loop.
   void run();
@@ -58,8 +57,6 @@ private:
   request_handler request_handler_;
 };
 
-} // namespace server
-} // namespace http
-} // namespace f16
+} // namespace f16::http::server
 
 #endif // F16_HTTP_SERVER_HPP

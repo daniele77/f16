@@ -9,9 +9,7 @@
 #include "connection_manager.hpp"
 #include "request_handler.hpp"
 
-namespace f16 {
-namespace http {
-namespace server {
+namespace f16::http::server {
 
 connection::connection(asio::ip::tcp::socket socket,
     connection_manager& manager, request_handler& handler)
@@ -87,6 +85,4 @@ void connection::do_write()
       });
 }
 
-} // namespace server
-} // namespace http
-} // namespace f16
+} // namespace f16::http::server

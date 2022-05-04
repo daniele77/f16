@@ -1,6 +1,7 @@
 set(EXAMPLES
   static
   rest
+  complete
 )
 
 find_package(asio CONFIG)

@@ -5,9 +5,7 @@
 
 #include "connection_manager.hpp"
 
-namespace f16 {
-namespace http {
-namespace server {
+namespace f16::http::server {
 
 connection_manager::connection_manager() = default;
 
@@ -30,6 +28,4 @@ void connection_manager::stop_all()
   connections_.clear();
 }
 
-} // namespace server
-} // namespace http
-} // namespace f16
+} // namespace f16::http::server

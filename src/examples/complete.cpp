@@ -13,12 +13,19 @@ int main(int /*argc*/, const char** /*argv*/)
   {
     asio::io_context ioc;
 
-    f16::http::server::server http_server_1(ioc, ".");
-    f16::http::server::server http_server_2(ioc, "..");
-
-    http_server_1.listen("7000", "0.0.0.0");
-    http_server_2.listen("7001", "0.0.0.0");
-
+#if 0
+    f16::http::server::server app(ioc);
+    app.static("/", "/var/www/");
+    app.get("/books", [](req, res){
+      res.json(books);
+    });
+    app.post("/book", [](req, res){
+    // We will be coding here
+    });
+#else
+    f16::http::server::server app(ioc, ".");
+    app.listen("7000", "localhost");
+#endif
 
     while(true)
     {

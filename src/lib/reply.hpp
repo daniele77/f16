@@ -11,9 +11,7 @@
 #include <asio.hpp>
 #include "header.hpp"
 
-namespace f16 {
-namespace http {
-namespace server {
+namespace f16::http::server {
 
 /// A reply to be sent to a client.
 struct reply
@@ -54,8 +52,6 @@ struct reply
   static reply stock_reply(status_type status);
 };
 
-} // namespace server
-} // namespace http
-} // namespace f16
+} // namespace f16::http::server
 
 #endif // F16_HTTP_REPLY_HPP
