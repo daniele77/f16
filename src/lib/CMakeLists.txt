@@ -21,8 +21,10 @@ target_link_libraries(
   PRIVATE project_options
           project_warnings
           ${FS_LINK_FLAG}
+  PUBLIC asio::asio
 )
-target_link_system_libraries(
-  f16lib
-  PUBLIC asio::asio)
+
+# target_link_system_libraries(
+#   f16lib
+#   PUBLIC asio::asio)
 

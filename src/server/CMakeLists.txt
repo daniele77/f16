@@ -13,9 +13,9 @@ target_link_libraries(
           docopt::docopt
           fmt::fmt
           spdlog::spdlog)
-target_link_system_libraries(
-  f16
-  PRIVATE asio::asio)
+# target_link_system_libraries(
+#   f16
+#   PRIVATE asio::asio)
 
 target_include_directories(f16 PRIVATE "${CMAKE_BINARY_DIR}/configured_files/include")
 
