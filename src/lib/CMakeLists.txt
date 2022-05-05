@@ -13,7 +13,8 @@ target_link_libraries(
   f16lib
   PRIVATE project_options
           project_warnings
-          -lstdc++fs)
+          stdc++fs)
+          # -lstdc++fs)
 target_link_system_libraries(
   f16lib
   PUBLIC asio::asio)
