@@ -38,7 +38,7 @@ void connection::do_read()
       {
         if (!ec)
         {
-          request_parser::result_type result;
+          request_parser::result_type result = request_parser::bad;
           std::tie(result, std::ignore) = request_parser_.parse(
               request_, buffer_.data(), buffer_.data() + bytes_transferred);
 

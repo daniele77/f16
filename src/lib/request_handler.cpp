@@ -125,9 +125,9 @@ void request_handler::handle_request(const request& req, reply& rep)
 
   // Fill out the reply to be sent to the client.
   rep.status = reply::ok;
-  char buf[512];
-  while (is.read(buf, sizeof(buf)).gcount() > 0) // NOLINT
-    rep.content.append(buf, static_cast<long unsigned int>(is.gcount())); // NOLINT
+  std::array<char, 512> buf; // NOLINT
+  while (is.read(buf.data(), buf.size()).gcount() > 0)
+    rep.content.append(buf.data(), static_cast<long unsigned int>(is.gcount()));
   rep.headers.resize(2);
   rep.headers[0].name = "Content-Length";
   rep.headers[0].value = std::to_string(rep.content.size());

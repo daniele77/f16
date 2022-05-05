@@ -16,5 +16,5 @@ target_link_libraries(
           -lstdc++fs)
 target_link_system_libraries(
   f16lib
-  PRIVATE asio::asio)
+  PUBLIC asio::asio)
 
