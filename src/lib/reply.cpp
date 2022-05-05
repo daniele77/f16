@@ -88,8 +88,8 @@ static asio::const_buffer to_buffer(reply::status_type status)
 
 namespace misc_strings {
 
-const char name_value_separator[] = { ':', ' ' };
-const char crlf[] = { '\r', '\n' };
+static const std::string name_value_separator = ": "; // NOLINT
+static const std::string crlf = "\r\n"; // NOLINT
 
 } // namespace misc_strings
 

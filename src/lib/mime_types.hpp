@@ -8,13 +8,11 @@
 
 #include <string>
 
-namespace f16::http::server {
-namespace mime_types {
+namespace f16::http::server::mime_types {
 
 /// Convert a file extension into a MIME type.
 std::string extension_to_type(const std::string& extension);
 
-} // namespace mime_types
-} // namespace f16::http::server
+} // namespace f16::http::server::mime_types
 
 #endif // F16_HTTP_MIME_TYPES_HPP
