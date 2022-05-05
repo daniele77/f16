@@ -13,5 +13,6 @@ foreach(example ${EXAMPLES})
     PRIVATE project_options
             project_warnings
             f16lib
-            asio::asio)
+            # asio::asio
+  )
 endforeach()
