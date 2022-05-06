@@ -40,7 +40,7 @@ void connection::do_read()
         {
           request_parser::result_type result = request_parser::bad;
           std::tie(result, std::ignore) = request_parser_.parse(
-              request_, buffer_.data(), buffer_.data() + bytes_transferred);
+              request_, buffer_.begin(), buffer_.begin() + bytes_transferred);
 
           if (result == request_parser::good)
           {
