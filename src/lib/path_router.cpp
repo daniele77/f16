@@ -9,7 +9,7 @@
 
 namespace f16::http::server {
 
-void path_router::add(const std::string& location, std::shared_ptr<http_handler> resource)
+void path_router::add(const std::string& location, const std::shared_ptr<http_handler>& resource)
 {
   resources.emplace_back(location, resource);
   std::sort(resources.begin(), resources.end(), [](const resource_entry& a, const resource_entry& b) {
