@@ -13,8 +13,11 @@ Checks: "*,
         -readability-avoid-const-params-in-decls,
         -cppcoreguidelines-non-private-member-variables-in-classes,
         -misc-non-private-member-variables-in-classes,
+        -cppcoreguidelines-avoid-non-const-global-variables,
         -hicpp-braces-around-statements,
         -readability-braces-around-statements,
+        -readability-magic-numbers,
+        -cppcoreguidelines-avoid-magic-numbers,
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
