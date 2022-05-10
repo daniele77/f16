@@ -8,13 +8,18 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif()
 
 add_library(f16lib
-  connection.cpp
-  connection_manager.cpp
-  mime_types.cpp
-  reply.cpp
-  request_handler.cpp
-  request_parser.cpp
-  server.cpp)
+  connection.hpp connection.cpp
+  connection_manager.hpp connection_manager.cpp
+  mime_types.hpp mime_types.cpp
+  reply.hpp reply.cpp
+  request_handler.hpp request_handler.cpp
+  request_parser.hpp request_parser.cpp
+  server.hpp server.cpp
+  path_router.hpp path_router.cpp
+  static_content.hpp static_content.cpp
+  dynamic_content_get.hpp dynamic_content_get.cpp
+  http_handler.hpp
+)
 target_include_directories(f16lib INTERFACE .)
 target_link_libraries(
   f16lib

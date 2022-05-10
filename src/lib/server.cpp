@@ -9,11 +9,10 @@
 
 namespace f16::http::server {
 
-server::server(asio::io_context& ioc, const std::string& doc_root)
+server::server(asio::io_context& ioc)
   : io_context_(ioc),
     signals_(io_context_),
-    acceptor_(io_context_),
-    request_handler_(doc_root)
+    acceptor_(io_context_)
 {
   // Register to handle the signals that indicate when the server should exit.
   // It is safe to register for the same signal multiple times in a program,
@@ -41,20 +40,11 @@ void server::listen(const std::string& port, const std::string& address)
   do_accept();
 }
 
-void server::run()
-{
-  // The io_context::run() call will block until all asynchronous operations
-  // have finished. While the server is running, there is always at least one
-  // asynchronous operation outstanding: the asynchronous accept call waiting
-  // for new incoming connections.
-  io_context_.run();
-}
 
-void server::add_handler(const std::string& url, const std::function<void(std::ostream&)>& h)
-{
-  request_handler_.add_handler(url, h);
+void server::add(const std::string& path, std::shared_ptr<http_handler> handler)
+{ 
+  request_handler_.add(path, handler);
 }
-
 
 void server::do_accept()
 {

@@ -8,6 +8,7 @@
 #include "reply.hpp"
 #include "request_parser.hpp"
 #include "request.hpp"
+#include "path_router.hpp"
 
 using namespace f16::http::server;
 
@@ -77,4 +78,67 @@ TEST_CASE("parser works properly", "[request_parser]") // NOLINT
   REQUIRE(req.headers.size() == 1);
   CHECK(req.headers[0].name == "Accept-Language");
   CHECK(req.headers[0].value == "en-us");
+}
+
+
+class dummy_handler : public http_handler
+{
+public:
+  dummy_handler(int _id) : id(_id) {} 
+  void serve(const std::string& resource, const request& /* req */, reply& /* rep */) override
+  { 
+	calls.push_back(std::make_pair(id, resource));
+  }
+  int id;
+  static std::vector<std::pair<int, std::string>> calls;
+};
+
+std::vector<std::pair<int, std::string>> dummy_handler::calls;
+
+
+TEST_CASE("path_router routes simple requests", "[path_router]")
+{ 
+  path_router router; 
+  router.add("/foo", std::make_shared<dummy_handler>(1));
+  router.add("/foo/bar", std::make_shared<dummy_handler>(2));
+  router.add("/bar", std::make_shared<dummy_handler>(3));
+  router.add("/bar/foo/aaa", std::make_shared<dummy_handler>(4));
+  router.add("/bar/foo/bbb", std::make_shared<dummy_handler>(5));
+  router.add("/bar/foo/bbb/ccc", std::make_shared<dummy_handler>(6));
+  router.add("/foo/bar/aaa", std::make_shared<dummy_handler>(7));
+
+  request req;
+  reply rep;
+
+  CHECK( router.serve("/ddd", req, rep) == false );
+  CHECK( router.serve("/bar/foo/xxx", req, rep) );
+  CHECK( router.serve("/bar/foo/aaa/zzz", req, rep) );
+  CHECK( router.serve("/bar/foo/bbb/xxx", req, rep) );
+  CHECK( router.serve("/bar/foo/bbb/ccc/zzz", req, rep) );
+  CHECK( router.serve("/foo/bar/xxx", req, rep) );
+  CHECK( router.serve("/foo/xxx", req, rep) );
+  CHECK( router.serve("/foo/bar/aaa/zzz", req, rep) );
+
+  REQUIRE(dummy_handler::calls.size() == 7);
+  
+  CHECK(dummy_handler::calls[0].first == 3);
+  CHECK(dummy_handler::calls[0].second == "/foo/xxx");
+
+  CHECK(dummy_handler::calls[1].first == 4);
+  CHECK(dummy_handler::calls[1].second == "/zzz");
+
+  CHECK(dummy_handler::calls[2].first == 5);
+  CHECK(dummy_handler::calls[2].second == "/xxx");
+
+  CHECK(dummy_handler::calls[3].first == 6);
+  CHECK(dummy_handler::calls[3].second == "/zzz");
+
+  CHECK(dummy_handler::calls[4].first == 2);
+  CHECK(dummy_handler::calls[4].second == "/xxx");
+
+  CHECK(dummy_handler::calls[5].first == 1);
+  CHECK(dummy_handler::calls[5].second == "/xxx");
+
+  CHECK(dummy_handler::calls[6].first == 7);
+  CHECK(dummy_handler::calls[6].second == "/zzz");
 }

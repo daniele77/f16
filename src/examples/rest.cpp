@@ -6,6 +6,7 @@
 #include <asio.hpp> // NB: the asio header must be included *before* iostream to avoid sanity check error
 #include <iostream>
 #include "server.hpp"
+#include "dynamic_content_get.hpp"
 
 int main()
 {
@@ -13,15 +14,10 @@ int main()
   {
     asio::io_context ioc;
 
-    f16::http::server::server http_server(ioc, ".");
-    http_server.add_handler("/version", [](std::ostream& os)
-      {
-          os << "1.0.0\n";
-      });
-    http_server.add_handler("/hello", [](std::ostream& os)
-      {
-          os << "Hello, world!\n";
-      });
+    using namespace f16::http::server;
+    server http_server(ioc);
+    http_server.add("/version", std::make_shared<dynamic_content_get>([](std::ostream& os) { os << "1.0.0\n"; }));
+    http_server.add("/hello", std::make_shared<dynamic_content_get>([](std::ostream& os) { os << "Hello, world!\n"; }));
     http_server.listen("7000", "0.0.0.0");
 
     while(true)
