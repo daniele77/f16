@@ -5,12 +5,17 @@
 
 #include <asio.hpp> // NB: the asio header must be included *before* iostream to avoid sanity check error
 #include <functional>
+#include <fstream>
 #include <iostream>
 
 #include <docopt/docopt.h>
 #include <spdlog/spdlog.h>
 
+#include <nlohmann/json.hpp>
+
 #include "server.hpp"
+
+#include "static_content.hpp"
 
 // This file will be generated automatically when you run the CMake configuration step.
 // It creates a namespace called `f16`.
@@ -21,7 +26,8 @@ static constexpr auto USAGE =
   R"(F16.
 
     Usage:
-          f16 serve <root_doc> [--bind=<address> --port=<port>]
+          f16 simple <root_doc> [--bind=<address> --port=<port>]
+          f16 advanced <cfg_file>
           f16 (-h | --help)
           f16 --version
 
@@ -53,19 +59,48 @@ int main(int argc, const char **argv)
 
     // http server
     asio::io_context ioc;
+    
+    using namespace f16::http::server;
 
-    const std::string address = args["--bind"].asString();
-    const std::string port = args["--port"].asString();
+    std::vector<std::unique_ptr<server>> server_set;
 
-    const std::string root_doc = args["<root_doc>"].asString();
-    spdlog::info("Serving root doc {} on {}:{}", root_doc, address, port);
-    f16::http::server::server http_server(ioc, root_doc);
-    http_server.add_handler("/demo", [](std::ostream& os)
-        {
-            os << "DEMO!\n";
-            os << "hello, world!\n";
-        });
-    http_server.listen(port, address);
+    if (args["simple"].asBool())
+    {
+      const std::string address = args["--bind"].asString();
+      const std::string port = args["--port"].asString();
+
+      const std::string root_doc = args["<root_doc>"].asString();
+      spdlog::info("Serving root doc {} on {}:{}", root_doc, address, port);
+
+      auto http_server = std::make_unique<server>(ioc);
+
+      http_server->add("/", std::make_shared<static_content>(root_doc));
+      http_server->listen(port, address);
+
+      server_set.push_back(std::move(http_server));
+    }
+    else if (args["advanced"].asBool())
+    {
+      const std::string cfg_file = args["<cfg_file>"].asString();
+      std::ifstream ifs(cfg_file);
+      if (!ifs) throw std::runtime_error("Configuration file " + cfg_file + " not fouund");
+      const nlohmann::json cfg = nlohmann::json::parse(ifs,
+        nullptr, // callback
+        true, // allow exceptions
+        true // ignore_comments
+      );
+
+      const std::string address = cfg.at("address");
+      const std::string port = cfg.at("port");
+      const std::string root_doc = cfg.at("root_doc");
+      const std::string path = cfg.at("path");
+      spdlog::info("Serving root doc {} on {}:{} path: {}", root_doc, address, port, path);
+
+      auto http_server = std::make_unique<server>(ioc);
+      http_server->add(path, std::make_shared<static_content>(root_doc));
+      http_server->listen(port, address);
+      server_set.push_back(std::move(http_server));
+    }
       
     //  start app
 

@@ -14,6 +14,10 @@
 
 namespace f16::http::server {
 
+// forward declaration
+class http_handler;
+
+
 /// The top-level class of the HTTP server.
 class server
 {
@@ -21,18 +25,15 @@ public:
   server(const server&) = delete;
   server& operator=(const server&) = delete;
 
-  /// Construct the server to listen on the specified TCP address and port, and
-  /// serve up files from the given directory.
+  /// Construct the server
+  explicit server(asio::io_context& ioc);
+
+  void add(const std::string& path, std::shared_ptr<http_handler>);
+
+  /// Start to listen on the specified TCP address and port
   /// For IPv4, try address: 0.0.0.0
   /// For IPv6, try address: 0::0
-  explicit server(asio::io_context& ioc, const std::string& doc_root);
-
   void listen(const std::string& port = "80", const std::string& address = "0.0.0.0");
-
-  /// Run the server's io_context loop.
-  void run();
-
-  void add_handler(const std::string& url, const std::function<void(std::ostream&)>& h);
 
 private:
   /// Perform an asynchronous accept operation.

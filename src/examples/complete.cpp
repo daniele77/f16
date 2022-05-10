@@ -6,6 +6,8 @@
 #include <asio.hpp> // NB: the asio header must be included *before* iostream to avoid sanity check error
 #include <iostream>
 #include "server.hpp"
+#include "static_content.hpp"
+#include "dynamic_content_get.hpp"
 
 int main(int /*argc*/, const char** /*argv*/)
 {
@@ -13,19 +15,13 @@ int main(int /*argc*/, const char** /*argv*/)
   {
     asio::io_context ioc;
 
-#if 0
-    f16::http::server::server app(ioc);
-    app.static("/", "/var/www/");
-    app.get("/books", [](req, res){
-      res.json(books);
-    });
-    app.post("/book", [](req, res){
-    // We will be coding here
-    });
-#else
-    f16::http::server::server app(ioc, ".");
+    using namespace f16::http::server;
+    server app(ioc);
+    app.add("/", std::make_shared<static_content>("."));
+    app.add("/books", std::make_shared<dynamic_content_get>([](std::ostream& os) {
+      os << "Hello, get apis!\n";
+    }));
     app.listen("7000", "localhost");
-#endif
 
     while(true)
     {
