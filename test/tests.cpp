@@ -87,16 +87,17 @@ public:
   explicit dummy_handler(int _id) : id(_id) {} 
   void serve(const std::string& resource, const request& /* req */, reply& /* rep */) override
   { 
-	calls.emplace_back(id, resource);
+	  calls.emplace_back(id, resource);
   }
-  int id;
   static std::vector<std::pair<int, std::string>> calls;
+private:  
+  const int id;
 };
 
 std::vector<std::pair<int, std::string>> dummy_handler::calls;
 
 
-TEST_CASE("path_router routes simple requests", "[path_router]")
+TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
 { 
   path_router router; 
   router.add("/foo", std::make_shared<dummy_handler>(1));
