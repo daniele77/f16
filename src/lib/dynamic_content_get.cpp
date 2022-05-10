@@ -10,8 +10,8 @@
 
 namespace f16::http::server {
 
-dynamic_content_get::dynamic_content_get(const std::function<void(std::ostream&)>& _handler) : 
-  handler(_handler)
+dynamic_content_get::dynamic_content_get(std::function<void(std::ostream&)> _handler) : 
+  handler(std::move(_handler))
 {
 }
 

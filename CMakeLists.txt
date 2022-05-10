@@ -118,7 +118,7 @@ add_subdirectory(src)
 option(ENABLE_TESTING "Enable the tests" ON)
 if(ENABLE_TESTING)
   enable_testing()
-  message("Building Tests. Be sure to check out test/constexpr_tests for constexpr
+  message("Building Tests.
 testing")
   add_subdirectory(test)
 endif()
