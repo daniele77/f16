@@ -4,6 +4,7 @@
 set(FUZZ_TESTS
   fuzz_mime_types
   fuzz_request_parser
+  fuzz_router
 )
 
 # Allow short runs during automated testing to see if something new breaks

@@ -10,7 +10,7 @@
 
 namespace f16::http::server {
 
-void request_handler::add(const std::string& path, std::shared_ptr<http_handler> handler)
+void request_handler::add(const std::string& path, const std::shared_ptr<http_handler>& handler)
 { 
   router.add(path, handler); 
 }

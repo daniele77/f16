@@ -14,18 +14,19 @@ namespace fs = std::filesystem;
 
 namespace f16::http::server {
 
-static_content::static_content(const std::string& _doc_root)
-  : doc_root(_doc_root)
+static_content::static_content(std::string _doc_root)
+  : doc_root(std::move(_doc_root))
 {}
 
-void static_content::serve(const std::string& request_path, const request& /* req */, reply& rep)
+void static_content::serve(const std::string& _request_path, const request& /* req */, reply& rep)
 {
+  const std::string request_path = '/' + _request_path;
   // If path ends in slash (i.e. is a directory) then add "index.html".
   if (request_path[request_path.size() - 1] == '/')
   {
     try
     {
-      std::string full_path = doc_root + request_path;
+      const std::string full_path = doc_root + request_path;
 
       rep.status = reply::ok;
       std::ostringstream ss;
@@ -55,7 +56,8 @@ void static_content::serve(const std::string& request_path, const request& /* re
       rep.headers[0].value = std::to_string(rep.content.size());
       rep.headers[1].name = "Content-Type";
       rep.headers[1].value = mime_types::extension_to_type("html");
-    } catch (const std::exception&)
+    }
+    catch (const std::exception&)
     {
       rep = reply::stock_reply(reply::not_found);
     }
@@ -73,7 +75,8 @@ void static_content::serve(const std::string& request_path, const request& /* re
   }
 
   // Open the file to send back.
-  std::string full_path = doc_root + request_path;
+  const std::string full_path = doc_root + request_path;
+
   if (!fs::is_regular_file(full_path))
   {
     rep = reply::stock_reply(reply::not_found);

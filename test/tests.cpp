@@ -84,10 +84,10 @@ TEST_CASE("parser works properly", "[request_parser]") // NOLINT
 class dummy_handler : public http_handler
 {
 public:
-  dummy_handler(int _id) : id(_id) {} 
+  explicit dummy_handler(int _id) : id(_id) {} 
   void serve(const std::string& resource, const request& /* req */, reply& /* rep */) override
   { 
-	calls.push_back(std::make_pair(id, resource));
+	calls.emplace_back(id, resource);
   }
   int id;
   static std::vector<std::pair<int, std::string>> calls;

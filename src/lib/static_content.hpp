@@ -14,8 +14,8 @@ namespace f16::http::server {
 class static_content : public http_handler
 {
 public:
-  explicit static_content(const std::string& doc_root);
-  void serve(const std::string& request_path, const request& req, reply& rep) override;
+  explicit static_content(std::string _doc_root);
+  void serve(const std::string& _request_path, const request& req, reply& rep) override;
 
 private:
   const std::string doc_root;
