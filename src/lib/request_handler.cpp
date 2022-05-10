@@ -15,7 +15,7 @@ void request_handler::add(const std::string& path, const std::shared_ptr<http_ha
   router.add(path, handler); 
 }
 
-void request_handler::handle_request(const request& req, reply& rep)
+void request_handler::handle_request(const request& req, reply& rep) const
 {
   // Decode url to path.
   std::string request_path;
@@ -35,8 +35,6 @@ void request_handler::handle_request(const request& req, reply& rep)
 
   if (!router.serve(request_path, req, rep))
     rep = reply::stock_reply(reply::not_found);
-
-  
 }
 
 bool request_handler::url_decode(const std::string& in, std::string& out)
