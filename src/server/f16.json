@@ -1,6 +1,36 @@
 {
-  "address": "0.0.0.0",
-  "port": "8080",
-  "path": "/",
-  "root_doc":  "."
+  "servers":
+  [
+    {
+      "listen_address": "0.0.0.0",
+      "listen_port": "4000",
+      "locations":
+      [
+        {
+          "location": "/",
+          "root": "/var/www/html"
+        },
+        {
+          "location": "/logs",
+          "root": "/var/log"
+        }
+      ]
+    },
+    {
+      "listen_address": "0.0.0.0",
+      "listen_port": "5000",
+      "locations":
+      [
+        {
+          "location": "/blog",
+          "root": "/var/www/blog/"
+        },
+        {
+          "location": "/news",
+          "root": "/var/www/news/",
+        }
+      ]
+    }
+
+  ]
 }
