@@ -90,16 +90,22 @@ int main(int argc, const char **argv)
         true // ignore_comments
       );
 
-      const std::string address = cfg.at("address");
-      const std::string port = cfg.at("port");
-      const std::string root_doc = cfg.at("root_doc");
-      const std::string path = cfg.at("path");
-      spdlog::info("Serving root doc {} on {}:{} path: {}", root_doc, address, port, path);
-
-      auto http_server = std::make_unique<server>(ioc);
-      http_server->add(path, std::make_shared<static_content>(root_doc));
-      http_server->listen(port, address);
-      server_set.push_back(std::move(http_server));
+      for (const auto& server_entry : cfg.at("servers"))
+      {
+        const std::string address = server_entry.at("listen_address");
+        const std::string port = server_entry.at("listen_port");
+        spdlog::info("New server listening on {}:{}", address, port);
+        auto http_server = std::make_unique<server>(ioc);
+        for (const auto& location_entry: server_entry.at("locations"))
+        {
+          const std::string root_doc = location_entry.at("root");
+          const std::string path = location_entry.at("location");
+          spdlog::info("  Serving root doc {} at path: {}", root_doc, path);
+          http_server->add(path, std::make_shared<static_content>(root_doc));
+        }
+        http_server->listen(port, address);
+        server_set.push_back(std::move(http_server));
+      }
     }
       
     //  start app

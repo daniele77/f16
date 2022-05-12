@@ -8,39 +8,20 @@
 
 namespace f16::http::server::mime_types {
 
-#if 0
-struct mapping
-{
-  const char* extension;
-  const char* mime_type;
-};
-
-mapping mappings[] =
-{
-  { "gif", "image/gif" },
-  { "htm", "text/html" },
-  { "html", "text/html" },
-  { "jpg", "image/jpeg" },
-  { "png", "image/png" }
-};
-#else
 static const std::unordered_map<std::string, std::string> mappings = // NOLINT
 {
-  { "gif", "image/gif" },
-  { "htm", "text/html" },
-  { "html", "text/html" },
-  { "jpg", "image/jpeg" },
-  { "png", "image/png" }
+  { ".gif", "image/gif" },
+  { ".htm", "text/html" },
+  { ".html", "text/html" },
+  { ".jpg", "image/jpeg" },
+  { ".png", "image/png" }
 };
-#endif
 
 std::string extension_to_type(const std::string& extension)
 {
   auto it = mappings.find(extension);
   if (it != mappings.end())
-  {
     return it->second;
-  }
 
   return "text/plain";
 }

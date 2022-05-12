@@ -7,6 +7,7 @@
 #define F16_HTTP_STATIC_CONTENT_HPP
 
 #include <string>
+#include <filesystem>
 #include "http_handler.hpp"
 
 namespace f16::http::server {
@@ -14,11 +15,11 @@ namespace f16::http::server {
 class static_content : public http_handler
 {
 public:
-  explicit static_content(std::string _doc_root);
+  explicit static_content(const std::string& _doc_root);
   void serve(const std::string& _request_path, const request& req, reply& rep) override;
 
 private:
-  const std::string doc_root;
+  const std::filesystem::path doc_root;
 };
 
 } // namespace f16::http::server
