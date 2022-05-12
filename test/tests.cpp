@@ -15,12 +15,12 @@ using namespace f16::http::server;
 TEST_CASE("mime types are deduced by extension", "[mime_types]")
 {
   using namespace f16::http::server::mime_types;
-  REQUIRE(extension_to_type("gif") == "image/gif");
-  REQUIRE(extension_to_type("htm") == "text/html" );
-  REQUIRE(extension_to_type("html") == "text/html" );
-  REQUIRE(extension_to_type("jpg") == "image/jpeg" );
-  REQUIRE(extension_to_type("png") == "image/png");
-  REQUIRE(extension_to_type("unk") == "text/plain");
+  REQUIRE(extension_to_type(".gif") == "image/gif");
+  REQUIRE(extension_to_type(".htm") == "text/html" );
+  REQUIRE(extension_to_type(".html") == "text/html" );
+  REQUIRE(extension_to_type(".jpg") == "image/jpeg" );
+  REQUIRE(extension_to_type(".png") == "image/png");
+  REQUIRE(extension_to_type(".unk") == "text/plain");
 }
 
 static void CheckEqual(asio::const_buffer b, const std::string& s)
@@ -39,7 +39,7 @@ TEST_CASE("reply converts to buffer", "[reply]")
   rep.headers[0].name = "Content-Length";
   rep.headers[0].value = std::to_string(rep.content.size());
   rep.headers[1].name = "Content-Type";
-  rep.headers[1].value = mime_types::extension_to_type("html");
+  rep.headers[1].value = mime_types::extension_to_type(".html");
 
   const auto buffers = rep.to_buffers();
 
