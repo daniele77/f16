@@ -7,6 +7,7 @@
 #include "static_content.hpp"
 #include "reply.hpp"
 #include "mime_types.hpp"
+#include "request.hpp"
 #include <fstream>
 
 namespace fs = std::filesystem;
@@ -18,56 +19,77 @@ static_content::static_content(const std::string& _doc_root)
 {
 }
 
-void static_content::serve(const std::string& _request_path, const request& /* req */, reply& rep)
+void static_content::serve(const std::string& _request_path, const request& req, reply& rep)
 {
   fs::path request_path{_request_path};
+  request_path = doc_root / request_path.relative_path();
 
-  // If path ends in slash (i.e. is a directory) then add "index.html".
-  if (!request_path.has_filename() && !request_path.empty())
+  if (!req.uri.empty() && req.uri.back() == '/')
   {
-    try
+    // check if it's a directory
+    if (fs::is_directory(request_path))
     {
-      const fs::path full_path = doc_root / request_path.relative_path();
+      // try adding index.html
+      const fs::path index_path = request_path / "index.html";
 
-      rep.status = reply::ok;
-      std::ostringstream ss;
-
-      ss << 
-        "<!DOCTYPE html>\r\n"
-        "<html>\r\n"
-        "<head><title>Directory listing</title></head>\r\n"
-        "<body>\r\n";
-      for (const auto& entry : fs::directory_iterator(full_path))
-      {
-        if (!entry.is_regular_file()) continue;
-        const auto name = entry.path().filename().string();
-        ss << "<a href=\"" << name << "\">" << name << "</a><br>\r\n";
-      }
-      ss <<
-        "</body>\r\n"
-        "</html> \r\n";
-
-      rep.content = ss.str();
-      rep.headers.resize(2);
-      rep.headers[0].name = "Content-Length";
-      rep.headers[0].value = std::to_string(rep.content.size());
-      rep.headers[1].name = "Content-Type";
-      rep.headers[1].value = mime_types::extension_to_type(".html");
+      if (fs::exists(index_path))
+        serve_file(index_path, rep);
+      else
+        list_directory(request_path, rep);
+      return;
     }
-    catch (const std::exception&)
-    {
-      rep = reply::stock_reply(reply::not_found);
-    }
-
+    rep = reply::stock_reply(reply::not_found);
     return;
   }
-
   // Open the file to send back.
-  const auto full_path = doc_root / request_path.relative_path();
+  serve_file(request_path, rep);
+}
 
-  if (!fs::is_regular_file(full_path))
+void static_content::list_directory(const fs::path& full_path, reply& rep)
+{
+  try
+  {
+    rep.status = reply::ok;
+    std::ostringstream ss;
+
+    ss << 
+      "<!DOCTYPE html>\r\n"
+      "<html>\r\n"
+      "<head><title>Directory listing</title></head>\r\n"
+      "<body>\r\n";
+    for (const auto& entry : fs::directory_iterator(full_path))
+    {
+      if (!entry.is_regular_file()) continue;
+      const auto name = entry.path().filename().string();
+      ss << "<a href=\"" << name << "\">" << name << "</a><br>\r\n";
+    }
+    ss <<
+      "</body>\r\n"
+      "</html> \r\n";
+
+    rep.content = ss.str();
+    rep.headers.resize(2);
+    rep.headers[0].name = "Content-Length";
+    rep.headers[0].value = std::to_string(rep.content.size());
+    rep.headers[1].name = "Content-Type";
+    rep.headers[1].value = mime_types::extension_to_type(".html");
+  }
+  catch (const std::exception&)
   {
     rep = reply::stock_reply(reply::not_found);
+  }
+}
+
+void static_content::serve_file(const fs::path& full_path, reply& rep)
+{
+  if (!fs::exists(full_path))
+  {
+    rep = reply::stock_reply(reply::not_found);
+    return;
+  }
+  if (!fs::is_regular_file(full_path))
+  {
+    rep = reply::stock_reply(reply::forbidden);
     return;
   }
   std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
@@ -77,7 +99,7 @@ void static_content::serve(const std::string& _request_path, const request& /* r
     return;
   }
 
-  const auto extension = request_path.extension();
+  const auto extension = full_path.extension();
 
   // Fill out the reply to be sent to the client.
   rep.status = reply::ok;
@@ -89,6 +111,7 @@ void static_content::serve(const std::string& _request_path, const request& /* r
   rep.headers[0].value = std::to_string(rep.content.size());
   rep.headers[1].name = "Content-Type";
   rep.headers[1].value = mime_types::extension_to_type(extension.string());
+
 }
 
 } // namespace f16::http::server
