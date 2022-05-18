@@ -19,6 +19,8 @@ public:
   void serve(const std::string& _request_path, const request& req, reply& rep) override;
 
 private:
+  static void list_directory(const std::filesystem::path& full_path, reply& rep);
+  static void serve_file(const std::filesystem::path& full_path, reply& rep);
   const std::filesystem::path doc_root;
 };
 

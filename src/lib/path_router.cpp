@@ -22,8 +22,6 @@ bool path_router::serve(const std::string& request_path, const request& req, rep
   for (const resource_entry& r : resources)
     if (request_path.rfind(r.location, 0) == 0)
     {
-      //assert(r.location.size() >= 1); // NOLINT
-      //const std::string resource_path = request_path.substr(r.location.size()-1);
       const std::string resource_path = request_path.substr(r.location.size());
       r.handler->serve(resource_path, req, rep);
       return true;

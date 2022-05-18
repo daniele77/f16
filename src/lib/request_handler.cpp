@@ -8,15 +8,20 @@
 #include "reply.hpp"
 #include "request.hpp"
 
+#include <iostream> // TODO remove
+
 namespace f16::http::server {
 
 void request_handler::add(const std::string& path, const std::shared_ptr<http_handler>& handler)
 { 
-  router.add(path, handler); 
+  router.add(path, handler);
 }
 
 void request_handler::handle_request(const request& req, reply& rep) const
 {
+  std::cout << "http v. " << req.http_version_major << '.' << req.http_version_minor
+            << ' ' << req.method
+            << " " << req.uri << std::endl; // TODO remove
   // Decode url to path.
   std::string request_path;
   if (!url_decode(req.uri, request_path))
