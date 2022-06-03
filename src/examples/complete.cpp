@@ -19,7 +19,7 @@ int main(int /*argc*/, const char** /*argv*/)
     server app(ioc);
     app.add("/", std::make_shared<static_content>("."));
     app.add("/books", std::make_shared<dynamic_content_get>([](std::ostream& os) {
-      os << "Hello, get apis!\n";
+      os << "Hello, get api!\n";
     }));
     app.listen("7000", "localhost");
 

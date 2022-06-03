@@ -24,23 +24,25 @@ void static_content::serve(const std::string& _request_path, const request& req,
   fs::path request_path{_request_path};
   request_path = doc_root / request_path.relative_path();
 
-  if (!req.uri.empty() && req.uri.back() == '/')
+  if (fs::is_directory(request_path))
   {
-    // check if it's a directory
-    if (fs::is_directory(request_path))
-    {
-      // try adding index.html
-      const fs::path index_path = request_path / "index.html";
+    // try adding index.html
+    const fs::path index_path = request_path / "index.html";
 
-      if (fs::exists(index_path))
-        serve_file(index_path, rep);
-      else
-        list_directory(request_path, rep);
-      return;
+    if (fs::exists(index_path))
+      serve_file(index_path, rep);
+    else if (!req.uri.empty() && req.uri.back() == '/')
+      list_directory(request_path, rep);
+    else
+    {
+      // directory w/o trailing slash
+      rep = reply::stock_reply(reply::moved_permanently);
+      header h{"Location", req.uri + '/'};
+      rep.headers.push_back(h);
     }
-    rep = reply::stock_reply(reply::not_found);
     return;
   }
+
   // Open the file to send back.
   serve_file(request_path, rep);
 }
