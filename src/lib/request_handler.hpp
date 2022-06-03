@@ -34,8 +34,6 @@ public:
 
 private:
   path_router router;
-  using Handlers =  std::unordered_map<std::string, std::function<void(std::ostream&)>>;
-  Handlers handlers;
 
   /// Perform URL-decoding on a string. Returns false if the encoding was
   /// invalid.
