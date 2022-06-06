@@ -4,22 +4,24 @@
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "path_router.hpp"
+#include "request.hpp"
 #include <algorithm>
 #include <cassert>
 
 namespace f16::http::server {
 
-void path_router::add(const std::string& method, const std::string& location, const std::shared_ptr<http_handler>& resource)
+void path_router::add(const std::string& location, const std::shared_ptr<http_handler>& resource)
 {
-  resources[method].emplace_back(location, resource);
-  std::sort(resources[method].begin(), resources[method].end(), [](const resource_entry& a, const resource_entry& b) {
+  auto& handlers = resources[resource->method()];
+  handlers.emplace_back(location, resource);
+  std::sort(handlers.begin(), handlers.end(), [](const resource_entry& a, const resource_entry& b) {
     return a.location.size() > b.location.size();
   });
 }
 
-bool path_router::serve(const std::string& method, const std::string& request_path, const request& req, reply& rep) const
+bool path_router::serve(const std::string& request_path, const request& req, reply& rep) const
 {
-  auto it = resources.find(method);
+  auto it = resources.find(req.method);
   if (it == resources.end())
     return false;
 

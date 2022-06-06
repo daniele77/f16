@@ -17,6 +17,7 @@ class static_content : public http_handler
 public:
   explicit static_content(const std::string& _doc_root);
   void serve(const std::string& _request_path, const request& req, reply& rep) override;
+  std::string method() const override { return "GET"; }
 
 private:
   static void list_directory(const std::filesystem::path& full_path, reply& rep);

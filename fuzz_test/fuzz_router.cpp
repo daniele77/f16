@@ -14,6 +14,7 @@ class dummy_handler : public http_handler
 {
 public:
   void serve(const std::string& /*request_path*/, const request& /*req*/, reply& /*rep*/) override {}
+  std::string method() const override { return "GET"; }
 };
 
 static path_router* GetRouter()

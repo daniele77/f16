@@ -89,6 +89,7 @@ public:
   { 
 	  calls.emplace_back(id, resource);
   }
+  std::string method() const override { return "GET"; }
   static std::vector<std::pair<int, std::string>> calls;
 private:  
   const int id;
@@ -100,26 +101,29 @@ std::vector<std::pair<int, std::string>> dummy_handler::calls;
 TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
 { 
   path_router router; 
-  router.add("GET", "/foo", std::make_shared<dummy_handler>(1));
-  router.add("GET", "/foo/bar", std::make_shared<dummy_handler>(2));
-  router.add("GET", "/bar", std::make_shared<dummy_handler>(3));
-  router.add("GET", "/bar/foo/aaa", std::make_shared<dummy_handler>(4));
-  router.add("GET", "/bar/foo/bbb", std::make_shared<dummy_handler>(5));
-  router.add("GET", "/bar/foo/bbb/ccc", std::make_shared<dummy_handler>(6));
-  router.add("GET", "/foo/bar/aaa", std::make_shared<dummy_handler>(7));
+  router.add("/foo", std::make_shared<dummy_handler>(1));
+  router.add("/foo/bar", std::make_shared<dummy_handler>(2));
+  router.add("/bar", std::make_shared<dummy_handler>(3));
+  router.add("/bar/foo/aaa", std::make_shared<dummy_handler>(4));
+  router.add("/bar/foo/bbb", std::make_shared<dummy_handler>(5));
+  router.add("/bar/foo/bbb/ccc", std::make_shared<dummy_handler>(6));
+  router.add("/foo/bar/aaa", std::make_shared<dummy_handler>(7));
 
   request req;
+  req.method = "GET";
   reply rep;
 
-  CHECK_FALSE( router.serve("GET", "/ddd", req, rep) );
-  CHECK_FALSE( router.serve("PUT", "/bar/foo/xxx", req, rep) );
-  CHECK( router.serve("GET", "/bar/foo/xxx", req, rep) );
-  CHECK( router.serve("GET", "/bar/foo/aaa/zzz", req, rep) );
-  CHECK( router.serve("GET", "/bar/foo/bbb/xxx", req, rep) );
-  CHECK( router.serve("GET", "/bar/foo/bbb/ccc/zzz", req, rep) );
-  CHECK( router.serve("GET", "/foo/bar/xxx", req, rep) );
-  CHECK( router.serve("GET", "/foo/xxx", req, rep) );
-  CHECK( router.serve("GET", "/foo/bar/aaa/zzz", req, rep) );
+  CHECK_FALSE( router.serve("/ddd", req, rep) );
+  CHECK( router.serve("/bar/foo/xxx", req, rep) );
+  CHECK( router.serve("/bar/foo/aaa/zzz", req, rep) );
+  CHECK( router.serve("/bar/foo/bbb/xxx", req, rep) );
+  CHECK( router.serve("/bar/foo/bbb/ccc/zzz", req, rep) );
+  CHECK( router.serve("/foo/bar/xxx", req, rep) );
+  CHECK( router.serve("/foo/xxx", req, rep) );
+  CHECK( router.serve("/foo/bar/aaa/zzz", req, rep) );
+
+  req.method = "PUT";
+  CHECK_FALSE( router.serve("/bar/foo/xxx", req, rep) );
 
   REQUIRE(dummy_handler::calls.size() == 7);
   

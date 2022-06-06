@@ -19,6 +19,7 @@ class http_handler
 public:
   virtual ~http_handler() = default;
   virtual void serve(const std::string& request_path, const request& req, reply& rep) = 0;
+  virtual std::string method() const = 0;
 };
 
 } // namespace f16::http::server
