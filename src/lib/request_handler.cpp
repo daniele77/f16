@@ -12,9 +12,9 @@
 
 namespace f16::http::server {
 
-void request_handler::add(const std::string& path, const std::shared_ptr<http_handler>& handler)
+void request_handler::add(const std::string& method, const std::string& path, const std::shared_ptr<http_handler>& handler)
 { 
-  router.add(path, handler);
+  router.add(method, path, handler);
 }
 
 void request_handler::handle_request(const request& req, reply& rep) const
@@ -38,7 +38,7 @@ void request_handler::handle_request(const request& req, reply& rep) const
     return;
   }
 
-  if (!router.serve(request_path, req, rep))
+  if (!router.serve(req.method, request_path, req, rep))
     rep = reply::stock_reply(reply::not_found);
 }
 

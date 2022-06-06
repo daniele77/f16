@@ -41,9 +41,9 @@ void server::listen(const std::string& port, const std::string& address)
 }
 
 
-void server::add(const std::string& path, const std::shared_ptr<http_handler>& handler)
+void server::add(const std::string& method, const std::string& path, const std::shared_ptr<http_handler>& handler)
 { 
-  request_handler_.add(path, handler);
+  request_handler_.add(method, path, handler);
 }
 
 void server::do_accept()
