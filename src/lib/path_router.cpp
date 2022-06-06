@@ -9,17 +9,21 @@
 
 namespace f16::http::server {
 
-void path_router::add(const std::string& location, const std::shared_ptr<http_handler>& resource)
+void path_router::add(const std::string& method, const std::string& location, const std::shared_ptr<http_handler>& resource)
 {
-  resources.emplace_back(location, resource);
-  std::sort(resources.begin(), resources.end(), [](const resource_entry& a, const resource_entry& b) {
+  resources[method].emplace_back(location, resource);
+  std::sort(resources[method].begin(), resources[method].end(), [](const resource_entry& a, const resource_entry& b) {
     return a.location.size() > b.location.size();
   });
 }
 
-bool path_router::serve(const std::string& request_path, const request& req, reply& rep) const
+bool path_router::serve(const std::string& method, const std::string& request_path, const request& req, reply& rep) const
 {
-  for (const resource_entry& r : resources)
+  auto it = resources.find(method);
+  if (it == resources.end())
+    return false;
+
+  for (const resource_entry& r : it->second)
     if (request_path.rfind(r.location, 0) == 0)
     {
       const std::string resource_path = request_path.substr(r.location.size());

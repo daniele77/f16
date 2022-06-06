@@ -28,7 +28,7 @@ public:
   /// Construct the server
   explicit server(asio::io_context& ioc);
 
-  void add(const std::string& path, const std::shared_ptr<http_handler>& handler);
+  void add(const std::string& method, const std::string& path, const std::shared_ptr<http_handler>& handler);
 
   /// Start to listen on the specified TCP address and port
   /// For IPv4, try address: 0.0.0.0
