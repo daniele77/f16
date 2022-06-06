@@ -16,6 +16,7 @@ class dynamic_content_get : public http_handler
 public:
   explicit dynamic_content_get(std::function<void(std::ostream&)> _handler);
   void serve(const std::string& request_path, const request& req, reply& rep) override;
+  std::string method() const override { return "GET"; }
 
 private:
   const std::function<void(std::ostream&)> handler;

@@ -17,8 +17,8 @@ int main(int /*argc*/, const char** /*argv*/)
 
     using namespace f16::http::server;
     server app(ioc);
-    app.add("GET", "/", std::make_shared<static_content>("."));
-    app.add("GET", "/books", std::make_shared<dynamic_content_get>([](std::ostream& os) {
+    app.add("/", std::make_shared<static_content>("."));
+    app.add("/books", std::make_shared<dynamic_content_get>([](std::ostream& os) {
       os << "Hello, get api!\n";
     }));
     app.listen("7000", "localhost");

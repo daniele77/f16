@@ -27,7 +27,7 @@ public:
 
   request_handler() = default;
 
-  void add(const std::string& method, const std::string& path, const std::shared_ptr<http_handler>& handler);
+  void add(const std::string& path, const std::shared_ptr<http_handler>& handler);
 
   /// Handle a request and produce a reply.
   void handle_request(const request& req, reply& rep) const;

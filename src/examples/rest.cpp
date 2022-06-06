@@ -16,8 +16,8 @@ int main()
 
     using namespace f16::http::server;
     server http_server(ioc);
-    http_server.add("GET", "/version", std::make_shared<dynamic_content_get>([](std::ostream& os) { os << "1.0.0\n"; }));
-    http_server.add("GET", "/hello", std::make_shared<dynamic_content_get>([](std::ostream& os) { os << "Hello, world!\n"; }));
+    http_server.add("/version", std::make_shared<dynamic_content_get>([](std::ostream& os) { os << "1.0.0\n"; }));
+    http_server.add("/hello", std::make_shared<dynamic_content_get>([](std::ostream& os) { os << "Hello, world!\n"; }));
     http_server.listen("7000", "0.0.0.0");
 
     while(true)
