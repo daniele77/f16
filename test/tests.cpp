@@ -89,7 +89,7 @@ public:
   { 
 	  calls.emplace_back(id, resource);
   }
-  std::string method() const override { return "GET"; }
+  [[nodiscard]] std::string method() const override { return "GET"; }
   static std::vector<std::pair<int, std::string>> calls;
 private:  
   const int id;
