@@ -28,6 +28,11 @@ public:
   /// Construct the server
   explicit server(asio::io_context& ioc);
 
+  /// Cancel all outstanding asynchronous operations.
+  /// Once all operations have finished the destructor will exit.
+
+  ~server();
+
   void add(const std::string& path, const std::shared_ptr<http_handler>& handler);
 
   /// Start to listen on the specified TCP address and port
@@ -44,9 +49,6 @@ private:
 
   /// The io_context used to perform asynchronous operations.
   asio::io_context& io_context_;
-
-  /// The signal_set is used to register for process termination notifications.
-  asio::signal_set signals_;
 
   /// Acceptor used to listen for incoming connections.
   asio::ip::tcp::acceptor acceptor_;
