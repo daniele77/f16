@@ -4,26 +4,27 @@
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "server.hpp"
-#include <csignal>
 #include <utility>
 
 namespace f16::http::server {
 
 server::server(asio::io_context& ioc)
   : io_context_(ioc),
-    signals_(io_context_),
     acceptor_(io_context_)
 {
-  // Register to handle the signals that indicate when the server should exit.
-  // It is safe to register for the same signal multiple times in a program,
-  // provided all registration for the specified signal is made through Asio.
-  signals_.add(SIGINT);
-  signals_.add(SIGTERM);
-#if defined(SIGQUIT)
-  signals_.add(SIGQUIT);
-#endif // defined(SIGQUIT)
+}
 
-  do_await_stop();
+server::~server()
+{
+  try
+  {    
+    acceptor_.close();
+    connection_manager_.stop_all();
+  }
+  catch(...)
+  {
+    // nothing to do in the destructor
+  }
 }
 
 void server::listen(const std::string& port, const std::string& address)
@@ -65,19 +66,6 @@ void server::do_accept()
         }
 
         do_accept();
-      });
-}
-
-void server::do_await_stop()
-{
-  signals_.async_wait(
-      [this](std::error_code /*ec*/, int /*signo*/)
-      {
-        // The server is stopped by cancelling all outstanding asynchronous
-        // operations. Once all operations have finished the io_context::run()
-        // call will exit.
-        acceptor_.close();
-        connection_manager_.stop_all();
       });
 }
 

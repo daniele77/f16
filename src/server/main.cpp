@@ -7,6 +7,7 @@
 #include <functional>
 #include <fstream>
 #include <iostream>
+#include <csignal>
 
 #include <docopt/docopt.h>
 #include <spdlog/spdlog.h>
@@ -108,6 +109,17 @@ int main(int argc, const char **argv)
       }
     }
       
+    // Register to handle the signals that indicate when the app should exit.
+    // It is safe to register for the same signal multiple times in a program,
+    // provided all registration for the specified signal is made through Asio.
+    asio::signal_set signals_(ioc);
+    signals_.add(SIGINT);
+    signals_.add(SIGTERM);
+#if defined(SIGQUIT)
+    signals_.add(SIGQUIT);
+#endif // defined(SIGQUIT)
+    signals_.async_wait([&ioc](std::error_code /*ec*/, int /*signo*/){ ioc.stop(); });
+
     //  start app
 
     spdlog::info("Start application");
