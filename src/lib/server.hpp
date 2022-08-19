@@ -44,9 +44,6 @@ private:
   /// Perform an asynchronous accept operation.
   void do_accept();
 
-  /// Wait for a request to stop the server.
-  void do_await_stop();
-
   /// The io_context used to perform asynchronous operations.
   asio::io_context& io_context_;
 

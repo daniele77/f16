@@ -40,11 +40,15 @@ void static_content::serve(const std::string& _request_path, const request& req,
       header h{"Location", req.uri + '/'};
       rep.headers.push_back(h);
     }
-    return;
+  }
+  else
+  {
+    // Open the file to send back.
+    serve_file(request_path, rep);
   }
 
-  // Open the file to send back.
-  serve_file(request_path, rep);
+  if (req.method == "HEAD")
+    rep.content.clear();
 }
 
 void static_content::list_directory(const fs::path& full_path, reply& rep)
@@ -113,7 +117,6 @@ void static_content::serve_file(const fs::path& full_path, reply& rep)
   rep.headers[0].value = std::to_string(rep.content.size());
   rep.headers[1].name = "Content-Type";
   rep.headers[1].value = mime_types::extension_to_type(extension.string());
-
 }
 
 } // namespace f16::http::server
