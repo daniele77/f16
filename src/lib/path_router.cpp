@@ -22,7 +22,13 @@ void path_router::add(const std::string& location, const std::shared_ptr<http_ha
 
 bool path_router::serve(const std::string& request_path, const request& req, reply& rep) const
 {
-  auto it = resources.find(req.method);
+  // we don't have handlers for HEAD methods.
+  // use use GET instead
+  auto method = req.method;
+  if (method == "HEAD")
+    method = "GET";
+
+  auto it = resources.find(method);
   if (it == resources.end())
     return false;
 
