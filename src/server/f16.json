@@ -27,7 +27,7 @@
         },
         {
           "location": "/news",
-          "root": "/var/www/news/",
+          "root": "/var/www/news/"
         }
       ]
     }
