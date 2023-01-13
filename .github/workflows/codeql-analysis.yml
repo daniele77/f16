@@ -74,7 +74,7 @@ jobs:
         ninja: true
         conan: true
         vcpkg: false
-        ccache: true
+        ccache: false
         clangtidy: false
 
         cppcheck: false
