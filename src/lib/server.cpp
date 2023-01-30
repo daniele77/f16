@@ -31,7 +31,7 @@ void server::listen(const std::string& port, const std::string& address)
 {
   // Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
   asio::ip::tcp::resolver resolver(io_context_);
-  asio::ip::tcp::endpoint endpoint =
+  const asio::ip::tcp::endpoint endpoint =
     *resolver.resolve(address, port).begin();
   acceptor_.open(endpoint.protocol());
   acceptor_.set_option(asio::ip::tcp::acceptor::reuse_address(true));
