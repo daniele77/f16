@@ -37,7 +37,7 @@ void static_content::serve(const std::string& _request_path, const request& req,
     {
       // directory w/o trailing slash
       rep = reply::stock_reply(reply::moved_permanently);
-      header h{"Location", req.uri + '/'};
+      const header h{"Location", req.uri + '/'};
       rep.headers.push_back(h);
     }
   }
