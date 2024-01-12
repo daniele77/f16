@@ -16,7 +16,9 @@ connection::connection(asio::ip::tcp::socket socket,
   : socket_(std::move(socket)),
     connection_manager_(manager),
     request_handler_(handler),
-    buffer_{}
+    buffer_{},
+    request_{},
+    reply_{}
 {
 }
 

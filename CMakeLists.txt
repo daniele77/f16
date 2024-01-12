@@ -1,5 +1,19 @@
 cmake_minimum_required(VERSION 3.12)
 
+include(FetchContent)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+  cmake_policy(SET CMP0135 NEW)
+endif()
+
+# Add project_options from https://github.com/aminya/project_options
+# Change the version in the following URL to update the package (watch the releases of the repository for future updates)
+set(PROJECT_OPTIONS_VERSION "v0.33.0")
+FetchContent_Declare(
+  _project_options
+  URL https://github.com/aminya/project_options/archive/refs/tags/${PROJECT_OPTIONS_VERSION}.zip)
+FetchContent_MakeAvailable(_project_options)
+include(${_project_options_SOURCE_DIR}/Index.cmake)
+
 # Not ideal to use this global variable, but necessary to make sure
 # that tooling and projects use the same version
 set(CMAKE_CXX_STANDARD 17)
@@ -8,32 +22,6 @@ set(CMAKE_CXX_STANDARD 17)
 # -Wpedantic being enabled and -std=c++20 and -std=gnu++20 for example
 # when compiling with PCH enabled
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-# Note: by default ENABLE_DEVELOPER_MODE is True
-# This means that all analysis (sanitizers, static analysis)
-# is enabled and all warnings are treated as errors
-# if you want to switch this behavior, change TRUE to FALSE
-set(ENABLE_DEVELOPER_MODE
-    TRUE
-    CACHE BOOL "Enable 'developer mode'")
-
-# Change this to false if you want to disable warnings_as_errors in developer mode
-set(OPT_WARNINGS_AS_ERRORS_DEVELOPER_DEFAULT TRUE)
-
-# Add project_options v0.17.0
-# https://github.com/cpp-best-practices/project_options
-include(FetchContent)
-# FetchContent_MakeAvailable was not added until CMake 3.14; use our shim
-if(${CMAKE_VERSION} VERSION_LESS 3.14)
-include(cmake/add_FetchContent_MakeAvailable.cmake)
-endif()
-
-# FetchContent_Declare(_project_options
-#                      URL https://github.com/cpp-best-practices/project_options/archive/refs/tags/v0.17.0.zip)
-# FetchContent_MakeAvailable(_project_options)
-# include(${_project_options_SOURCE_DIR}/Index.cmake)
-
-include(cmake/project_options/Index.cmake)
 
 # uncomment to enable vcpkg:
 # # Setup vcpkg - should be called before defining project()
@@ -46,6 +34,41 @@ project(
   DESCRIPTION "f16 C++ web server"
   HOMEPAGE_URL "github.com/daniele77/f16"
   LANGUAGES CXX)
+
+# Initialize project_options variable related to this project
+# This overwrites `project_options` and sets `project_warnings`
+# uncomment to enable the options. Some of them accept one or more inputs:
+project_options(
+      PREFIX "f16"
+      ENABLE_CACHE
+      # ENABLE_CPPCHECK
+      # ENABLE_CLANG_TIDY
+      ENABLE_VS_ANALYSIS
+      # ENABLE_CONAN
+      # ENABLE_INTERPROCEDURAL_OPTIMIZATION
+      # ENABLE_NATIVE_OPTIMIZATION
+      # ENABLE_DOXYGEN
+      ENABLE_COVERAGE
+      # ENABLE_SANITIZER_ADDRESS
+      # ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
+      # ENABLE_SANITIZER_THREAD
+      # ENABLE_SANITIZER_MEMORY
+      ENABLE_CONTROL_FLOW_PROTECTION
+      ENABLE_STACK_PROTECTION
+      ENABLE_OVERFLOW_PROTECTION
+      ENABLE_ELF_PROTECTION
+      # ENABLE_RUNTIME_SYMBOLS_RESOLUTION
+      # ENABLE_COMPILE_COMMANDS_SYMLINK
+      # ENABLE_PCH
+      # PCH_HEADERS
+      WARNINGS_AS_ERRORS
+      # ENABLE_INCLUDE_WHAT_YOU_USE
+      # ENABLE_GCC_ANALYZER
+      # ENABLE_BUILD_WITH_TIME_TRACE
+      # ENABLE_UNITY
+      # LINKER "lld"
+      # CONAN_PROFILE ${profile_path}
+)
 
 set(GIT_SHA
     "Unknown"
@@ -77,37 +100,6 @@ if(BUILDING_MULTI_CONFIG)
         CACHE STRING "Enabled build types" FORCE)
   endif()
 endif()
-
-include(cmake/project_options/DynamicProjectOptions.cmake)
-
-# defaulted_project_options sets recommended defaults and provides user and developer
-# modes and full GUI support for choosing options at configure time
-
-# for more flexibility, look into project_options() macro
-
-# Any default can be overridden
-# set(<feature_name>_DEFAULT <value>) - set default for both user and developer modes
-# set(<feature_name>_DEVELOPER_DEFAULT <value>) - set default for developer mode
-# set(<feature_name>_USER_DEFAULT <value>) - set default for user mode
-
-# Initialize project_options variable related to this project
-# This overwrites `project_options` and sets `project_warnings`
-# uncomment the options to enable them:
-dynamic_project_options(
-  # Note: PCH is disabled by default in developer mode because these headers become
-  # globally included and they can mask other errors
-  PCH_HEADERS
-  <vector>
-  <string> # This is a list of headers to pre-compile, here are some common ones
-  # CONAN_OPTIONS    # Extra options to pass to conan
-  # MSVC_WARNINGS    # Override the defaults for the MSVC warnings
-  # CLANG_WARNINGS   # Override the defaults for the CLANG warnings
-  # GCC_WARNINGS     # Override the defaults for the GCC warnings
-  # CPPCHECK_OPTIONS # Override the defaults for CppCheck
-)
-
-target_compile_features(project_options INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
-
 # configure files based on CMake configuration options
 add_subdirectory(configured_files)
 
@@ -141,7 +133,7 @@ set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT f16)
 
 # Add other targets that you want installed here, by default we just package the one executable
 # we know we want to ship
-# package_project(TARGETS f16)
+package_project(TARGETS f16)
 
 # Experience shows that explicit package naming can help make it easier to sort
 # out potential ABI related issues before they start, while helping you

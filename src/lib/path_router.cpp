@@ -32,13 +32,16 @@ bool path_router::serve(const std::string& request_path, const request& req, rep
   if (it == resources.end())
     return false;
 
-  for (const resource_entry& r : it->second)
-    if (request_path.rfind(r.location, 0) == 0)
-    {
-      const std::string resource_path = request_path.substr(r.location.size());
-      r.handler->serve(resource_path, req, rep);
-      return true;
-    }
+  auto found = std::find_if(it->second.begin(), it->second.end(), [&](const resource_entry& r){
+    return request_path.rfind(r.location, 0) == 0;
+  });
+
+  if (found != it->second.end())
+  {
+    const std::string resource_path = request_path.substr(found->location.size());
+    found->handler->serve(resource_path, req, rep);
+    return true;
+  }
 
   return false;
 }

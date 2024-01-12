@@ -4,14 +4,13 @@ set(EXAMPLES
   complete
 )
 
-find_package(asio CONFIG)
-
 foreach(example ${EXAMPLES})
   add_executable(example-${example} ${example}.cpp)
   target_link_libraries(
     example-${example}
-    PRIVATE project_options
-            project_warnings
-            f16lib
+    PRIVATE
+      f16_project_options
+      f16_project_warnings
+      f16lib
   )
 endforeach()

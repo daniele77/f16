@@ -4,6 +4,7 @@
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <string>
+#include <cstdint>
 #include "mime_types.hpp"
 
 [[nodiscard]] auto GetExtension(const uint8_t* data, size_t size)
