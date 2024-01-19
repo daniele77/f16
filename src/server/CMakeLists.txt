@@ -11,8 +11,6 @@ add_executable(f16
 target_link_libraries(
   f16
   PRIVATE
-    f16_project_options
-    f16_project_warnings
     f16lib
     docopt_s
     fmt::fmt

@@ -34,8 +34,6 @@ target_include_directories(f16lib INTERFACE . ${STANDALONE_ASIO_INCLUDE_PATH})
 target_link_libraries(
   f16lib
   PRIVATE
-    f16_project_options
-    f16_project_warnings
     ${FS_LINK_FLAG}
   PUBLIC
     asio::asio
