@@ -5,6 +5,7 @@ include(Catch)
 
 add_library(catch_main OBJECT catch_main.cpp)
 target_link_libraries(catch_main PUBLIC Catch2::Catch2)
+target_link_libraries(catch_main PRIVATE f16_project_options)
 
 # Provide a simple smoke test to make sure that the CLI works and can display a --help message
 add_test(NAME cli.has_help COMMAND f16 --help)
@@ -20,8 +21,10 @@ set_tests_properties(cli.version_matches PROPERTIES PASS_REGULAR_EXPRESSION "${P
 add_executable(tests tests.cpp)
 target_link_libraries(tests 
   PRIVATE
+    f16_project_options f16_project_warnings
     catch_main
-    f16lib)
+    f16lib
+  )
 
 # automatically discover tests that are defined in catch based test files you can modify the unittests. Set TEST_PREFIX
 # to whatever you want, or use different for different binaries

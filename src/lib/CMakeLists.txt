@@ -1,15 +1,3 @@
-find_package(asio 1.24.0 QUIET)
-if(NOT asio_FOUND)
-  find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
-  if(STANDALONE_ASIO_INCLUDE_PATH)
-    message(STATUS "ASIO library found in ${STANDALONE_ASIO_INCLUDE_PATH}")
-    mark_as_advanced(STANDALONE_ASIO_INCLUDE_PATH)
-    add_library(asio::asio INTERFACE IMPORTED)
-  else()
-    message(FATAL_ERROR "ASIO library not found")
-  endif()
-endif()
-
 set(FS_LINK_FLAG "")
 if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR
    ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0))
@@ -30,7 +18,13 @@ add_library(f16lib
   http_handler.hpp
 )
 
-target_include_directories(f16lib INTERFACE . ${STANDALONE_ASIO_INCLUDE_PATH})
+# link project_options/warnings
+target_link_libraries(f16lib
+  PRIVATE f16_project_options f16_project_warnings
+)
+
+target_include_directories(f16lib SYSTEM INTERFACE . ${STANDALONE_ASIO_INCLUDE_PATH})
+
 target_link_libraries(
   f16lib
   PRIVATE

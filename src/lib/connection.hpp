@@ -8,7 +8,9 @@
 
 #include <array>
 #include <memory>
+#pragma GCC diagnostic ignored "-Wnull-dereference"
 #include <asio.hpp>
+#pragma GCC diagnostic warning "-Wnull-dereference"
 #include "reply.hpp"
 #include "request.hpp"
 #include "request_handler.hpp"

@@ -17,6 +17,7 @@ foreach(test ${FUZZ_TESTS})
   target_link_libraries(
     ${test}
     PRIVATE
+      f16_project_options f16_project_warnings
       f16lib
       -coverage
       -fsanitize=fuzzer,undefined,address)

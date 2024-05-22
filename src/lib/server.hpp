@@ -6,7 +6,9 @@
 #ifndef F16_HTTP_SERVER_HPP
 #define F16_HTTP_SERVER_HPP
 
+#pragma GCC diagnostic ignored "-Wnull-dereference"
 #include <asio.hpp>
+#pragma GCC diagnostic warning "-Wnull-dereference"
 #include <string>
 #include "connection.hpp"
 #include "connection_manager.hpp"
