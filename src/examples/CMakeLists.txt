@@ -9,6 +9,7 @@ foreach(example ${EXAMPLES})
   target_link_libraries(
     example-${example}
     PRIVATE
+      f16_project_options f16_project_warnings
       f16lib
   )
 endforeach()
