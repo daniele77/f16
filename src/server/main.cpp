@@ -77,7 +77,7 @@ int main(int argc, const char **argv)
 
       auto http_server = std::make_unique<server>(ioc);
 
-      http_server->add("/", std::make_shared<static_content>(root_doc));
+      http_server->add("/", static_content(root_doc));
       http_server->listen(port, address);
 
       server_set.push_back(std::move(http_server));
@@ -104,7 +104,7 @@ int main(int argc, const char **argv)
           const std::string root_doc = location_entry.at("root");
           const std::string path = location_entry.at("location");
           spdlog::info("  Serving root doc {} at path: {}", root_doc, path);
-          http_server->add(path, std::make_shared<static_content>(root_doc));
+          http_server->add(path, static_content(root_doc));
         }
         http_server->listen(port, address);
         server_set.push_back(std::move(http_server));

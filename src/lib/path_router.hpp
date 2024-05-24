@@ -23,7 +23,7 @@ public:
   /// Add a resource to the server
   void add(const std::string& location, const std::shared_ptr<http_handler>& resource);
 
-  bool serve(const std::string& request_path, const request& req, reply& rep) const;
+  bool serve(const std::string& request_path, const http_request& req, reply& rep) const;
 
 private:
 

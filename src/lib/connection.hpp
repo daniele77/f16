@@ -12,7 +12,7 @@
 #include <asio.hpp>
 #pragma GCC diagnostic warning "-Wnull-dereference"
 #include "reply.hpp"
-#include "request.hpp"
+#include "http_request.hpp"
 #include "request_handler.hpp"
 #include "request_parser.hpp"
 
@@ -58,7 +58,7 @@ private:
   std::array<char, 8192> buffer_;
 
   /// The incoming request.
-  request request_;
+  http_request request_;
 
   /// The parser for the incoming request.
   request_parser request_parser_;

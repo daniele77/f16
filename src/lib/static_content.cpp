@@ -7,19 +7,19 @@
 #include "static_content.hpp"
 #include "reply.hpp"
 #include "mime_types.hpp"
-#include "request.hpp"
+#include "http_request.hpp"
 #include <fstream>
 
 namespace fs = std::filesystem;
 
 namespace f16::http::server {
 
-static_content::static_content(const std::string& _doc_root)
+static_content_handler::static_content_handler(const std::string& _doc_root)
   : doc_root(_doc_root)
 {
 }
 
-void static_content::serve(const std::string& _request_path, const request& req, reply& rep)
+void static_content_handler::serve(const std::string& _request_path, const http_request& req, reply& rep)
 {
   fs::path request_path{_request_path};
   request_path = doc_root / request_path.relative_path();
@@ -51,7 +51,7 @@ void static_content::serve(const std::string& _request_path, const request& req,
     rep.content.clear();
 }
 
-void static_content::list_directory(const fs::path& full_path, reply& rep)
+void static_content_handler::list_directory(const fs::path& full_path, reply& rep)
 {
   try
   {
@@ -86,7 +86,7 @@ void static_content::list_directory(const fs::path& full_path, reply& rep)
   }
 }
 
-void static_content::serve_file(const fs::path& full_path, reply& rep)
+void static_content_handler::serve_file(const fs::path& full_path, reply& rep)
 {
   if (!fs::exists(full_path))
   {

@@ -8,18 +8,34 @@
 
 #include <string>
 #include <vector>
-#include "header.hpp"
+#include <unordered_map>
+#include "http_request.hpp"
+// #include <iostream> // TODO remove
 
 namespace f16::http::server {
 
-/// A request received from a client.
+/// @brief  A request for the handler
 struct request
 {
-  std::string method;
-  std::string uri;
-  int http_version_major;
-  int http_version_minor;
-  std::vector<header> headers;
+  const http_request orig_request;
+  std::unordered_map<std::string, std::string> params; // key -> value
+
+  explicit request(const http_request& r) : orig_request(r) {}
+  void add_param(const std::string& key, const std::string& value) { params[key] = value; }
+  std::string param(const std::string& key) const { return params.at(key); }
+
+/*
+  void dump() const
+  {
+    std::cout << "method: " << orig_request.method << std::endl;
+    std::cout << "uri: " << orig_request.uri << std::endl;
+    std::cout << "version: " << orig_request.http_version_major << '.' << orig_request.http_version_minor << std::endl;
+    for (const auto& h: orig_request.headers)
+      std::cout << "header " << h.name << ": " << h.value << std::endl;
+    for (const auto& p: params)
+      std::cout << "parameter " << p.first << ": " << p.second << std::endl;
+  }
+*/
 };
 
 } // namespace f16::http::server

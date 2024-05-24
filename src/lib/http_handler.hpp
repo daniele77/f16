@@ -11,14 +11,14 @@
 namespace f16::http::server {
 
 // forward declarations:
-struct request;
+struct http_request;
 struct reply;
 
 class http_handler
 {
 public:
   virtual ~http_handler() = default;
-  virtual void serve(const std::string& request_path, const request& req, reply& rep) = 0;
+  virtual void serve(const std::string& request_path, const http_request& req, reply& rep) = 0;
   [[nodiscard]] virtual std::string method() const = 0;
 };
 

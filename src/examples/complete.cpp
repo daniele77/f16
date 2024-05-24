@@ -9,7 +9,7 @@
 #include <iostream>
 #include "server.hpp"
 #include "static_content.hpp"
-#include "dynamic_content_get.hpp"
+#include "dynamic_content.hpp"
 
 int main(int /*argc*/, const char** /*argv*/)
 {
@@ -19,8 +19,8 @@ int main(int /*argc*/, const char** /*argv*/)
 
     using namespace f16::http::server;
     server app(ioc);
-    app.add("/", std::make_shared<static_content>("."));
-    app.add("/books", std::make_shared<dynamic_content_get>([](std::ostream& os) {
+    app.add("/", static_content("."));
+    app.add("/books", get([](const request& /*req*/, std::ostream& os) {
       os << "Hello, get api!\n";
     }));
     app.listen("7000", "localhost");

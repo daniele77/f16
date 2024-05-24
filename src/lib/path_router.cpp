@@ -4,7 +4,7 @@
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "path_router.hpp"
-#include "request.hpp"
+#include "http_request.hpp"
 #include <algorithm>
 #include <cassert>
 
@@ -20,7 +20,7 @@ void path_router::add(const std::string& location, const std::shared_ptr<http_ha
   });
 }
 
-bool path_router::serve(const std::string& request_path, const request& req, reply& rep) const
+bool path_router::serve(const std::string& request_path, const http_request& req, reply& rep) const
 {
   // we don't have handlers for HEAD methods.
   // use use GET instead

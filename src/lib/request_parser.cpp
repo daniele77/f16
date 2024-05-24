@@ -4,7 +4,7 @@
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "request_parser.hpp"
-#include "request.hpp"
+#include "http_request.hpp"
 
 namespace f16::http::server {
 
@@ -18,7 +18,7 @@ void request_parser::reset()
   state_ = method_start;
 }
 
-request_parser::result_type request_parser::consume(request& req, char input) // NOLINT
+request_parser::result_type request_parser::consume(http_request& req, char input) // NOLINT
 {
   switch (state_)
   {
