@@ -1,0 +1,42 @@
+ARG VARIANT="13.2.0"
+FROM gcc:${VARIANT}
+
+# Restate the variant to use it later on in the llvm and cmake installations
+ARG VARIANT
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update && \
+    apt-get install -y \
+        cmake libgtest-dev \
+        cppcheck \
+        git \
+        libasio-dev \
+        catch2 \
+        libfmt-dev \
+        libspdlog-dev \
+        nlohmann-json3-dev \
+        && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/docopt/docopt.cpp.git --depth 1 --branch v0.6.3 && \
+    cd docopt.cpp && \
+    cmake -Bbuild -H. -DCMAKE_CXX_STANDARD=17 && \
+    cmake --build build/ --target install && \
+    cd .. && \
+    rm -rf docopt.cpp
+
+# Allow the user to set compiler defaults
+ARG USE_CLANG
+# if --build-arg USE_CLANG=1, set CC to 'clang' or set to null otherwise.
+ENV CC=${USE_CLANG:+"clang"}
+ENV CXX=${USE_CLANG:+"clang++"}
+# if CC is null, set it to 'gcc' (or leave as is otherwise).
+ENV CC=${CC:-"gcc"}
+ENV CXX=${CXX:-"g++"}
+
+# Include project
+#ADD . /workspaces/cpp_starter_project
+#WORKDIR /workspaces/cpp_starter_project
+
+CMD ["bash"]
