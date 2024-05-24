@@ -15,7 +15,7 @@
 namespace f16::http::server {
 
 struct reply;
-struct request;
+struct http_request;
 
 /// The common handler for all incoming requests.
 class request_handler
@@ -30,7 +30,7 @@ public:
   void add(const std::string& path, const std::shared_ptr<http_handler>& handler);
 
   /// Handle a request and produce a reply.
-  void handle_request(const request& req, reply& rep) const;
+  void handle_request(const http_request& req, reply& rep) const;
 
 private:
   path_router router;

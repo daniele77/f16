@@ -7,8 +7,9 @@
 #include "mime_types.hpp"
 #include "reply.hpp"
 #include "request_parser.hpp"
-#include "request.hpp"
+#include "http_request.hpp"
 #include "path_router.hpp"
+#include "dynamic_content.hpp"
 
 using namespace f16::http::server;
 
@@ -66,7 +67,7 @@ TEST_CASE("parser works properly", "[request_parser]") // NOLINT
   // Request-Line = Method SP Request-URI SP HTTP-Version CRLF
 
   request_parser grammar;
-  request req;
+  http_request req;
   const std::string input{"GET /hello.htm HTTP/1.1\r\nAccept-Language: en-us\r\n\r\n"};
   const auto result = grammar.parse(req, input.begin(), input.end());
   CHECK(std::get<0>(result) == request_parser::good);
@@ -85,7 +86,7 @@ class dummy_handler : public http_handler
 {
 public:
   explicit dummy_handler(int _id) : id(_id) {} 
-  void serve(const std::string& resource, const request& /* req */, reply& /* rep */) override
+  void serve(const std::string& resource, const http_request& /* req */, reply& /* rep */) override
   { 
 	  calls.emplace_back(id, resource);
   }
@@ -109,7 +110,7 @@ TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
   router.add("/bar/foo/bbb/ccc", std::make_shared<dummy_handler>(6));
   router.add("/foo/bar/aaa", std::make_shared<dummy_handler>(7));
 
-  request req;
+  http_request req;
   req.method = "GET";
   reply rep;
 
@@ -147,4 +148,38 @@ TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
 
   CHECK(dummy_handler::calls[6].first == 7);
   CHECK(dummy_handler::calls[6].second == "/zzz");
+}
+
+TEST_CASE("dynamic_content calls handler", "[dynamic_content]") // NOLINT
+{
+  static const std::string output{"content"};
+  auto g = get([](const request&, std::ostream& o){
+    o << output;
+  });
+  CHECK(g->method() == "GET");
+  http_request req;
+  req.method = "GET";
+  reply rep;
+  g->serve("/param1/param2", req, rep);
+  CHECK(rep.content == output);
+  REQUIRE(rep.headers.size() == 2);
+  CHECK(rep.headers[0].name == "Content-Length");
+  CHECK(rep.headers[0].value == std::to_string(output.size()));
+  CHECK(rep.headers[1].name == "Content-Type");
+  CHECK(rep.headers[1].value == mime_types::extension_to_type("txt"));
+
+  g = get({"key1", "key2"}, [](const request& r, std::ostream& o){
+    o << output;
+    CHECK(r.param("key1") == "param1");
+    CHECK(r.param("key2") == "param2");
+  });
+  CHECK(g->method() == "GET");
+  req.method = "GET";
+  g->serve("/param1/param2", req, rep);
+  CHECK(rep.content == output);
+  REQUIRE(rep.headers.size() == 2);
+  CHECK(rep.headers[0].name == "Content-Length");
+  CHECK(rep.headers[0].value == std::to_string(output.size()));
+  CHECK(rep.headers[1].name == "Content-Type");
+  CHECK(rep.headers[1].value == mime_types::extension_to_type("txt"));
 }

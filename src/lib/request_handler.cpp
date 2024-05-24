@@ -6,7 +6,7 @@
 #include "request_handler.hpp"
 #include <string>
 #include "reply.hpp"
-#include "request.hpp"
+#include "http_request.hpp"
 
 #include <iostream> // TODO remove
 
@@ -17,7 +17,7 @@ void request_handler::add(const std::string& path, const std::shared_ptr<http_ha
   router.add(path, handler);
 }
 
-void request_handler::handle_request(const request& req, reply& rep) const
+void request_handler::handle_request(const http_request& req, reply& rep) const
 {
   std::cout << "http v. " << req.http_version_major << '.' << req.http_version_minor
             << ' ' << req.method

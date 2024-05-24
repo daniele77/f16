@@ -16,9 +16,9 @@ int main(int /*argc*/, const char** /*argv*/)
 
     using namespace f16::http::server;
     server http_server_1(ioc);
-    http_server_1.add("/", std::make_shared<static_content>("."));
+    http_server_1.add("/", static_content("."));
     server http_server_2(ioc);
-    http_server_2.add("/", std::make_shared<static_content>(".."));
+    http_server_2.add("/", static_content(".."));
     http_server_1.listen("7000", "0.0.0.0");
     http_server_2.listen("7001", "0.0.0.0");
 

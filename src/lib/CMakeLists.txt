@@ -14,8 +14,9 @@ add_library(f16lib
   server.hpp server.cpp
   path_router.hpp path_router.cpp
   static_content.hpp static_content.cpp
-  dynamic_content_get.hpp dynamic_content_get.cpp
+  dynamic_content.hpp dynamic_content.cpp
   http_handler.hpp
+  request.hpp
 )
 
 # link project_options/warnings

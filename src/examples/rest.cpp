@@ -8,7 +8,7 @@
 #pragma GCC diagnostic warning "-Wnull-dereference"
 #include <iostream>
 #include "server.hpp"
-#include "dynamic_content_get.hpp"
+#include "dynamic_content.hpp"
 
 int main()
 {
@@ -18,8 +18,33 @@ int main()
 
     using namespace f16::http::server;
     server http_server(ioc);
-    http_server.add("/version", std::make_shared<dynamic_content_get>([](std::ostream& os) { os << "1.0.0\n"; }));
-    http_server.add("/hello", std::make_shared<dynamic_content_get>([](std::ostream& os) { os << "Hello, world!\n"; }));
+
+    http_server.add("/version", get([](const request& /*req*/, std::ostream& os) { os << "1.0.0\n"; }));
+    http_server.add("/hello", get([](const request& /*req*/, std::ostream& os) { os << "Hello, world!\n"; }));
+    http_server.add("/greet", get({"name", "country"}, [](const request& req, std::ostream& os) {
+        try
+        {
+          os << "Hi, " << req.param("name") << " from " << req.param("country") << "!\n";
+        }
+        catch(const std::exception& e)
+        {
+          os << "Error in request parameters\n";
+        }
+      })
+    );
+    http_server.add("/person", put({"name", "country"}, [](const request& req, std::ostream& os) {
+        try
+        {
+          std::cout << "Insert person " << req.param("name") << " from " << req.param("country") << "\n";
+          os << "ok";
+        }
+        catch(const std::exception& e)
+        {
+          os << "Error in request parameters\n";
+        }
+      })
+    );
+
     http_server.listen("7000", "0.0.0.0");
 
     while(true)

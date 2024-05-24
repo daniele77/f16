@@ -12,11 +12,11 @@
 
 namespace f16::http::server {
 
-class static_content : public http_handler
+class static_content_handler : public http_handler
 {
 public:
-  explicit static_content(const std::string& _doc_root);
-  void serve(const std::string& _request_path, const request& req, reply& rep) override;
+  explicit static_content_handler(const std::string& _doc_root);
+  void serve(const std::string& _request_path, const http_request& req, reply& rep) override;
   [[nodiscard]] std::string method() const override { return "GET"; }
 
 private:
@@ -24,6 +24,11 @@ private:
   static void serve_file(const std::filesystem::path& full_path, reply& rep);
   const std::filesystem::path doc_root;
 };
+
+inline std::shared_ptr<static_content_handler> static_content(const std::string& _doc_root)
+{
+  return std::make_shared<static_content_handler>(_doc_root);
+}
 
 } // namespace f16::http::server
 
