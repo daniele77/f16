@@ -123,9 +123,15 @@ jobs:
         run: |
           conan remove -f '*/system'
 
-      - name: Setup conan
+      - name: Non macos - Setup conan
+        if: runner.os != 'macos'
         run: |
           conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing
+
+      - name: Macos - Setup conan
+        if: runner.os == 'macos'
+        run: |
+          conan install . -of build --settings=build_type=${{matrix.build_type}} compiler.libcxx=libc++11 --build missing
 
         # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
         # has meaningful results
