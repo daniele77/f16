@@ -14,6 +14,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(FetchContent)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+  cmake_policy(SET CMP0135 NEW)
+endif()
 
 # Add project_options from https://github.com/aminya/project_options
 # Change the version in the following URL to update the package (watch the releases of the repository for future updates)
@@ -64,6 +67,14 @@ option(DISABLE_STACK_PROTECTION  "Disable stack protection" OFF)
 if(NOT DISABLE_STACK_PROTECTION)
   set(ENABLE_STACK_PROTECTION "ENABLE_STACK_PROTECTION")
 endif()
+
+
+option(DISABLE_ELF_PROTECTION  "Disable ELF protection" OFF)
+
+if(NOT DISABLE_ELF_PROTECTION)
+  set(ENABLE_ELF_PROTECTION "ENABLE_ELF_PROTECTION")
+endif()
+
 
 # Adding the tests:
 option(ENABLE_TESTING "Enable the tests" ON)
@@ -118,7 +129,7 @@ project_options(
       ENABLE_CONTROL_FLOW_PROTECTION
       ${ENABLE_STACK_PROTECTION}
       # ENABLE_OVERFLOW_PROTECTION
-      ENABLE_ELF_PROTECTION
+      ${ENABLE_ELF_PROTECTION}
       # ENABLE_RUNTIME_SYMBOLS_RESOLUTION
       # ENABLE_COMPILE_COMMANDS_SYMLINK
       # ENABLE_PCH
