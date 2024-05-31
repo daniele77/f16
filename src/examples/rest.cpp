@@ -24,7 +24,7 @@ int main()
         {
           os << "Hi, " << req.param("name") << " from " << req.param("country") << "!\n";
         }
-        catch(const std::exception& e)
+        catch(const std::exception&)
         {
           os << "Error in request parameters\n";
         }
@@ -36,7 +36,7 @@ int main()
           std::cout << "Insert person " << req.param("name") << " from " << req.param("country") << "\n";
           os << "ok";
         }
-        catch(const std::exception& e)
+        catch(const std::exception&)
         {
           os << "Error in request parameters\n";
         }
