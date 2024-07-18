@@ -19,29 +19,24 @@ int main()
     using namespace f16::http::server;
     server http_server(ioc);
 
+    // GET <ip>/version
     http_server.add("/version", get([](const request& /*req*/, std::ostream& os) { os << "1.0.0\n"; }));
+    // GET <ip>/hello
     http_server.add("/hello", get([](const request& /*req*/, std::ostream& os) { os << "Hello, world!\n"; }));
-    http_server.add("/greet", get({"name", "country"}, [](const request& req, std::ostream& os) {
-        try
-        {
-          os << "Hi, " << req.param("name") << " from " << req.param("country") << "!\n";
-        }
-        catch(const std::exception& e)
-        {
-          os << "Error in request parameters\n";
-        }
+    // GET <ip>/print/?name=<name>&country=<country>
+    http_server.add("/print", get([](const request& req, std::ostream& os) {
+        os << "Hi, " << req.query("name") << " from " << req.query("country") << "!\n";
       })
     );
+    // GET <ip>/greet/<name>/<country>
+    http_server.add("/greet", get({"name", "country"}, [](const request& req, std::ostream& os) {
+        os << "Hi, " << req.resource("name") << " from " << req.resource("country") << "!\n";
+      })
+    );
+    // PUT <ip>/person/<name>/<country>
     http_server.add("/person", put({"name", "country"}, [](const request& req, std::ostream& os) {
-        try
-        {
-          std::cout << "Insert person " << req.param("name") << " from " << req.param("country") << "\n";
-          os << "ok";
-        }
-        catch(const std::exception& e)
-        {
-          os << "Error in request parameters\n";
-        }
+        std::cout << "Insert person " << req.resource("name") << " from " << req.resource("country") << "\n";
+        os << "ok";
       })
     );
 
