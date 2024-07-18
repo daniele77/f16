@@ -86,7 +86,7 @@ int main(int argc, const char **argv)
     {
       const std::string cfg_file = args["<cfg_file>"].asString();
       std::ifstream ifs(cfg_file);
-      if (!ifs) throw std::runtime_error("Configuration file " + cfg_file + " not fouund");
+      if (!ifs) throw std::runtime_error{"Configuration file " + cfg_file + " not fouund"};
       const nlohmann::json cfg = nlohmann::json::parse(ifs,
         nullptr, // callback
         true, // allow exceptions

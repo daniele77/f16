@@ -5,6 +5,7 @@ if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VER
 endif()
 
 add_library(f16lib
+  url.hpp url.cpp
   connection.hpp connection.cpp
   connection_manager.hpp connection_manager.cpp
   mime_types.hpp mime_types.cpp

@@ -22,6 +22,9 @@ public:
   [[nodiscard]] std::string method() const override { return action; }
 
 private:
+  void get_path_components(const std::string& resources, request& req);
+  void handle_query_parameters(const std::string& query, request& req);
+
   const std::string action;
   const std::function<void(const request&, std::ostream&)> handler;
   const std::vector<std::string> param_keys;
