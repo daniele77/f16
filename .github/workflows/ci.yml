@@ -31,7 +31,7 @@ jobs:
       matrix:
         os:
           - ubuntu-20.04
-          - macos-11
+          - macos-12
         compiler:
           # you can specify the version after `-` like "llvm-13.0.0".
           - llvm-13.0.0
@@ -47,7 +47,7 @@ jobs:
 
         exclude:
           # mingw is determined by this author to be too buggy to support
-          - os: macos-11
+          - os: macos-12
             compiler: gcc-11
           - os: ubuntu-20.04
             compiler: llvm-13.0.0
@@ -65,17 +65,16 @@ jobs:
             developer_mode: OFF
             package_generator: TBZ2
 
-# TODO: enable with newer asio version
-#          - os: windows-2022
-#            compiler: msvc
-#            generator: "Visual Studio 17 2022"
-#            build_type: Debug
-#            developer_mode: ON
-#          - os: windows-2022
-#            compiler: msvc
-#            generator: "Visual Studio 17 2022"
-#            build_type: Release
-#            developer_mode: ON
+          - os: windows-2022
+            compiler: msvc
+            generator: "Visual Studio 17 2022"
+            build_type: Debug
+            developer_mode: ON
+          - os: windows-2022
+            compiler: msvc
+            generator: "Visual Studio 17 2022"
+            build_type: Release
+            developer_mode: ON
           - os: windows-2022
             compiler: msvc
             generator: "Visual Studio 17 2022"
@@ -123,11 +122,21 @@ jobs:
         run: |
           conan remove -f '*/system'
 
+      - name: Non macos - Setup conan
+        if: runner.os != 'macos'
+        run: |
+          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing
+
+      - name: Macos - Setup conan
+        if: runner.os == 'macos'
+        run: |
+          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.libcxx=libc++
+
         # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
         # has meaningful results
       - name: Configure CMake
         run: |
-          cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} -DOPT_ENABLE_COVERAGE:BOOL=${{ matrix.build_type == 'Debug' && matrix.developer_mode == 'OFF' }} -DGIT_SHA:STRING=${{ github.sha }}
+          cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} -DDISABLE_STACK_PROTECTION:BOOL=${{ runner.os == 'macos' }} -DDISABLE_ELF_PROTECTION:BOOL=${{ runner.os == 'macos' }} -DGIT_SHA:STRING=${{ github.sha }}
 
       - name: Build
         # Execute the build.  You can specify a specific target with "--target <NAME>"

@@ -8,9 +8,7 @@
 
 #include <string>
 #include <vector>
-#pragma GCC diagnostic ignored "-Wnull-dereference"
-#include <asio.hpp>
-#pragma GCC diagnostic warning "-Wnull-dereference"
+#include "f16asio.hpp"
 #include "header.hpp"
 
 namespace f16::http::server {
