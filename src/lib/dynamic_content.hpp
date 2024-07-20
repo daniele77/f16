@@ -30,34 +30,34 @@ private:
   const std::vector<std::string> param_keys;
 };
 
-inline std::shared_ptr<dynamic_content_handler> get(std::function<void(const request& req, std::ostream&)> _handler)
+inline std::unique_ptr<dynamic_content_handler> get(std::function<void(const request& req, std::ostream&)> _handler)
 {
-  return std::make_shared<dynamic_content_handler>("GET", std::vector<std::string>{}, _handler);
+  return std::make_unique<dynamic_content_handler>("GET", std::vector<std::string>{}, _handler);
 }
 
-inline std::shared_ptr<dynamic_content_handler> get(std::vector<std::string> params, std::function<void(const request& req, std::ostream&)> _handler)
+inline std::unique_ptr<dynamic_content_handler> get(std::vector<std::string> params, std::function<void(const request& req, std::ostream&)> _handler)
 {
-  return std::make_shared<dynamic_content_handler>("GET", std::move(params), _handler);
+  return std::make_unique<dynamic_content_handler>("GET", std::move(params), _handler);
 }
 
-inline std::shared_ptr<dynamic_content_handler> post(std::function<void(const request& req, std::ostream&)> _handler)
+inline std::unique_ptr<dynamic_content_handler> post(std::function<void(const request& req, std::ostream&)> _handler)
 {
-  return std::make_shared<dynamic_content_handler>("POST", std::vector<std::string>{}, _handler);
+  return std::make_unique<dynamic_content_handler>("POST", std::vector<std::string>{}, _handler);
 }
 
-inline std::shared_ptr<dynamic_content_handler> post(std::vector<std::string> params, std::function<void(const request& req, std::ostream&)> _handler)
+inline std::unique_ptr<dynamic_content_handler> post(std::vector<std::string> params, std::function<void(const request& req, std::ostream&)> _handler)
 {
-  return std::make_shared<dynamic_content_handler>("POST", std::move(params), _handler);
+  return std::make_unique<dynamic_content_handler>("POST", std::move(params), _handler);
 }
 
-inline std::shared_ptr<dynamic_content_handler> put(std::function<void(const request& req, std::ostream&)> _handler)
+inline std::unique_ptr<dynamic_content_handler> put(std::function<void(const request& req, std::ostream&)> _handler)
 {
-  return std::make_shared<dynamic_content_handler>("PUT", std::vector<std::string>{}, _handler);
+  return std::make_unique<dynamic_content_handler>("PUT", std::vector<std::string>{}, _handler);
 }
 
-inline std::shared_ptr<dynamic_content_handler> put(std::vector<std::string> params, std::function<void(const request& req, std::ostream&)> _handler)
+inline std::unique_ptr<dynamic_content_handler> put(std::vector<std::string> params, std::function<void(const request& req, std::ostream&)> _handler)
 {
-  return std::make_shared<dynamic_content_handler>("PUT", std::move(params), _handler);
+  return std::make_unique<dynamic_content_handler>("PUT", std::move(params), _handler);
 }
 
 } // namespace f16::http::server

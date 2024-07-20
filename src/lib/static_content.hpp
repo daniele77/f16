@@ -25,9 +25,9 @@ private:
   const std::filesystem::path doc_root;
 };
 
-inline std::shared_ptr<static_content_handler> static_content(const std::string& _doc_root)
+inline std::unique_ptr<static_content_handler> static_content(const std::string& _doc_root)
 {
-  return std::make_shared<static_content_handler>(_doc_root);
+  return std::make_unique<static_content_handler>(_doc_root);
 }
 
 } // namespace f16::http::server

@@ -21,7 +21,7 @@ class path_router
 {
 public:
   /// Add a resource to the server
-  void add(const std::string& location, const std::shared_ptr<http_handler>& resource);
+  void add(const std::string& location, std::unique_ptr<http_handler> resource);
 
   bool serve(const std::string& request_path, const http_request& req, reply& rep) const;
 
@@ -29,9 +29,9 @@ private:
 
   struct resource_entry
   {
-    resource_entry(const std::string& l, std::shared_ptr<http_handler> h) : location(l), handler(h) {}
+    resource_entry(const std::string& l, std::unique_ptr<http_handler> h) : location(l), handler{std::move(h)} {}
     std::string location;
-    std::shared_ptr<http_handler> handler;
+    std::unique_ptr<http_handler> handler;
   };
 
   std::unordered_map<std::string, std::vector<resource_entry>> resources;

@@ -33,7 +33,7 @@ public:
 
   ~server();
 
-  void add(const std::string& path, const std::shared_ptr<http_handler>& handler);
+  void add(const std::string& path, std::unique_ptr<http_handler> handler);
 
   /// Start to listen on the specified TCP address and port
   /// For IPv4, try address: 0.0.0.0

@@ -12,9 +12,9 @@
 
 namespace f16::http::server {
 
-void request_handler::add(const std::string& path, const std::shared_ptr<http_handler>& handler)
+void request_handler::add(const std::string& path, std::unique_ptr<http_handler> handler)
 { 
-  router.add(path, handler);
+  router.add(path, std::move(handler));
 }
 
 void request_handler::handle_request(const http_request& req, reply& rep) const

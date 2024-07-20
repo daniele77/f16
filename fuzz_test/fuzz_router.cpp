@@ -6,7 +6,7 @@
 #include <cstdint>
 #include "path_router.hpp"
 #include "http_handler.hpp"
-#include "request.hpp"
+#include "http_request.hpp"
 #include "reply.hpp"
 
 using namespace f16::http::server;
@@ -14,20 +14,20 @@ using namespace f16::http::server;
 class dummy_handler : public http_handler
 {
 public:
-  void serve(const std::string& /*request_path*/, const request& /*req*/, reply& /*rep*/) override {}
+  void serve(const std::string& /*request_path*/, const http_request& /*req*/, reply& /*rep*/) override {}
   [[nodiscard]] std::string method() const override { return "GET"; }
 };
 
 static path_router* GetRouter()
 {
   static path_router router;
-  router.add("/foo", std::make_shared<dummy_handler>());
-  router.add("/foo/bar", std::make_shared<dummy_handler>());
-  router.add("/bar", std::make_shared<dummy_handler>());
-  router.add("/bar/foo/aaa", std::make_shared<dummy_handler>());
-  router.add("/bar/foo/bbb", std::make_shared<dummy_handler>());
-  router.add("/bar/foo/bbb/ccc", std::make_shared<dummy_handler>());
-  router.add("/foo/bar/aaa", std::make_shared<dummy_handler>());
+  router.add("/foo", std::make_unique<dummy_handler>());
+  router.add("/foo/bar", std::make_unique<dummy_handler>());
+  router.add("/bar", std::make_unique<dummy_handler>());
+  router.add("/bar/foo/aaa", std::make_unique<dummy_handler>());
+  router.add("/bar/foo/bbb", std::make_unique<dummy_handler>());
+  router.add("/bar/foo/bbb/ccc", std::make_unique<dummy_handler>());
+  router.add("/foo/bar/aaa", std::make_unique<dummy_handler>());
   return &router;
 }
 
@@ -41,7 +41,7 @@ static path_router* GetRouter()
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 {
   static path_router* router = GetRouter();
-  static request req;
+  static http_request req;
   static reply rep;
 
   const auto path = GetPath(Data, Size);

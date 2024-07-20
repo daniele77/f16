@@ -42,6 +42,8 @@ if(NOT asio_FOUND)
     message(STATUS "ASIO library found in ${STANDALONE_ASIO_INCLUDE_PATH}")
     mark_as_advanced(STANDALONE_ASIO_INCLUDE_PATH)
     add_library(asio::asio INTERFACE IMPORTED)
+    set_property(TARGET asio::asio PROPERTY
+      INTERFACE_INCLUDE_DIRECTORIES "${STANDALONE_ASIO_INCLUDE_PATH}")
   else()
     message(FATAL_ERROR "ASIO library not found")
   endif()
