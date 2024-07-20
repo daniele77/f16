@@ -212,13 +212,13 @@ std::vector<std::pair<int, std::string>> dummy_handler::calls;
 TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
 {
   path_router router;
-  router.add("/foo", std::make_shared<dummy_handler>(1));
-  router.add("/foo/bar", std::make_shared<dummy_handler>(2));
-  router.add("/bar", std::make_shared<dummy_handler>(3));
-  router.add("/bar/foo/aaa", std::make_shared<dummy_handler>(4));
-  router.add("/bar/foo/bbb", std::make_shared<dummy_handler>(5));
-  router.add("/bar/foo/bbb/ccc", std::make_shared<dummy_handler>(6));
-  router.add("/foo/bar/aaa", std::make_shared<dummy_handler>(7));
+  router.add("/foo", std::make_unique<dummy_handler>(1));
+  router.add("/foo/bar", std::make_unique<dummy_handler>(2));
+  router.add("/bar", std::make_unique<dummy_handler>(3));
+  router.add("/bar/foo/aaa", std::make_unique<dummy_handler>(4));
+  router.add("/bar/foo/bbb", std::make_unique<dummy_handler>(5));
+  router.add("/bar/foo/bbb/ccc", std::make_unique<dummy_handler>(6));
+  router.add("/foo/bar/aaa", std::make_unique<dummy_handler>(7));
 
   http_request req;
   req.method = "GET";

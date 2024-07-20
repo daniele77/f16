@@ -6,7 +6,7 @@
 #include <string>
 #include <cstdint>
 #include "request_parser.hpp"
-#include "request.hpp"
+#include "http_request.hpp"
 
 // cppcheck-suppress unusedFunction symbolName=LLVMFuzzerTestOneInput
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
@@ -14,7 +14,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
   using namespace f16::http::server;
 
   request_parser grammar;
-  request req;
+  http_request req;
   const std::string input(reinterpret_cast<const char *>(data), size); // NOLINT
   grammar.parse(req, input.begin(), input.end());
 

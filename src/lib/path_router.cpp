@@ -10,11 +10,11 @@
 
 namespace f16::http::server {
 
-void path_router::add(const std::string& location, const std::shared_ptr<http_handler>& resource)
+void path_router::add(const std::string& location, std::unique_ptr<http_handler> resource)
 {
   auto& handlers = resources[resource->method()];
   
-  handlers.emplace_back(location, resource);
+  handlers.emplace_back(location, std::move(resource));
   std::sort(handlers.begin(), handlers.end(), [](const resource_entry& a, const resource_entry& b) {
     return a.location.size() > b.location.size();
   });
