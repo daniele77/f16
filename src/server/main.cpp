@@ -24,7 +24,7 @@
 #include <internal_use_only/config.hpp>
 
 static constexpr auto USAGE =
-  R"(F16.
+  R"(f16 web server.
 
     Usage:
           f16 simple <root_doc> [--bind=<address> --port=<port>]
@@ -33,10 +33,10 @@ static constexpr auto USAGE =
           f16 --version
 
     Options:
-          -h --help         Show this screen.
-          --version         Show version.
-          --bind=<address>  The binding address [default: 0.0.0.0].
-          --port=<port>     The port [default: 80].
+          -h --help            Show this screen.
+          -v --version         Show version.
+          -b --bind=<address>  The binding address [default: 0.0.0.0].
+          -p --port=<port>     The port [default: 80].
   )";
 
 int main(int argc, const char **argv)
@@ -140,6 +140,9 @@ int main(int argc, const char **argv)
     spdlog::info("Gracefully exit application");
 
   } catch (const std::exception &e) {
-    fmt::print("Unhandled exception in main: {}", e.what());
+    fmt::print(stderr, "Unhandled exception in main: {}", e.what());
+    exit(1);
   }
+
+  return 0;
 }
