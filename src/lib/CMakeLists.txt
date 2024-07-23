@@ -7,12 +7,14 @@ endif()
 add_library(f16lib
   url.hpp url.cpp
   connection.hpp connection.cpp
+  ssl_connection.hpp ssl_connection.cpp
   connection_manager.hpp connection_manager.cpp
   mime_types.hpp mime_types.cpp
   reply.hpp reply.cpp
   request_handler.hpp request_handler.cpp
   request_parser.hpp request_parser.cpp
-  server.hpp server.cpp
+  http_server.hpp http_server.cpp
+  https_server.hpp https_server.cpp
   path_router.hpp path_router.cpp
   static_content.hpp static_content.cpp
   dynamic_content.hpp dynamic_content.cpp
@@ -31,6 +33,7 @@ target_link_libraries(
   f16lib
   PRIVATE
     ${FS_LINK_FLAG}
+    ${OPENSSL_LIBRARIES}
   PUBLIC
     asio::asio
 )

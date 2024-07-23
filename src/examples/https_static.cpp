@@ -1,13 +1,12 @@
-// Copyright (c) 2022 Daniele Pallastrelli
+// Copyright (c) 2024 Daniele Pallastrelli
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
 #include <iostream>
-#include "http_server.hpp"
+#include "https_server.hpp"
 #include "static_content.hpp"
-#include "dynamic_content.hpp"
 
 int main(int /*argc*/, const char** /*argv*/)
 {
@@ -16,12 +15,15 @@ int main(int /*argc*/, const char** /*argv*/)
     asio::io_context ioc;
 
     using namespace f16::http::server;
-    http_server app(ioc);
-    app.add("/", static_content("."));
-    app.add("/books", get([](const request& /*req*/, std::ostream& os) {
-      os << "Hello, get api!\n";
-    }));
-    app.listen("7000", "localhost");
+
+    // openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365
+    // psw -> 123456
+    //
+    // openssl dhparam -out dh4096.pem 4096
+
+    https_server server{ioc};
+    server.add("/", static_content("."));
+    server.listen("7000", "0.0.0.0");
 
     while(true)
     {

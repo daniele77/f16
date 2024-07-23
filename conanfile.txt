@@ -7,6 +7,7 @@ spdlog/1.14.1
 fmt/10.2.1
 asio/1.30.2
 nlohmann_json/3.11.3
+openssl/3.2.2
 
 [generators]
 CMakeDeps

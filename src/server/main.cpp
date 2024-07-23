@@ -14,7 +14,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "server.hpp"
+#include "http_server.hpp"
 
 #include "static_content.hpp"
 
@@ -63,7 +63,7 @@ int main(int argc, const char **argv)
     
     using namespace f16::http::server;
 
-    std::vector<std::unique_ptr<server>> server_set;
+    std::vector<std::unique_ptr<http_server>> server_set;
 
     if (args["simple"].asBool())
     {
@@ -73,12 +73,12 @@ int main(int argc, const char **argv)
       const std::string root_doc = args["<root_doc>"].asString();
       spdlog::info("Serving root doc {} on {}:{}", root_doc, address, port);
 
-      auto http_server = std::make_unique<server>(ioc);
+      auto server = std::make_unique<http_server>(ioc);
 
-      http_server->add("/", static_content(root_doc));
-      http_server->listen(port, address);
+      server->add("/", static_content(root_doc));
+      server->listen(port, address);
 
-      server_set.push_back(std::move(http_server));
+      server_set.push_back(std::move(server));
     }
     else if (args["advanced"].asBool())
     {
@@ -96,16 +96,16 @@ int main(int argc, const char **argv)
         const std::string address = server_entry.at("listen_address");
         const std::string port = server_entry.at("listen_port");
         spdlog::info("New server listening on {}:{}", address, port);
-        auto http_server = std::make_unique<server>(ioc);
+        auto server = std::make_unique<http_server>(ioc);
         for (const auto& location_entry: server_entry.at("locations"))
         {
           const std::string root_doc = location_entry.at("root");
           const std::string path = location_entry.at("location");
           spdlog::info("  Serving root doc {} at path: {}", root_doc, path);
-          http_server->add(path, static_content(root_doc));
+          server->add(path, static_content(root_doc));
         }
-        http_server->listen(port, address);
-        server_set.push_back(std::move(http_server));
+        server->listen(port, address);
+        server_set.push_back(std::move(server));
       }
     }
       

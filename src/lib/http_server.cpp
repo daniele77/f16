@@ -3,18 +3,18 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include "server.hpp"
+#include "http_server.hpp"
 #include <utility>
 
 namespace f16::http::server {
 
-server::server(asio::io_context& ioc)
+http_server::http_server(asio::io_context& ioc)
   : io_context_(ioc),
     acceptor_(io_context_)
 {
 }
 
-server::~server()
+http_server::~http_server()
 {
   try
   {    
@@ -27,7 +27,7 @@ server::~server()
   }
 }
 
-void server::listen(const std::string& port, const std::string& address)
+void http_server::listen(const std::string& port, const std::string& address)
 {
   // Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
   asio::ip::tcp::resolver resolver(io_context_);
@@ -41,12 +41,12 @@ void server::listen(const std::string& port, const std::string& address)
   do_accept();
 }
 
-void server::add(const std::string& path, std::unique_ptr<http_handler> handler)
+void http_server::add(const std::string& path, std::unique_ptr<http_handler> handler)
 { 
   request_handler_.add(path, std::move(handler));
 }
 
-void server::do_accept()
+void http_server::do_accept()
 {
   acceptor_.async_accept(
       [this](std::error_code ec, asio::ip::tcp::socket socket)

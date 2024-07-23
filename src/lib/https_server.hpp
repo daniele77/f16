@@ -1,12 +1,13 @@
-// Copyright (c) 2022 Daniele Pallastrelli
+// Copyright (c) 2024 Daniele Pallastrelli
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef F16_HTTP_SERVER_HPP
-#define F16_HTTP_SERVER_HPP
+#ifndef F16_HTTP_HTTPS_SERVER_HPP
+#define F16_HTTP_HTTPS_SERVER_HPP
 
 #include "f16asio.hpp"
+#include <asio/ssl.hpp>
 #include <string>
 #include "connection.hpp"
 #include "connection_manager.hpp"
@@ -18,27 +19,27 @@ namespace f16::http::server {
 class http_handler;
 
 
-/// The top-level class of the HTTP server.
-class server
+/// The top-level class of the HTTPS server.
+class https_server
 {
 public:
-  server(const server&) = delete;
-  server& operator=(const server&) = delete;
+  https_server(const https_server&) = delete;
+  https_server& operator=(const https_server&) = delete;
 
   /// Construct the server
-  explicit server(asio::io_context& ioc);
+  explicit https_server(asio::io_context& ioc);
 
   /// Cancel all outstanding asynchronous operations.
   /// Once all operations have finished the destructor will exit.
 
-  ~server();
+  ~https_server();
 
   void add(const std::string& path, std::unique_ptr<http_handler> handler);
 
   /// Start to listen on the specified TCP address and port
   /// For IPv4, try address: 0.0.0.0
   /// For IPv6, try address: 0::0
-  void listen(const std::string& port = "80", const std::string& address = "0.0.0.0");
+  void listen(const std::string& port = "443", const std::string& address = "0.0.0.0");
 
 private:
   /// Perform an asynchronous accept operation.
@@ -46,6 +47,8 @@ private:
 
   /// The io_context used to perform asynchronous operations.
   asio::io_context& io_context_;
+
+  asio::ssl::context ssl_context_;
 
   /// Acceptor used to listen for incoming connections.
   asio::ip::tcp::acceptor acceptor_;
@@ -59,4 +62,4 @@ private:
 
 } // namespace f16::http::server
 
-#endif // F16_HTTP_SERVER_HPP
+#endif // F16_HTTP_HTTPS_SERVER_HPP
