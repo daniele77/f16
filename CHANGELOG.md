@@ -8,3 +8,4 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [0.0.1] - 2022-05-10
 
  - Basic http server and library
+ - Basic https server and library

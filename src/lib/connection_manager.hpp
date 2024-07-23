@@ -8,6 +8,7 @@
 
 #include <set>
 #include "connection.hpp"
+#include "ssl_connection.hpp"
 
 namespace f16::http::server {
 
@@ -28,12 +29,19 @@ public:
   /// Stop the specified connection.
   void stop(const connection_ptr& c);
 
+  /// Add the specified connection to the manager and start it.
+  void start(const ssl_connection_ptr& c);
+
+  /// Stop the specified connection.
+  void stop(const ssl_connection_ptr& c);
+
   /// Stop all connections.
   void stop_all();
 
 private:
   /// The managed connections.
   std::set<connection_ptr> connections_;
+  std::set<ssl_connection_ptr> ssl_connections_;
 };
 
 } // namespace f16::http::server

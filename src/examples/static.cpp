@@ -5,7 +5,7 @@
 
 #include "f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
 #include <iostream>
-#include "server.hpp"
+#include "http_server.hpp"
 #include "static_content.hpp"
 
 int main(int /*argc*/, const char** /*argv*/)
@@ -15,12 +15,13 @@ int main(int /*argc*/, const char** /*argv*/)
     asio::io_context ioc;
 
     using namespace f16::http::server;
-    server http_server_1(ioc);
-    http_server_1.add("/", static_content("."));
-    server http_server_2(ioc);
-    http_server_2.add("/", static_content(".."));
-    http_server_1.listen("7000", "0.0.0.0");
-    http_server_2.listen("7001", "0.0.0.0");
+
+    http_server server_1{ioc};
+    server_1.add("/", static_content("."));
+    server_1.listen("7000", "0.0.0.0");
+    http_server server_2{ioc};
+    server_2.add("/", static_content(".."));
+    server_2.listen("7001", "0.0.0.0");
 
     while(true)
     {
@@ -39,5 +40,7 @@ int main(int /*argc*/, const char** /*argv*/)
   catch (const std::exception &e)
   {
     std::cerr << "Unhandled exception in main: " << e.what() << std::endl;
+    return 1;
   }
+  return 0;
 }

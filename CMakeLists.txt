@@ -49,6 +49,9 @@ if(NOT asio_FOUND)
   endif()
 endif()
 
+find_package(OpenSSL REQUIRED)
+include_directories(${OPENSSL_INCLUDE_DIR})
+
 # configure files based on CMake configuration options
 add_subdirectory(configured_files)
 

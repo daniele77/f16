@@ -1,5 +1,6 @@
 set(EXAMPLES
   static
+  https_static
   rest
   complete
 )

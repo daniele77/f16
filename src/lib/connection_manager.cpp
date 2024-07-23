@@ -21,11 +21,27 @@ void connection_manager::stop(const connection_ptr& c)
   c->stop();
 }
 
+void connection_manager::start(const ssl_connection_ptr& c)
+{
+  ssl_connections_.insert(c);
+  c->start();
+}
+
+void connection_manager::stop(const ssl_connection_ptr& c)
+{
+  ssl_connections_.erase(c);
+  c->stop();
+}
+
 void connection_manager::stop_all()
 {
   for (const auto& c: connections_)
     c->stop();
   connections_.clear();
+
+  for (const auto& c: ssl_connections_)
+    c->stop();
+  ssl_connections_.clear();
 }
 
 } // namespace f16::http::server
