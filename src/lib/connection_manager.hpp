@@ -6,9 +6,8 @@
 #ifndef F16_HTTP_CONNECTION_MANAGER_HPP
 #define F16_HTTP_CONNECTION_MANAGER_HPP
 
-#include <set>
+#include <unordered_set>
 #include "connection.hpp"
-#include "ssl_connection.hpp"
 
 namespace f16::http::server {
 
@@ -22,6 +21,8 @@ public:
 
   /// Construct a connection manager.
   connection_manager();
+  
+  ~connection_manager();
 
   /// Add the specified connection to the manager and start it.
   void start(const connection_ptr& c);
@@ -29,19 +30,12 @@ public:
   /// Stop the specified connection.
   void stop(const connection_ptr& c);
 
-  /// Add the specified connection to the manager and start it.
-  void start(const ssl_connection_ptr& c);
-
-  /// Stop the specified connection.
-  void stop(const ssl_connection_ptr& c);
-
+private:
   /// Stop all connections.
   void stop_all();
 
-private:
   /// The managed connections.
-  std::set<connection_ptr> connections_;
-  std::set<ssl_connection_ptr> ssl_connections_;
+  std::unordered_set<connection_ptr> connections_;
 };
 
 } // namespace f16::http::server

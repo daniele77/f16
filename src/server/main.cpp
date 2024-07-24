@@ -15,6 +15,7 @@
 #include <nlohmann/json.hpp>
 
 #include "http_server.hpp"
+#include "https_server.hpp"
 
 #include "static_content.hpp"
 
@@ -95,8 +96,11 @@ int main(int argc, const char **argv)
       {
         const std::string address = server_entry.at("listen_address");
         const std::string port = server_entry.at("listen_port");
-        spdlog::info("New server listening on {}:{}", address, port);
-        auto server = std::make_unique<http_server>(ioc);
+        const bool has_ssl = server_entry.contains("ssl");
+        spdlog::info("New {} server listening on {}:{}", (has_ssl ? "https" : "http"), address, port);
+        std::unique_ptr<http_server> server;
+        if (has_ssl) server = std::make_unique<https_server>(ioc);
+        else server = std::make_unique<http_server>(ioc);
         for (const auto& location_entry: server_entry.at("locations"))
         {
           const std::string root_doc = location_entry.at("root");
