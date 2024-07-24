@@ -3,13 +3,12 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef F16_HTTP_SSL_CONNECTION_HPP
-#define F16_HTTP_SSL_CONNECTION_HPP
+#ifndef F16_HTTP_PLAIN_CONNECTION_HPP
+#define F16_HTTP_PLAIN_CONNECTION_HPP
 
 #include <array>
 #include <memory>
 #include "f16asio.hpp"
-#include <asio/ssl.hpp>
 #include "reply.hpp"
 #include "http_request.hpp"
 #include "request_handler.hpp"
@@ -20,40 +19,36 @@ namespace f16::http::server {
 
 class connection_manager;
 
-/// Represents a single connection from a client.
-class ssl_connection
+/// Represents a single plain_connection from a client.
+class plain_connection
   : public connection,
-    public std::enable_shared_from_this<ssl_connection>
+    public std::enable_shared_from_this<plain_connection>
 {
 public:
-  ssl_connection(const ssl_connection&) = delete;
-  ssl_connection& operator=(const ssl_connection&) = delete;
+  plain_connection(const plain_connection&) = delete;
+  plain_connection& operator=(const plain_connection&) = delete;
 
-  /// Construct a connection with the given socket.
-  explicit ssl_connection(asio::ip::tcp::socket socket,
-      connection_manager& manager, request_handler& handler,
-      asio::ssl::context& ctx);
+  /// Construct a plain_connection with the given socket.
+  explicit plain_connection(asio::ip::tcp::socket socket,
+      connection_manager& manager, request_handler& handler);
 
-  /// Start the first asynchronous operation for the connection.
+  /// Start the first asynchronous operation for the plain_connection.
   void start() override;
 
-  /// Stop all asynchronous operations associated with the connection.
+  /// Stop all asynchronous operations associated with the plain_connection.
   void stop() override;
 
 private:
-
-  void do_handshake();
-
   /// Perform an asynchronous read operation.
   void do_read();
 
   /// Perform an asynchronous write operation.
   void do_write();
 
-  /// SSL socket for the connection.
-  asio::ssl::stream<asio::ip::tcp::socket> socket_;
+  /// Socket for the plain_connection.
+  asio::ip::tcp::socket socket_;
 
-  /// The manager for this connection.
+  /// The manager for this plain_connection.
   connection_manager& connection_manager_;
 
   /// The handler used to process the incoming request.
@@ -74,4 +69,4 @@ private:
 
 } // namespace f16::http::server
 
-#endif // F16_HTTP_SSL_CONNECTION_HPP
+#endif // F16_HTTP_PLAIN_CONNECTION_HPP

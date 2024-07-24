@@ -6,13 +6,7 @@
 #ifndef F16_HTTP_CONNECTION_HPP
 #define F16_HTTP_CONNECTION_HPP
 
-#include <array>
 #include <memory>
-#include "f16asio.hpp"
-#include "reply.hpp"
-#include "http_request.hpp"
-#include "request_handler.hpp"
-#include "request_parser.hpp"
 
 namespace f16::http::server {
 
@@ -20,52 +14,31 @@ class connection_manager;
 
 /// Represents a single connection from a client.
 class connection
-  : public std::enable_shared_from_this<connection>
 {
 public:
-  connection(const connection&) = delete;
-  connection& operator=(const connection&) = delete;
 
-  /// Construct a connection with the given socket.
-  explicit connection(asio::ip::tcp::socket socket,
-      connection_manager& manager, request_handler& handler);
+  virtual ~connection() noexcept = default;
 
   /// Start the first asynchronous operation for the connection.
-  void start();
+  virtual void start() = 0;
 
   /// Stop all asynchronous operations associated with the connection.
-  void stop();
-
-private:
-  /// Perform an asynchronous read operation.
-  void do_read();
-
-  /// Perform an asynchronous write operation.
-  void do_write();
-
-  /// Socket for the connection.
-  asio::ip::tcp::socket socket_;
-
-  /// The manager for this connection.
-  connection_manager& connection_manager_;
-
-  /// The handler used to process the incoming request.
-  request_handler& request_handler_;
-
-  /// Buffer for incoming data.
-  std::array<char, 8192> buffer_;
-
-  /// The incoming request.
-  http_request request_;
-
-  /// The parser for the incoming request.
-  request_parser request_parser_;
-
-  /// The reply to be sent back to the client.
-  reply reply_;
+  virtual void stop() = 0;
 };
 
 using connection_ptr = std::shared_ptr<connection>;
+
+/*
+template <typename Connection>
+class connection_wrapper : public connection
+{
+    template <typename... Args>
+    connection_wrapper(Args&&... args) : c{std::forward<Args>(args)...} {}
+    void start() override { c.start(); }
+    void stop() override { c.stop(); }
+    Connection c;
+};
+*/
 
 } // namespace f16::http::server
 

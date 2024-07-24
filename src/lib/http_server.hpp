@@ -8,7 +8,6 @@
 
 #include "f16asio.hpp"
 #include <string>
-#include "connection.hpp"
 #include "connection_manager.hpp"
 #include "request_handler.hpp"
 
@@ -31,7 +30,7 @@ public:
   /// Cancel all outstanding asynchronous operations.
   /// Once all operations have finished the destructor will exit.
 
-  ~http_server();
+  virtual ~http_server();
 
   void add(const std::string& path, std::unique_ptr<http_handler> handler);
 
@@ -40,10 +39,14 @@ public:
   /// For IPv6, try address: 0::0
   void listen(const std::string& port = "80", const std::string& address = "0.0.0.0");
 
+protected:
+
+  virtual connection_ptr create_connection(asio::ip::tcp::socket socket, connection_manager& cm, request_handler& rh);
+
 private:
   /// Perform an asynchronous accept operation.
   void do_accept();
-
+  
   /// The io_context used to perform asynchronous operations.
   asio::io_context& io_context_;
 

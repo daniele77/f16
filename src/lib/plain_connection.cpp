@@ -1,9 +1,9 @@
-// Copyright (c) 2022 Daniele Pallastrelli
+// Copyright (c) 2024 Daniele Pallastrelli
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include "connection.hpp"
+#include "plain_connection.hpp"
 #include <utility>
 #include <vector>
 #include "connection_manager.hpp"
@@ -11,7 +11,7 @@
 
 namespace f16::http::server {
 
-connection::connection(asio::ip::tcp::socket socket,
+plain_connection::plain_connection(asio::ip::tcp::socket socket,
     connection_manager& manager, request_handler& handler)
   : socket_(std::move(socket)),
     connection_manager_(manager),
@@ -22,17 +22,17 @@ connection::connection(asio::ip::tcp::socket socket,
 {
 }
 
-void connection::start()
+void plain_connection::start()
 {
   do_read();
 }
 
-void connection::stop()
+void plain_connection::stop()
 {
   socket_.close();
 }
 
-void connection::do_read()
+void plain_connection::do_read()
 {
   auto self(shared_from_this());
   socket_.async_read_some(asio::buffer(buffer_),
@@ -66,7 +66,7 @@ void connection::do_read()
       });
 }
 
-void connection::do_write()
+void plain_connection::do_write()
 {
   auto self(shared_from_this());
   asio::async_write(socket_, reply_.to_buffers(),
@@ -74,7 +74,7 @@ void connection::do_write()
       {
         if (!ec)
         {
-          // Initiate graceful connection closure.
+          // Initiate graceful plain_connection closure.
           asio::error_code ignored_ec;
           socket_.shutdown(asio::ip::tcp::socket::shutdown_both,
             ignored_ec);
