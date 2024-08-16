@@ -7,6 +7,7 @@ endif()
 add_library(f16lib
   url.hpp url.cpp
   connection.hpp
+  base_connection.hpp
   plain_connection.hpp plain_connection.cpp
   ssl_connection.hpp ssl_connection.cpp
   connection_manager.hpp connection_manager.cpp
