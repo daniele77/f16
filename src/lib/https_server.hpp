@@ -7,12 +7,34 @@
 #define F16_HTTP_HTTPS_SERVER_HPP
 
 #include <asio/ssl.hpp>
+#include <unordered_set>
 #include "http_server.hpp"
 
 namespace f16::http::server {
 
 // forward declaration
 class http_handler;
+
+
+struct ssl_settings
+{
+  enum ssl_proto
+  {
+    sslv2 = asio::ssl::context::sslv2,
+    sslv3 = asio::ssl::context::sslv3,
+    tlsv1 = asio::ssl::context::tlsv1,
+    tlsv11 = asio::ssl::context::tlsv11,
+    tlsv12 = asio::ssl::context::tlsv12,
+    tlsv13 = asio::ssl::context::tlsv13
+  };
+  std::string certificate = {};
+  std::string certificate_key = {};
+  std::string dhparam = {};
+  std::string password = {};
+  std::unordered_set<ssl_proto> protocols = { tlsv1, tlsv11, tlsv12, tlsv13 };
+  std::string ciphers = {};
+  std::string client_certificate = {};
+};
 
 
 /// The top-level class of the HTTPS server.
@@ -23,7 +45,7 @@ public:
   https_server& operator=(const https_server&) = delete;
 
   /// Construct the server
-  explicit https_server(asio::io_context& ioc);
+  https_server(asio::io_context& ioc, const ssl_settings& ssl_s);
 
 protected:
 

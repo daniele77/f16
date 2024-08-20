@@ -24,6 +24,19 @@
 // You can modify the source template at `configured_files/config.hpp.in`.
 #include <internal_use_only/config.hpp>
 
+
+static f16::http::server::ssl_settings::ssl_proto protocol_from_string(const std::string& s)
+{
+  using namespace f16::http::server;
+  if (s == "SSLv2") return ssl_settings::sslv2;
+  if (s == "SSLv3") return ssl_settings::sslv3;
+  if (s == "TLSv1") return ssl_settings::tlsv1;
+  if (s == "TLSv1.1") return ssl_settings::tlsv11;
+  if (s == "TLSv1.2") return ssl_settings::tlsv12;
+  if (s == "TLSv1.3") return ssl_settings::tlsv13;
+  throw std::invalid_argument("Unknown protocol: " + s);
+}
+
 static constexpr auto USAGE =
   R"(f16 web server.
 
@@ -99,7 +112,28 @@ int main(int argc, const char **argv)
         const bool has_ssl = server_entry.contains("ssl");
         spdlog::info("New {} server listening on {}:{}", (has_ssl ? "https" : "http"), address, port);
         std::unique_ptr<http_server> server;
-        if (has_ssl) server = std::make_unique<https_server>(ioc);
+        if (has_ssl)
+        {
+          const auto& ssl_section = server_entry.at("ssl");
+          ssl_settings ssl_s;
+          ssl_s.certificate = ssl_section.value("certificate", "");
+          ssl_s.certificate_key = ssl_section.value("certificate_key", "");
+          ssl_s.dhparam = ssl_section.value("dhparam", "");
+          ssl_s.password = ssl_section.value("password", "");
+          if (ssl_section.contains("protocols"))
+          {
+            const auto& protocols = ssl_section["protocols"];
+            for (std::string protocol: protocols)
+              ssl_s.protocols.insert(protocol_from_string(protocol));
+          }
+
+          ssl_s.ciphers = ssl_section.value("ciphers", "");
+
+          if (ssl_section.value("verify_client", false))
+            ssl_s.client_certificate = ssl_section.value("client_certificate", "");
+
+          server = std::make_unique<https_server>(ioc, ssl_s);
+        }
         else server = std::make_unique<http_server>(ioc);
         for (const auto& location_entry: server_entry.at("locations"))
         {

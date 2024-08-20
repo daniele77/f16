@@ -4,7 +4,17 @@
     {
       "listen_address": "0.0.0.0",
       "listen_port": "4000",
-      "ssl": true,
+      "ssl":
+      {
+        "certificate": "cert.pem",
+        "certificate_key": "key.pem",
+        "dhparam": "dh4096.pem",
+        "password": "123456",
+        "protocols": ["TLSv1.3"],
+        "ciphers": "HIGH:!aNULL:!MD5",
+        "verify_client": true,
+        "client_certificate": "client.crt"
+      },
       "locations":
       [
         {
