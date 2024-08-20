@@ -21,7 +21,12 @@ int main(int /*argc*/, const char** /*argv*/)
     //
     // openssl dhparam -out dh4096.pem 4096
 
-    https_server server{ioc};
+    const ssl_settings ssl_s{
+      "cert.pem",
+      "key.pem",
+      "dh4096.pem"
+    };
+    https_server server{ioc, ssl_s};
     server.add("/", static_content("."));
     server.listen("7000", "0.0.0.0");
 
