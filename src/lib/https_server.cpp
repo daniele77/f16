@@ -21,6 +21,8 @@ https_server::https_server(asio::io_context& ioc, const ssl_settings& ssl_s)
     ssl_context_.set_options(proto);
   if (!ssl_s.ciphers.empty())
     SSL_CTX_set_cipher_list(ssl_context_.native_handle(), ssl_s.ciphers.c_str());
+  if (ssl_s.prefer_server_ciphers)
+    SSL_CTX_set_options(ssl_context_.native_handle(), SSL_OP_CIPHER_SERVER_PREFERENCE);
   if (!ssl_s.password.empty()) // only to decrypt private key 
   {
     auto psw = ssl_s.password;
@@ -33,9 +35,20 @@ https_server::https_server(asio::io_context& ioc, const ssl_settings& ssl_s)
   ssl_context_.use_tmp_dh_file(ssl_s.dhparam);
   if (!ssl_s.client_certificate.empty())
   {
-    ssl_context_.set_verify_mode(asio::ssl::verify_peer);
+    ssl_context_.set_verify_mode(asio::ssl::verify_peer | asio::ssl::verify_fail_if_no_peer_cert);
     ssl_context_.load_verify_file(ssl_s.client_certificate);
   }
+
+  // cache in SSL sessions
+  if (ssl_s.session_cache)
+    SSL_CTX_set_session_cache_mode(ssl_context_.native_handle(), SSL_SESS_CACHE_SERVER);
+    // Imposta la dimensione della cache delle sessioni SSL (in numero di sessioni)
+  if (ssl_s.session_cache_size > 0)
+    SSL_CTX_sess_set_cache_size(ssl_context_.native_handle(), ssl_s.session_cache_size);
+
+  // Set timeout SSL sessions (in seconds)
+  if (ssl_s.session_timeout_secs > 0)
+    SSL_CTX_set_timeout(ssl_context_.native_handle(), ssl_s.session_timeout_secs);
 }
 
 connection_ptr https_server::create_connection(asio::ip::tcp::socket socket, connection_manager& cm, request_handler& rh)

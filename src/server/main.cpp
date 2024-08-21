@@ -108,8 +108,8 @@ int main(int argc, const char **argv)
       for (const auto& server_entry : cfg.at("servers"))
       {
         const std::string address = server_entry.at("listen_address");
-        const std::string port = server_entry.at("listen_port");
         const bool has_ssl = server_entry.contains("ssl");
+        const std::string port = server_entry.value("listen_port", (has_ssl ? "443" : "80"));
         spdlog::info("New {} server listening on {}:{}", (has_ssl ? "https" : "http"), address, port);
         std::unique_ptr<http_server> server;
         if (has_ssl)
@@ -128,9 +128,14 @@ int main(int argc, const char **argv)
           }
 
           ssl_s.ciphers = ssl_section.value("ciphers", "");
+          ssl_s.prefer_server_ciphers = ssl_section.value("prefer_server_ciphers", false);
 
           if (ssl_section.value("verify_client", false))
             ssl_s.client_certificate = ssl_section.value("client_certificate", "");
+
+          ssl_s.session_timeout_secs = ssl_section.value("session_timeout_secs", -1l);
+          ssl_s.session_cache = ssl_section.value("session_cache", false);
+          ssl_s.session_cache_size = ssl_section.value("session_cache_size", -1l);
 
           server = std::make_unique<https_server>(ioc, ssl_s);
         }
