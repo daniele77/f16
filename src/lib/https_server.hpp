@@ -33,7 +33,11 @@ struct ssl_settings
   std::string password = {};
   std::unordered_set<ssl_proto> protocols = { tlsv1, tlsv11, tlsv12, tlsv13 };
   std::string ciphers = {};
+  bool prefer_server_ciphers = false;
   std::string client_certificate = {};
+  long session_timeout_secs = -1;
+  bool session_cache = false;
+  long session_cache_size = -1;
 };
 
 
