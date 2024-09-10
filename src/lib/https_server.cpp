@@ -5,25 +5,27 @@
 
 #include "https_server.hpp"
 #include "ssl_connection.hpp"
+#include <memory>
 
-namespace f16::http::server {
+namespace f16::http::server
+{
 
 https_server::https_server(asio::io_context& ioc, const ssl_settings& ssl_s)
-  : http_server{ioc}
-  , ssl_context_{asio::ssl::context::tlsv13}
+  : http_server{ ioc }
+  , ssl_context_{ asio::ssl::context::tlsv13 }
 {
   ssl_context_.set_options(
     asio::ssl::context::default_workarounds |
     // asio::ssl::context::no_sslv2 |
     asio::ssl::context::single_dh_use
   );
-  for (const auto& proto: ssl_s.protocols)
+  for (const auto& proto : ssl_s.protocols)
     ssl_context_.set_options(proto);
   if (!ssl_s.ciphers.empty())
     SSL_CTX_set_cipher_list(ssl_context_.native_handle(), ssl_s.ciphers.c_str());
   if (ssl_s.prefer_server_ciphers)
     SSL_CTX_set_options(ssl_context_.native_handle(), SSL_OP_CIPHER_SERVER_PREFERENCE);
-  if (!ssl_s.password.empty()) // only to decrypt private key 
+  if (!ssl_s.password.empty()) // only to decrypt private key
   {
     auto psw = ssl_s.password;
     ssl_context_.set_password_callback(
@@ -42,7 +44,7 @@ https_server::https_server(asio::io_context& ioc, const ssl_settings& ssl_s)
   // cache in SSL sessions
   if (ssl_s.session_cache)
     SSL_CTX_set_session_cache_mode(ssl_context_.native_handle(), SSL_SESS_CACHE_SERVER);
-    // Imposta la dimensione della cache delle sessioni SSL (in numero di sessioni)
+  // Set SSL sessions cache size (in number of sessions)
   if (ssl_s.session_cache_size > 0)
     SSL_CTX_sess_set_cache_size(ssl_context_.native_handle(), ssl_s.session_cache_size);
 

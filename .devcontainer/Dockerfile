@@ -5,13 +5,18 @@ FROM ubuntu:${VARIANT}
 # Restate the variant to use it later on in the llvm and cmake installations
 ARG VARIANT
 
+ARG USERNAME="root"
+ARG USER_UID
+ARG USER_GID
+
 # Install necessary packages available from standard repos
 RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y --no-install-recommends \
         software-properties-common wget apt-utils file zip \
         openssh-client gpg-agent socat rsync \
         make ninja-build git \
-        python3 python3-pip
+        python3 python3-pip \
+        sudo
 
 # Install conan
 RUN python3 -m pip install --upgrade pip setuptools && \
@@ -100,9 +105,52 @@ RUN mkdir -p $(include-what-you-use -print-resource-dir 2>/dev/null)
 RUN ln -s $(readlink -f /usr/lib/clang/${LLVM_VER}/include) \
     $(include-what-you-use -print-resource-dir 2>/dev/null)/include
 
+# Libraries
+RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
+    apt-get install -y --no-install-recommends \
+        libfmt-dev \
+        libspdlog-dev \
+        libssl-dev \
+        nlohmann-json3-dev
+
+# Last version of nlohmann JSON
+RUN mkdir /usr/local/include/nlohmann/ && \
+    wget https://github.com/nlohmann/json/releases/download/v3.11.3/json.hpp -O /usr/local/include/nlohmann/json.hpp
+
+# Last version of ASIO
+RUN wget https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-30-2.tar.gz && \
+    tar -xzf asio-1-30-2.tar.gz && \
+    cp -r asio-asio-1-30-2/asio/include/asio /usr/local/include/ && \
+    cp -r asio-asio-1-30-2/asio/include/asio.hpp /usr/local/include/
+
+# Last version of catch2
+RUN git clone --branch v2.13.10 https://github.com/catchorg/Catch2.git && \
+    cd Catch2 && \
+    cmake -Bbuild -H. -DBUILD_TESTING=OFF && \
+    cmake --build build/ --target install && \
+    cd .. && \
+    rm -rf Catch2
+
+RUN git clone https://github.com/docopt/docopt.cpp.git --depth 1 --branch v0.6.3 && \
+    cd docopt.cpp && \
+    cmake -Bbuild -H. -DCMAKE_CXX_STANDARD=17 && \
+    cmake --build build/ --target install && \
+    cd .. && \
+    rm -rf docopt.cpp
+
 ## Cleanup cached apt data we don't need anymore
 RUN apt-get autoremove -y && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+
+RUN if [ "$USERNAME" != "root" ]; then \
+    groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    && echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers; \
+fi
+
+USER $USERNAME
+
 
 # Allow the user to set compiler defaults
 ARG USE_CLANG

@@ -6,6 +6,7 @@ ARG VARIANT
 
 # Install necessary packages available from standard repos
 RUN apk add \
+        bash \
         wget file zip \
         openssh-client socat rsync \
         gcc g++ \
@@ -45,4 +46,4 @@ ENV CXX=${CXX:-"g++"}
 #ADD . /workspaces/cpp_starter_project
 #WORKDIR /workspaces/cpp_starter_project
 
-CMD ["sh"]
+CMD ["/bin/bash"]

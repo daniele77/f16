@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.7...3.28)
 
 if(${CMAKE_VERSION} VERSION_LESS 3.12)
-    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+  cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 endif()
 
 # Not ideal to use this global variable, but necessary to make sure
@@ -21,9 +21,8 @@ endif()
 # Add project_options from https://github.com/aminya/project_options
 # Change the version in the following URL to update the package (watch the releases of the repository for future updates)
 set(PROJECT_OPTIONS_VERSION "v0.35.1")
-FetchContent_Declare(
-  _project_options
-  URL https://github.com/aminya/project_options/archive/refs/tags/${PROJECT_OPTIONS_VERSION}.zip)
+FetchContent_Declare(_project_options
+                     URL https://github.com/aminya/project_options/archive/refs/tags/${PROJECT_OPTIONS_VERSION}.zip)
 FetchContent_MakeAvailable(_project_options)
 include(${_project_options_SOURCE_DIR}/Index.cmake)
 
@@ -35,15 +34,20 @@ project(
   HOMEPAGE_URL "github.com/daniele77/f16"
   LANGUAGES CXX)
 
+# TODO!!!!
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 find_package(asio 1.24.0 QUIET)
 if(NOT asio_FOUND)
-  find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
+  find_path(
+    STANDALONE_ASIO_INCLUDE_PATH
+    NAMES "asio.hpp"
+    HINTS ${ASIO_INCLUDEDIR})
   if(STANDALONE_ASIO_INCLUDE_PATH)
     message(STATUS "ASIO library found in ${STANDALONE_ASIO_INCLUDE_PATH}")
     mark_as_advanced(STANDALONE_ASIO_INCLUDE_PATH)
     add_library(asio::asio INTERFACE IMPORTED)
-    set_property(TARGET asio::asio PROPERTY
-      INTERFACE_INCLUDE_DIRECTORIES "${STANDALONE_ASIO_INCLUDE_PATH}")
+    set_property(TARGET asio::asio PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${STANDALONE_ASIO_INCLUDE_PATH}")
   else()
     message(FATAL_ERROR "ASIO library not found")
   endif()
@@ -66,20 +70,17 @@ if(ENABLE_DOCS)
   set(ENABLE_DOXYGEN "ENABLE_DOXYGEN")
 endif()
 
-
-option(DISABLE_STACK_PROTECTION  "Disable stack protection" OFF)
+option(DISABLE_STACK_PROTECTION "Disable stack protection" OFF)
 
 if(NOT DISABLE_STACK_PROTECTION)
   set(ENABLE_STACK_PROTECTION "ENABLE_STACK_PROTECTION")
 endif()
 
-
-option(DISABLE_ELF_PROTECTION  "Disable ELF protection" OFF)
+option(DISABLE_ELF_PROTECTION "Disable ELF protection" OFF)
 
 if(NOT DISABLE_ELF_PROTECTION)
   set(ENABLE_ELF_PROTECTION "ENABLE_ELF_PROTECTION")
 endif()
-
 
 # Adding the tests:
 option(ENABLE_TESTING "Enable the tests" ON)
@@ -106,46 +107,47 @@ if(ENABLE_DEVELOPER_MODE)
   set(ENABLE_COVERAGE "ENABLE_COVERAGE")
   set(WARNINGS_AS_ERRORS "WARNINGS_AS_ERRORS")
 
-  check_sanitizers_support(ENABLE_SANITIZER_ADDRESS
-                           ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
-                           ENABLE_SANITIZER_LEAK
-                           ENABLE_SANITIZER_THREAD
-                           ENABLE_SANITIZER_MEMORY)
+  check_sanitizers_support(
+    ENABLE_SANITIZER_ADDRESS
+    ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
+    ENABLE_SANITIZER_LEAK
+    ENABLE_SANITIZER_THREAD
+    ENABLE_SANITIZER_MEMORY)
 endif()
 
 # Initialize project_options variable related to this project
 # This overwrites `project_options` and sets `project_warnings`
 # uncomment to enable the options. Some of them accept one or more inputs:
 project_options(
-      PREFIX "f16"
-      ENABLE_CACHE
-      ${ENABLE_CPPCHECK}
-      ${ENABLE_CLANG_TIDY}
-      ENABLE_VS_ANALYSIS
-      # ENABLE_CONAN
-      # ENABLE_INTERPROCEDURAL_OPTIMIZATION
-      # ENABLE_NATIVE_OPTIMIZATION
-      ${ENABLE_DOXYGEN}
-      ${ENABLE_COVERAGE}
-      ${ENABLE_SANITIZER_ADDRESS}
-      ${ENABLE_SANITIZER_UNDEFINED_BEHAVIOR}
-      ${ENABLE_SANITIZER_THREAD}
-      ${ENABLE_SANITIZER_MEMORY}
-      ENABLE_CONTROL_FLOW_PROTECTION
-      ${ENABLE_STACK_PROTECTION}
-      # ENABLE_OVERFLOW_PROTECTION
-      ${ENABLE_ELF_PROTECTION}
-      # ENABLE_RUNTIME_SYMBOLS_RESOLUTION
-      # ENABLE_COMPILE_COMMANDS_SYMLINK
-      # ENABLE_PCH
-      # PCH_HEADERS
-      ${WARNINGS_AS_ERRORS}
-      # ENABLE_INCLUDE_WHAT_YOU_USE
-      # ENABLE_GCC_ANALYZER
-      # ENABLE_BUILD_WITH_TIME_TRACE
-      # ENABLE_UNITY
-      # LINKER "lld"
-      # CONAN_PROFILE ${profile_path}
+  PREFIX "f16"
+  ENABLE_CACHE
+  ${ENABLE_CPPCHECK}
+  ${ENABLE_CLANG_TIDY}
+  ENABLE_VS_ANALYSIS
+  # ENABLE_CONAN
+  # ENABLE_INTERPROCEDURAL_OPTIMIZATION
+  # ENABLE_NATIVE_OPTIMIZATION
+  ${ENABLE_DOXYGEN}
+  ${ENABLE_COVERAGE}
+  ${ENABLE_SANITIZER_ADDRESS}
+  ${ENABLE_SANITIZER_UNDEFINED_BEHAVIOR}
+  ${ENABLE_SANITIZER_THREAD}
+  ${ENABLE_SANITIZER_MEMORY}
+  ENABLE_CONTROL_FLOW_PROTECTION
+  ${ENABLE_STACK_PROTECTION}
+  # ENABLE_OVERFLOW_PROTECTION
+  ${ENABLE_ELF_PROTECTION}
+  # ENABLE_RUNTIME_SYMBOLS_RESOLUTION
+  ENABLE_COMPILE_COMMANDS_SYMLINK
+  # ENABLE_PCH
+  # PCH_HEADERS
+  ${WARNINGS_AS_ERRORS}
+  # ENABLE_INCLUDE_WHAT_YOU_USE
+  # ENABLE_GCC_ANALYZER
+  # ENABLE_BUILD_WITH_TIME_TRACE
+  # ENABLE_UNITY
+  # LINKER "lld"
+  # CONAN_PROFILE ${profile_path}
 )
 
 # If MSVC is being used, and ASAN is enabled, we need to set the debugger environment
@@ -158,8 +160,22 @@ endif()
 # set the startup project for the "play" button in MSVC
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT f16)
 
+
+# Installer and packaging:
+
+install(TARGETS f16 DESTINATION bin)
+
+# Add other files, for example configuration, libraries or documentation
+# install(FILES path/to/your/file DESTINATION etc/tuo_progetto)
+
 # CPack configuration
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+# if(WIN32)
+#     set(CPACK_GENERATOR "NSIS")
+# elseif(UNIX)
+#     set(CPACK_GENERATOR "DEB")
+#     set(CPACK_PACKAGE_CONTACT "wallaroolib@gmail.com")
+#     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Daniele Pallastrelli")
+# endif()
 include(CPack)
-
