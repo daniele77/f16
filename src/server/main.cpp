@@ -133,9 +133,9 @@ int main(int argc, const char **argv)
           if (ssl_section.value("verify_client", false))
             ssl_s.client_certificate = ssl_section.value("client_certificate", "");
 
-          ssl_s.session_timeout_secs = ssl_section.value("session_timeout_secs", -1l);
+          ssl_s.session_timeout_secs = ssl_section.value("session_timeout_secs", -1L);
           ssl_s.session_cache = ssl_section.value("session_cache", false);
-          ssl_s.session_cache_size = ssl_section.value("session_cache_size", -1l);
+          ssl_s.session_cache_size = ssl_section.value("session_cache_size", -1L);
 
           server = std::make_unique<https_server>(ioc, ssl_s);
         }

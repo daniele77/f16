@@ -11,6 +11,13 @@ to give f16 a star! Your stars create generate additional visibility,
 which leads to more users, more bug reports, more fixes, more testing,
 more features, and a better product!
 
+:heart: **Consider sponsoring the project!** :heart:
+
+If you find f16 useful and would like to support its development,
+please consider becoming a sponsor. Your sponsorship helps fund ongoing maintenance,
+new features, and improvements.
+You can become a sponsor by visiting the [Sponsor page](https://github.com/sponsors/daniele77).
+
 ## Ways to Contribute
 
 No contribution to f16 is too big or too small! We are

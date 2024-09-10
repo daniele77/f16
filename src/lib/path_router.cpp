@@ -6,14 +6,13 @@
 #include "path_router.hpp"
 #include "http_request.hpp"
 #include <algorithm>
-#include <cassert>
 
 namespace f16::http::server {
 
 void path_router::add(const std::string& location, std::unique_ptr<http_handler> resource)
 {
   auto& handlers = resources[resource->method()];
-  
+
   handlers.emplace_back(location, std::move(resource));
   std::sort(handlers.begin(), handlers.end(), [](const resource_entry& a, const resource_entry& b) {
     return a.location.size() > b.location.size();
@@ -32,7 +31,7 @@ bool path_router::serve(const std::string& request_path, const http_request& req
   if (it == resources.end())
     return false;
 
-  auto found = std::find_if(it->second.begin(), it->second.end(), [&](const resource_entry& r){
+  auto found = std::find_if(it->second.begin(), it->second.end(), [&](const resource_entry& r) {
     return request_path.rfind(r.location, 0) == 0;
   });
 

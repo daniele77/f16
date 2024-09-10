@@ -31,11 +31,14 @@ target_link_libraries(f16lib
 
 target_include_directories(f16lib SYSTEM INTERFACE . ${STANDALONE_ASIO_INCLUDE_PATH})
 
+find_package(Threads REQUIRED)
+
 target_link_libraries(
   f16lib
   PRIVATE
     ${FS_LINK_FLAG}
     ${OPENSSL_LIBRARIES}
+    Threads::Threads
   PUBLIC
     asio::asio
 )

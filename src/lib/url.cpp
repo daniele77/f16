@@ -3,9 +3,10 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include <sstream>
-#include <cctype>
 #include "url.hpp"
+#include <cctype>
+#include <ios>
+#include <sstream>
 
 namespace f16::http::server {
 
@@ -22,7 +23,7 @@ namespace f16::http::server {
           char hex[3] = { in[i + 1], in[i + 2], '\0' };
           if (std::isxdigit(hex[0]) && std::isxdigit(hex[1]))
           {
-            int value;
+            int value = 0;
             std::istringstream is(hex);
             if (is >> std::hex >> value)
             {
