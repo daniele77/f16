@@ -7,6 +7,7 @@ endif()
 # Not ideal to use this global variable, but necessary to make sure
 # that tooling and projects use the same version
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # strongly encouraged to enable this globally to avoid conflicts between
 # -Wpedantic being enabled and -std=c++20 and -std=gnu++20 for example
