@@ -118,9 +118,9 @@ jobs:
           gcovr: true
           opencppcoverage: true
 
-      - name: Cleanup Conan system packages (they are not properly cached)
-        run: |
-          conan remove -f '*/system'
+      # - name: Cleanup Conan system packages (they are not properly cached)
+      #  run: |
+      #    conan remove -f '*/system'
 
       - name: Non macos - Setup conan
         if: runner.os != 'macos'
