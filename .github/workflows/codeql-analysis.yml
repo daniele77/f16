@@ -87,6 +87,10 @@ jobs:
     #  run: |
     #    conan remove -f '*/system'
 
+    - name: Detect Conan profile
+      run: |
+        conan profile detect
+
     - name: Setup conan
       run: |
         conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing
