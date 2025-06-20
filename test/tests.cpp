@@ -227,7 +227,7 @@ TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
     reply rep;
     req.uri = uri;
     req.method = method;
-    router.handle_request(req, rep);
+    router(req, rep);
     CHECK(rep.status == expected_status);
   };
 

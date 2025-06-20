@@ -21,7 +21,7 @@ void path_router::add(const std::string& location, std::unique_ptr<http_handler>
   });
 }
 
-void path_router::handle_request(const http_request& req, reply& rep) const
+void path_router::operator()(const http_request& req, reply& rep) const
 {
   /*
   std::cout << "http v. " << req.http_version_major << '.' << req.http_version_minor
