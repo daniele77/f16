@@ -17,10 +17,16 @@ int main(int /*argc*/, const char** /*argv*/)
 
     using namespace f16::http::server;
     http_server app(ioc);
-    app.add("/", static_content("."));
-    app.add("/books", get([](const request& /*req*/, std::ostream& os) {
+    path_router router;
+    // Serve static content from the current directory
+    router.add("/", static_content("."));
+    // Add a dynamic content handler for the "/books" endpoint
+    router.add("/books", get([](const request& /*req*/, std::ostream& os) {
       os << "Hello, get api!\n";
     }));
+    // Set the router to the server
+    app.set(std::move(router));
+    // Start listening on port 7000
     app.listen("7000", "localhost");
 
     while(true)

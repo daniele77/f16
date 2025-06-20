@@ -5,6 +5,8 @@
 
 #include "path_router.hpp"
 #include "http_request.hpp"
+#include "url.hpp"
+#include "reply.hpp"
 #include <algorithm>
 
 namespace f16::http::server {
@@ -19,17 +21,41 @@ void path_router::add(const std::string& location, std::unique_ptr<http_handler>
   });
 }
 
-bool path_router::serve(const std::string& request_path, const http_request& req, reply& rep) const
+void path_router::handle_request(const http_request& req, reply& rep) const
 {
+  /*
+  std::cout << "http v. " << req.http_version_major << '.' << req.http_version_minor
+            << ' ' << req.method
+            << " " << req.uri << std::endl; // TODO remove
+  */
+  // Decode url to path.  
+  std::string request_path;
+  if (!url_decode(req.uri, request_path))
+  {
+    rep = reply::stock_reply(reply::bad_request);
+    return;
+  }
+
+  // Request path must be absolute and not contain "..".
+  if (request_path.empty() || request_path[0] != '/'
+      || request_path.find("..") != std::string::npos)
+  {
+    rep = reply::stock_reply(reply::bad_request);
+    return;
+  }
+
   // we don't have handlers for HEAD methods.
-  // use use GET instead
+  // use GET instead
   auto method = req.method;
   if (method == "HEAD")
     method = "GET";
 
   auto it = resources.find(method);
   if (it == resources.end())
-    return false;
+  {
+    rep = reply::stock_reply(reply::not_found);
+    return;
+  }
 
   auto found = std::find_if(it->second.begin(), it->second.end(), [&](const resource_entry& r) {
     return request_path.rfind(r.location, 0) == 0;
@@ -39,10 +65,9 @@ bool path_router::serve(const std::string& request_path, const http_request& req
   {
     const std::string resource_path = request_path.substr(found->location.size());
     found->handler->serve(resource_path, req, rep);
-    return true;
+    return;
   }
-
-  return false;
+  rep = reply::stock_reply(reply::not_found);
 }
 
 } // namespace f16::http::server

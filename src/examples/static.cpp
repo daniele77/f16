@@ -17,10 +17,14 @@ int main(int /*argc*/, const char** /*argv*/)
     using namespace f16::http::server;
 
     http_server server_1{ioc};
-    server_1.add("/", static_content("."));
+    path_router router_1;
+    router_1.add("/", static_content("."));
+    server_1.set(std::move(router_1));
     server_1.listen("7000", "0.0.0.0");
     http_server server_2{ioc};
-    server_2.add("/", static_content(".."));
+    path_router router_2;
+    router_2.add("/", static_content(".."));
+    server_2.set(std::move(router_2));
     server_2.listen("7001", "0.0.0.0");
 
     while(true)

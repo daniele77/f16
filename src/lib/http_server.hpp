@@ -32,7 +32,12 @@ public:
 
   virtual ~http_server();
 
-  void add(const std::string& path, std::unique_ptr<http_handler> handler);
+#ifndef NEW_CODE
+  void set(path_router handler);
+#endif
+  void set(handler_fn handler);
+
+  // void set_handler(const std::function<void(const http_request& req, reply& rep)> handler);
 
   /// Start to listen on the specified TCP address and port
   /// For IPv4, try address: 0.0.0.0

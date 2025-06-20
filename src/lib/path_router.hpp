@@ -23,7 +23,12 @@ public:
   /// Add a resource to the server
   void add(const std::string& location, std::unique_ptr<http_handler> resource);
 
-  bool serve(const std::string& request_path, const http_request& req, reply& rep) const;
+  void handle_request(const http_request& req, reply& rep) const;
+
+  void operator()(const http_request& req, reply& rep) const
+  {
+    handle_request(req, rep);
+  }
 
 private:
 

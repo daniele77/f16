@@ -51,8 +51,7 @@ Conan and CMake use the environment variables CC and CXX to decide which compile
 
 CMake will detect which compiler was used to build each of the Conan targets. If you build all of your Conan targets with one compiler, and then build your CMake targets with a different compiler, the project may fail to build.
 
-<details>
-<summary>Commands for setting the compilers </summary>
+Commands for setting the compilers:
 
 - Debian/Ubuntu/MacOS:
 
@@ -117,7 +116,6 @@ CMake will detect which compiler was used to build each of the Conan targets. If
 			$Env:CC="clang.exe"
 			$Env:CXX="clang++.exe"
 
-</details>
 
 ### Configure the build
 

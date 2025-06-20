@@ -4,7 +4,7 @@ on:
   release:
     types: [published]
   push:
-    tags:
+    # tags: [v*.*.*] # Uncomment and specify valid tags if needed, or remove this line
     branches:
       - main
       - develop
@@ -31,7 +31,7 @@ jobs:
       matrix:
         os:
           - ubuntu-20.04
-          - macos-12
+          - macos-13
         compiler:
           # you can specify the version after `-` like "llvm-13.0.0".
           - llvm-13.0.0
@@ -47,7 +47,7 @@ jobs:
 
         exclude:
           # mingw is determined by this author to be too buggy to support
-          - os: macos-12
+          - os: macos-13
             compiler: gcc-11
           - os: ubuntu-20.04
             compiler: llvm-13.0.0
@@ -86,8 +86,6 @@ jobs:
             build_type: Release
             developer_mode: OFF
             package_generator: ZIP
-
-
 
     steps:
       - uses: actions/checkout@v2
@@ -170,7 +168,6 @@ jobs:
         with:
           files: |
             build/*-*${{ matrix.build_type }}*-*.*
-
 
       - name: Publish to codecov
         uses: codecov/codecov-action@v4

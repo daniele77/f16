@@ -89,7 +89,9 @@ int main(int argc, const char **argv)
 
       auto server = std::make_unique<http_server>(ioc);
 
-      server->add("/", static_content(root_doc));
+      path_router router;
+      router.add("/", static_content(root_doc));
+      server->set(std::move(router));
       server->listen(port, address);
 
       server_set.push_back(std::move(server));
@@ -140,13 +142,16 @@ int main(int argc, const char **argv)
           server = std::make_unique<https_server>(ioc, ssl_s);
         }
         else server = std::make_unique<http_server>(ioc);
+
+        path_router router;
         for (const auto& location_entry: server_entry.at("locations"))
         {
           const std::string root_doc = location_entry.at("root");
           const std::string path = location_entry.at("location");
           spdlog::info("  Serving root doc {} at path: {}", root_doc, path);
-          server->add(path, static_content(root_doc));
+          router.add(path, static_content(root_doc));
         }
+        server->set(std::move(router));
         server->listen(port, address);
         server_set.push_back(std::move(server));
       }

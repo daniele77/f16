@@ -195,8 +195,9 @@ class dummy_handler : public http_handler
 {
 public:
   explicit dummy_handler(int _id) : id(_id) {}
-  void serve(const std::string& resource, const http_request& /* req */, reply& /* rep */) override
+  void serve(const std::string& resource, const http_request& /* req */, reply& rep) override
   {
+    rep = reply::stock_reply(reply::ok);
     calls.emplace_back(id, resource);
   }
   [[nodiscard]] std::string method() const override { return "GET"; }
@@ -219,22 +220,27 @@ TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
   router.add("/bar/foo/bbb", std::make_unique<dummy_handler>(5));
   router.add("/bar/foo/bbb/ccc", std::make_unique<dummy_handler>(6));
   router.add("/foo/bar/aaa", std::make_unique<dummy_handler>(7));
+  
+  auto test_request = [&](const std::string& uri, reply::status_type expected_status, const std::string& method = "GET") {
+    CAPTURE(method, uri, expected_status);
+    http_request req;
+    reply rep;
+    req.uri = uri;
+    req.method = method;
+    router.handle_request(req, rep);
+    CHECK(rep.status == expected_status);
+  };
 
-  http_request req;
-  req.method = "GET";
-  reply rep;
+  test_request("/ddd", reply::not_found);
+  test_request("/bar/foo/xxx", reply::ok);
+  test_request("/bar/foo/aaa/zzz", reply::ok);
+  test_request("/bar/foo/bbb/xxx", reply::ok);
+  test_request("/bar/foo/bbb/ccc/zzz", reply::ok);
+  test_request("/foo/bar/xxx", reply::ok);
+  test_request("/foo/xxx", reply::ok);
+  test_request("/foo/bar/aaa/zzz", reply::ok);
 
-  CHECK_FALSE(router.serve("/ddd", req, rep));
-  CHECK(router.serve("/bar/foo/xxx", req, rep));
-  CHECK(router.serve("/bar/foo/aaa/zzz", req, rep));
-  CHECK(router.serve("/bar/foo/bbb/xxx", req, rep));
-  CHECK(router.serve("/bar/foo/bbb/ccc/zzz", req, rep));
-  CHECK(router.serve("/foo/bar/xxx", req, rep));
-  CHECK(router.serve("/foo/xxx", req, rep));
-  CHECK(router.serve("/foo/bar/aaa/zzz", req, rep));
-
-  req.method = "PUT";
-  CHECK_FALSE(router.serve("/bar/foo/xxx", req, rep));
+  test_request("/bar/foo/xxx", reply::not_found, "PUT");
 
   REQUIRE(dummy_handler::calls.size() == 7);
 
