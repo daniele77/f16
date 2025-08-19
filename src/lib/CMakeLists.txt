@@ -20,7 +20,6 @@ add_library(f16lib
   path_router.hpp path_router.cpp
   static_content.hpp static_content.cpp
   dynamic_content.hpp dynamic_content.cpp
-  http_handler.hpp
   request.hpp
 )
 

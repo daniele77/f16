@@ -11,16 +11,6 @@
 
 namespace f16::http::server {
 
-void path_router::add(const std::string& location, std::unique_ptr<http_handler> resource)
-{
-  auto& handlers = resources[resource->method()];
-
-  handlers.emplace_back(location, std::move(resource));
-  std::sort(handlers.begin(), handlers.end(), [](const resource_entry& a, const resource_entry& b) {
-    return a.location.size() > b.location.size();
-  });
-}
-
 void path_router::operator()(const http_request& req, reply& rep) const
 {
   /*
@@ -64,7 +54,7 @@ void path_router::operator()(const http_request& req, reply& rep) const
   if (found != it->second.end())
   {
     const std::string resource_path = request_path.substr(found->location.size());
-    found->handler->serve(resource_path, req, rep);
+    found->serve(resource_path, req, rep);
     return;
   }
   rep = reply::stock_reply(reply::not_found);

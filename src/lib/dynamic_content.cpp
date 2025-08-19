@@ -4,21 +4,24 @@
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <sstream>
+#include <string>
 #include "dynamic_content.hpp"
 #include "mime_types.hpp"
 #include "reply.hpp"
 #include "string.hpp"
+#include "request.hpp"
 
 namespace f16::http::server {
 
-dynamic_content_handler::dynamic_content_handler(std::string _action, std::vector<std::string> _params, std::function<void(const request&, std::ostream&)> _handler) : 
+dynamic_content::dynamic_content(std::string _action, std::vector<std::string> _params, std::function<void(const request&, std::ostream&)> _handler) : 
   action{std::move(_action)},
   handler{std::move(_handler)},
   param_keys{std::move(_params)}
 {
 }
 
-void dynamic_content_handler::serve(const std::string& request_path, const http_request& http_req, reply& rep) {
+void dynamic_content::serve(const std::string& request_path, const http_request& http_req, reply& rep) const
+{
   request req{http_req};
 
   auto res_query = split_string(request_path);
@@ -39,7 +42,7 @@ void dynamic_content_handler::serve(const std::string& request_path, const http_
   rep.headers[1].value = mime_types::extension_to_type("txt");
 }
 
-void dynamic_content_handler::get_path_components(const std::string& resources, request& req) {
+void dynamic_content::get_path_components(const std::string& resources, request& req) const {
   static const char delimiter = '/';
   std::string temp;
   std::stringstream stringstream{resources};
@@ -54,7 +57,7 @@ void dynamic_content_handler::get_path_components(const std::string& resources, 
     req.add_resource(param_keys[i], components_vec[i]);
 }
 
-void dynamic_content_handler::handle_query_parameters(const std::string& query, request& req) {
+void dynamic_content::handle_query_parameters(const std::string& query, request& req) {
   std::vector<std::string> params;
   std::stringstream s{query};
   std::string temp;

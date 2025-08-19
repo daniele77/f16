@@ -41,25 +41,6 @@ void http_server::listen(const std::string& port, const std::string& address)
   do_accept();
 }
 
-#ifndef NEW_CODE
-void http_server::set(path_router handler)
-{ 
-  request_handler_.set(std::move(handler));
-}
-#endif
-
-void http_server::set(handler_fn handler)
-{
-  request_handler_.set(std::move(handler));
-}
-
-/*
-void http_server::set_handler(const std::function<void(const http_request& req, reply& rep)> handler)
-{
-  request_handler_.set_handler(std::move(handler));
-}
-*/
-
 void http_server::do_accept()
 {
   acceptor_.async_accept(

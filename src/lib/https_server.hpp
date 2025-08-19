@@ -12,9 +12,6 @@
 
 namespace f16::http::server {
 
-// forward declaration
-class http_handler;
-
 
 struct ssl_settings
 {

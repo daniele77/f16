@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <variant>
 
-#include <memory> // shared_ptr
-
-#include "http_handler.hpp"
+#include "static_content.hpp"
+#include "dynamic_content.hpp"
 
 namespace f16::http::server {
 
@@ -21,7 +21,15 @@ class path_router
 {
 public:
   /// Add a resource to the server
-  void add(const std::string& location, std::unique_ptr<http_handler> resource);
+  template<typename T>
+  void add(std::string location, T&& resource)
+  {
+    auto& handlers = resources[resource.method()];
+    handlers.emplace_back(std::move(location), std::forward<T>(resource));
+    std::sort(handlers.begin(), handlers.end(), [](const resource_entry& a, const resource_entry& b) {
+      return a.location.size() > b.location.size();
+    });
+  }
 
   void operator()(const http_request& req, reply& rep) const;
 
@@ -29,9 +37,29 @@ private:
 
   struct resource_entry
   {
-    resource_entry(const std::string& l, std::unique_ptr<http_handler> h) : location(l), handler{std::move(h)} {}
+    template <typename Handler>
+    resource_entry(std::string l, Handler&& h) :
+      location(std::move(l)),
+      handler(std::in_place_type<std::decay_t<Handler>>, std::forward<Handler>(h))
+    {
+      static_assert(std::disjunction<
+        std::is_same<std::decay_t<Handler>, static_content>,
+        std::is_same<std::decay_t<Handler>, dynamic_content>>::value,
+        "Invalid handler type passed to resource_entry");      
+    }
+
+    void serve(const std::string& resource_path, const http_request& req, reply& rep) const
+    {
+      std::visit(
+        [&](auto&& _handler) {
+          _handler.serve(resource_path, req, rep);
+        },
+        handler);
+    }
+
     std::string location;
-    std::unique_ptr<http_handler> handler;
+  private:
+    std::variant<static_content, dynamic_content> handler;
   };
 
   std::unordered_map<std::string, std::vector<resource_entry>> resources;

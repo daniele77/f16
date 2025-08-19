@@ -6,7 +6,8 @@
 #include "f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
 #include <iostream>
 #include "http_server.hpp"
-#include "dynamic_content.hpp"
+#include "dynamic_content.hpp" // get, post, put
+#include "request.hpp"
 
 int main()
 {

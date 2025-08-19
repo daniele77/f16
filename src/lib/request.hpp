@@ -48,7 +48,7 @@ struct request
    * 
    * @param r The original HTTP request.
    */
-  explicit request(const http_request& r) : orig_request{r} {}
+  explicit request(http_request r) : orig_request{std::move(r)} {}
 
   /**
    * @brief Adds a resource to the resources map.

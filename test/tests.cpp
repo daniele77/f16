@@ -11,6 +11,7 @@
 #include "request_parser.hpp"
 #include "string.hpp"
 #include "url.hpp"
+#include "request.hpp"
 #include <catch2/catch.hpp>
 
 using namespace f16::http::server;
@@ -190,36 +191,24 @@ TEST_CASE("parser works properly", "[request_parser]") // NOLINT
   CHECK(req.headers[0].value == "en-us");
 }
 
-
-class dummy_handler : public http_handler
-{
-public:
-  explicit dummy_handler(int _id) : id(_id) {}
-  void serve(const std::string& resource, const http_request& /* req */, reply& rep) override
-  {
-    rep = reply::stock_reply(reply::ok);
-    calls.emplace_back(id, resource);
-  }
-  [[nodiscard]] std::string method() const override { return "GET"; }
-  static std::vector<std::pair<int, std::string>> calls;
-
-private:
-  const int id;
-};
-
-std::vector<std::pair<int, std::string>> dummy_handler::calls;
-
-
 TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
 {
+  std::vector<std::pair<int, std::string>> calls;
+
+  auto make_handler = [&calls](int id) {
+    return [id, &calls](const request& req, std::ostream& /*os*/) {
+      calls.emplace_back(id, req.resource("1")+req.resource("2")+req.resource("3"));
+    };
+  };
+
   path_router router;
-  router.add("/foo", std::make_unique<dummy_handler>(1));
-  router.add("/foo/bar", std::make_unique<dummy_handler>(2));
-  router.add("/bar", std::make_unique<dummy_handler>(3));
-  router.add("/bar/foo/aaa", std::make_unique<dummy_handler>(4));
-  router.add("/bar/foo/bbb", std::make_unique<dummy_handler>(5));
-  router.add("/bar/foo/bbb/ccc", std::make_unique<dummy_handler>(6));
-  router.add("/foo/bar/aaa", std::make_unique<dummy_handler>(7));
+  router.add("/foo", get({"1","2","3"}, make_handler(1)));
+  router.add("/foo/bar", get({"1","2","3"}, make_handler(2)));
+  router.add("/bar", get({"1","2","3"}, make_handler(3)));
+  router.add("/bar/foo/aaa", get({"1","2","3"}, make_handler(4)));
+  router.add("/bar/foo/bbb", get({"1","2","3"}, make_handler(5)));
+  router.add("/bar/foo/bbb/ccc", get({"1","2","3"}, make_handler(6)));
+  router.add("/foo/bar/aaa", get({"1","2","3"}, make_handler(7)));
   
   auto test_request = [&](const std::string& uri, reply::status_type expected_status, const std::string& method = "GET") {
     CAPTURE(method, uri, expected_status);
@@ -242,31 +231,31 @@ TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
 
   test_request("/bar/foo/xxx", reply::not_found, "PUT");
 
-  REQUIRE(dummy_handler::calls.size() == 7);
+  REQUIRE(calls.size() == 7);
 
-  CHECK(dummy_handler::calls[0].first == 3);
-  CHECK(dummy_handler::calls[0].second == "/foo/xxx");
+  CHECK(calls[0].first == 3);
+  CHECK(calls[0].second == "fooxxx");
 
-  CHECK(dummy_handler::calls[1].first == 4);
-  CHECK(dummy_handler::calls[1].second == "/zzz");
+  CHECK(calls[1].first == 4);
+  CHECK(calls[1].second == "zzz");
 
-  CHECK(dummy_handler::calls[2].first == 5);
-  CHECK(dummy_handler::calls[2].second == "/xxx");
+  CHECK(calls[2].first == 5);
+  CHECK(calls[2].second == "xxx");
 
-  CHECK(dummy_handler::calls[3].first == 6);
-  CHECK(dummy_handler::calls[3].second == "/zzz");
+  CHECK(calls[3].first == 6);
+  CHECK(calls[3].second == "zzz");
 
-  CHECK(dummy_handler::calls[4].first == 2);
-  CHECK(dummy_handler::calls[4].second == "/xxx");
+  CHECK(calls[4].first == 2);
+  CHECK(calls[4].second == "xxx");
 
-  CHECK(dummy_handler::calls[5].first == 1);
-  CHECK(dummy_handler::calls[5].second == "/xxx");
+  CHECK(calls[5].first == 1);
+  CHECK(calls[5].second == "xxx");
 
-  CHECK(dummy_handler::calls[6].first == 7);
-  CHECK(dummy_handler::calls[6].second == "/zzz");
+  CHECK(calls[6].first == 7);
+  CHECK(calls[6].second == "zzz");
 }
 
-TEST_CASE("dynamic_content_handler handles request correctly", "[dynamic_content_handler][serve]") // NOLINT
+TEST_CASE("dynamic_content handles request correctly", "[dynamic_content][serve]") // NOLINT
 {
   auto handler = get({ "resource1", "resource2" }, [](const request& req, std::ostream& os) {
     os << "Resource1: " << req.resource("resource1") << "\n";
@@ -279,7 +268,7 @@ TEST_CASE("dynamic_content_handler handles request correctly", "[dynamic_content
 
   SECTION("Handles path and query parameters")
   {
-    handler->serve("/res1/res2?param=value", http_req, rep);
+    handler.serve("/res1/res2?param=value", http_req, rep);
 
     REQUIRE(rep.status == reply::ok);
     REQUIRE(rep.content == "Resource1: res1\nResource2: res2\nQueryParam: value\n");
@@ -292,7 +281,7 @@ TEST_CASE("dynamic_content_handler handles request correctly", "[dynamic_content
 
   SECTION("Handles path without query parameters")
   {
-    handler->serve("/res1/res2", http_req, rep);
+    handler.serve("/res1/res2", http_req, rep);
 
     REQUIRE(rep.status == reply::ok);
     REQUIRE(rep.content == "Resource1: res1\nResource2: res2\nQueryParam: \n");
@@ -305,7 +294,7 @@ TEST_CASE("dynamic_content_handler handles request correctly", "[dynamic_content
 
   SECTION("Handles query parameters without path")
   {
-    handler->serve("?param=value", http_req, rep);
+    handler.serve("?param=value", http_req, rep);
 
     REQUIRE(rep.status == reply::ok);
     REQUIRE(rep.content == "Resource1: \nResource2: \nQueryParam: value\n");

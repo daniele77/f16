@@ -13,9 +13,6 @@
 
 namespace f16::http::server {
 
-// forward declaration
-class http_handler;
-
 
 /// The top-level class of the HTTP server.
 class http_server
@@ -32,12 +29,11 @@ public:
 
   virtual ~http_server();
 
-#ifndef NEW_CODE
-  void set(path_router handler);
-#endif
-  void set(handler_fn handler);
-
-  // void set_handler(const std::function<void(const http_request& req, reply& rep)> handler);
+  template <typename Handler>
+  void set(Handler&& handler)
+  {
+    request_handler_.set(std::forward<Handler>(handler));
+  }
 
   /// Start to listen on the specified TCP address and port
   /// For IPv4, try address: 0.0.0.0

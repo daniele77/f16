@@ -7,7 +7,6 @@
 #include <iostream>
 #include "http_server.hpp"
 #include "static_content.hpp"
-#include "dynamic_content.hpp"
 
 int main(int /*argc*/, const char** /*argv*/)
 {
