@@ -21,6 +21,8 @@ int main()
     path_router router;
     // GET <ip>/version
     router.add("/version", get([](const request& /*req*/, std::ostream& os) { os << "1.0.0\n"; }));
+    router.add("/version_j", get([](const request& /*req*/, f16::response_stream& os) { os << f16::json << R"({"version":"1.0.0"})"; }));
+    router.add("/bad", get([](const request& /*req*/, f16::response_stream& os) { os << f16::bad_request; }));
     // GET <ip>/hello
     router.add("/hello", get([](const request& /*req*/, std::ostream& os) { os << "Hello, world!\n"; }));
     // GET <ip>/print/?name=<name>&country=<country>

@@ -74,11 +74,10 @@ void static_content::list_directory(const fs::path& full_path, reply& rep)
       "</html> \r\n";
 
     rep.content = ss.str();
-    rep.headers.resize(2);
-    rep.headers[0].name = "Content-Length";
-    rep.headers[0].value = std::to_string(rep.content.size());
-    rep.headers[1].name = "Content-Type";
-    rep.headers[1].value = mime_types::extension_to_type(".html");
+    rep.headers = {
+      {"Content-Length", std::to_string(rep.content.size())},
+      {"Content-Type", mime_types::extension_to_type(".html")}
+    };
   }
   catch (const std::exception&)
   {
@@ -112,11 +111,10 @@ void static_content::serve_file(const fs::path& full_path, reply& rep)
   std::array<char, 512> buf; // NOLINT
   while (is.read(buf.data(), buf.size()).gcount() > 0)
     rep.content.append(buf.data(), static_cast<long unsigned int>(is.gcount()));
-  rep.headers.resize(2);
-  rep.headers[0].name = "Content-Length";
-  rep.headers[0].value = std::to_string(rep.content.size());
-  rep.headers[1].name = "Content-Type";
-  rep.headers[1].value = mime_types::extension_to_type(extension.string());
+  rep.headers = {
+    {"Content-Length", std::to_string(rep.content.size())},
+    {"Content-Type", mime_types::extension_to_type(extension.string())}
+  };
 }
 
 } // namespace f16::http::server

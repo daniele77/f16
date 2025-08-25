@@ -14,7 +14,20 @@ static const std::unordered_map<std::string, std::string> mappings = // NOLINT
   { ".htm", "text/html" },
   { ".html", "text/html" },
   { ".jpg", "image/jpeg" },
-  { ".png", "image/png" }
+  { ".png", "image/png" },
+  { ".txt", "text/plain" },
+  { ".css", "text/css" },
+  { ".js", "application/javascript" },
+  { ".json", "application/json" },
+  { ".xml", "application/xml" },
+  { ".pdf", "application/pdf" },
+  { ".zip", "application/zip" },
+  { ".tar", "application/x-tar" },
+  { ".gz", "application/gzip" },
+  { ".mp3", "audio/mpeg" },
+  { ".mp4", "video/mp4" },
+  { ".webm", "video/webm" }
+  // Add more mappings as needed
 };
 
 std::string extension_to_type(const std::string& extension)

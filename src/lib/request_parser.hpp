@@ -47,16 +47,16 @@ private:
   result_type consume(http_request& req, char input);
 
   /// Check if a byte is an HTTP character.
-  static bool is_char(int c);
+  static constexpr bool is_char(int c);
 
   /// Check if a byte is an HTTP control character.
-  static bool is_ctl(int c);
+  static constexpr bool is_ctl(int c);
 
   /// Check if a byte is defined as an HTTP tspecial character.
-  static bool is_tspecial(int c);
+  static constexpr bool is_tspecial(int c);
 
   /// Check if a byte is a digit.
-  static bool is_digit(int c);
+  static constexpr bool is_digit(int c);
 
   /// The current state of the parser.
   enum state

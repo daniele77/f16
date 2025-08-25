@@ -28,7 +28,7 @@ RUN apk add \
 
 RUN git clone https://github.com/docopt/docopt.cpp.git --depth 1 --branch v0.6.3 && \
     cd docopt.cpp && \
-    cmake -Bbuild -H. -DCMAKE_CXX_STANDARD=17 && \
+    cmake -Bbuild -H. -DCMAKE_CXX_STANDARD=17 -DCMAKE_POLICY_VERSION_MINIMUM=3.5 && \
     cmake --build build/ --target install && \
     cd .. && \
     rm -rf docopt.cpp

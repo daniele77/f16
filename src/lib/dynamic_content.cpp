@@ -13,7 +13,7 @@
 
 namespace f16::http::server {
 
-dynamic_content::dynamic_content(std::string _action, std::vector<std::string> _params, std::function<void(const request&, std::ostream&)> _handler) : 
+dynamic_content::dynamic_content(std::string _action, std::vector<std::string> _params, std::function<void(const request&, response_stream&)> _handler) : 
   action{std::move(_action)},
   handler{std::move(_handler)},
   param_keys{std::move(_params)}
@@ -31,15 +31,15 @@ void dynamic_content::serve(const std::string& request_path, const http_request&
   get_path_components(resources, req);
   handle_query_parameters(query, req);
 
-  rep.status = reply::ok;
-  std::ostringstream ss;
+  response_stream ss;
   handler(req, ss);
   rep.content = ss.str();
-  rep.headers.resize(2);
-  rep.headers[0].name = "Content-Length";
-  rep.headers[0].value = std::to_string(rep.content.size());
-  rep.headers[1].name = "Content-Type";
-  rep.headers[1].value = mime_types::extension_to_type("txt");
+  rep.status = ss.status;
+  rep.headers = {
+    {"Content-Length", std::to_string(rep.content.size())},
+    // {"Content-Type", mime_types::extension_to_type(".txt")} // TODO: use a more appropriate content type
+    {"Content-Type", ss.content_type}
+  };
 }
 
 void dynamic_content::get_path_components(const std::string& resources, request& req) const {

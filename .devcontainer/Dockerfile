@@ -91,9 +91,12 @@ RUN mkdir -p ${IWYU_BUILD} && \
     git clone --branch clang_${LLVM_VER} \
         https://github.com/include-what-you-use/include-what-you-use.git \
         ${IWYU_SRC}
-RUN CC=clang-${LLVM_VER} CXX=clang++-${LLVM_VER} cmake -S ${IWYU_SRC} \
-        -B ${IWYU_BUILD} \
-        -G "Unix Makefiles" -DCMAKE_PREFIX_PATH=/usr/lib/llvm-${LLVM_VER} && \
+RUN CC=clang-${LLVM_VER} CXX=clang++-${LLVM_VER} cmake \
+    -S ${IWYU_SRC} \
+    -B ${IWYU_BUILD} \
+    -G "Unix Makefiles" \
+    -DCMAKE_PREFIX_PATH=/usr/lib/llvm-${LLVM_VER} \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 && \
     cmake --build ${IWYU_BUILD} -j && \
     cmake --install ${IWYU_BUILD}
 
@@ -133,7 +136,7 @@ RUN git clone --branch v2.13.10 https://github.com/catchorg/Catch2.git && \
 
 RUN git clone https://github.com/docopt/docopt.cpp.git --depth 1 --branch v0.6.3 && \
     cd docopt.cpp && \
-    cmake -Bbuild -H. -DCMAKE_CXX_STANDARD=17 && \
+    cmake -Bbuild -H. -DCMAKE_CXX_STANDARD=17 -DCMAKE_POLICY_VERSION_MINIMUM=3.5 && \
     cmake --build build/ --target install && \
     cd .. && \
     rm -rf docopt.cpp

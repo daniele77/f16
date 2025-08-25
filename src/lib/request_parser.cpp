@@ -194,7 +194,6 @@ request_parser::result_type request_parser::consume(http_request& req, char inpu
     }
     else
     {
-      //req.headers.push_back(header());
       req.headers.emplace_back();
       req.headers.back().name.push_back(input);
       state_ = header_name;
@@ -277,17 +276,17 @@ request_parser::result_type request_parser::consume(http_request& req, char inpu
   }
 }
 
-bool request_parser::is_char(int c)
+constexpr bool request_parser::is_char(int c)
 {
   return c >= 0 && c <= 127;
 }
 
-bool request_parser::is_ctl(int c)
+constexpr bool request_parser::is_ctl(int c)
 {
   return (c >= 0 && c <= 31) || (c == 127);
 }
 
-bool request_parser::is_tspecial(int c)
+constexpr bool request_parser::is_tspecial(int c)
 {
   switch (c)
   {
@@ -301,7 +300,7 @@ bool request_parser::is_tspecial(int c)
   }
 }
 
-bool request_parser::is_digit(int c)
+constexpr bool request_parser::is_digit(int c)
 {
   return c >= '0' && c <= '9';
 }

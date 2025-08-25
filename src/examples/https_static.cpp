@@ -40,31 +40,17 @@ int main(int /*argc*/, const char** /*argv*/)
     http_server.set(
       [](const http_request& req, reply& res)
       {
-        //res.write_header(301, { "Location": "https://" + req.headers["host"] + req.url });
-        //res.end();
-        auto it = std::find_if(req.headers.begin(), req.headers.end(),
-          [](const auto& h)
-          { 
-            std::string host = h.name;
-            std::transform(host.begin(), host.end(), host.begin(),
-                    [](char c){ return std::tolower(c); });
-            return (host) == "host";
-          }
-        );
-        if (it == req.headers.end())
+        std::string host = req.get_header("host");
+        if (host.empty()) // no host header
         {
-          res.status = reply::bad_request;
+          res = reply::stock_reply(reply::bad_request); // 400
         }
         else
         {
-          auto host = it->value;
-          size_t pos = host.find(':'); // Trova la posizione del carattere ':'
-          if (pos != std::string::npos)
-            host = host.substr(0, pos); // Ottiene la parte prima di ':'
-          res.status = reply::moved_permanently;
-          res.headers.resize(1);
-          res.headers[0].name = "Location";
-          res.headers[0].value = "https://" + host + ":7000" + req.uri;
+          if (auto pos = host.find(':'); pos != std::string::npos)
+            host.erase(pos); // Rimuove tutto dopo il carattere ':'
+          res = reply::stock_reply(reply::moved_permanently); // 301
+          res.headers.push_back({"Location", "https://" + host + ":7000" + req.uri});
         }
       }
     );
