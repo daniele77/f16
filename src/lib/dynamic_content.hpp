@@ -65,7 +65,7 @@ public:
   [[nodiscard]] std::string method() const { return action; }
 
 private:
-  void get_path_components(const std::string& resources, request& req) const;
+  bool get_path_components(const std::string& resources, request& req) const;
   static void handle_query_parameters(const std::string& query, request& req);
 
   std::string action;

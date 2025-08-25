@@ -28,7 +28,11 @@ void dynamic_content::serve(const std::string& request_path, const http_request&
   const auto& resources = res_query.first;
   const auto& query = res_query.second;
 
-  get_path_components(resources, req);
+  if (!get_path_components(resources, req))
+  {
+    rep = reply::stock_reply(reply::bad_request); // 400
+    return;
+  }
   handle_query_parameters(query, req);
 
   response_stream ss;
@@ -42,7 +46,7 @@ void dynamic_content::serve(const std::string& request_path, const http_request&
   };
 }
 
-void dynamic_content::get_path_components(const std::string& resources, request& req) const {
+bool dynamic_content::get_path_components(const std::string& resources, request& req) const {
   static const char delimiter = '/';
   std::string temp;
   std::stringstream stringstream{resources};
@@ -53,8 +57,13 @@ void dynamic_content::get_path_components(const std::string& resources, request&
       components_vec.push_back(temp);
   }
 
+  if (param_keys.size() != components_vec.size())
+    return false;
+
   for (std::size_t i = 0; i < param_keys.size() && i < components_vec.size(); ++i)
     req.add_resource(param_keys[i], components_vec[i]);
+
+  return true;
 }
 
 void dynamic_content::handle_query_parameters(const std::string& query, request& req) {
