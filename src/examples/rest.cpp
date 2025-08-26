@@ -25,6 +25,7 @@ int main()
     router.add("/bad", get([](const request& /*req*/, f16::response_stream& os) { os << f16::bad_request; }));
     // GET <ip>/hello
     router.add("/hello", get([](const request& /*req*/, std::ostream& os) { os << "Hello, world!\n"; }));
+    router.add("/hello", get({"name"}, [](const request& req, std::ostream& os) { os << "Hello, " << req.resource("name") << "!\n"; }));
     // GET <ip>/print/?name=<name>&country=<country>
     router.add("/print", get([](const request& req, std::ostream& os) {
         os << "Hi, " << req.query("name") << " from " << req.query("country") << "!\n";

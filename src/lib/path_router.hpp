@@ -62,6 +62,7 @@ private:
     std::variant<static_content, dynamic_content> handler;
   };
 
+  // method -> list of resource_entry sorted by location length (desc)
   std::unordered_map<std::string, std::vector<resource_entry>> resources;
 };
 
