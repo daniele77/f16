@@ -68,6 +68,59 @@ TEST_CASE("split_string splits strings correctly", "[split_string]")
   }
 }
 
+TEST_CASE("match_pattern matches an input string against a pattern correctly", "[match_pattern]")
+{
+  std::unordered_map<std::string, std::string> params;
+
+  SECTION("Exact match without parameters")
+  {
+    REQUIRE(match_pattern("/user/profile", "/user/profile", params));
+    REQUIRE(params.empty());
+  }
+
+  SECTION("Match with one parameter")
+  {
+    REQUIRE(match_pattern("/user/:id/profile", "/user/123/profile", params));
+    REQUIRE(params.size() == 1);
+    REQUIRE(params["id"] == "123");
+  }
+
+  SECTION("Match with multiple parameters")
+  {
+    REQUIRE(match_pattern("/user/:id/post/:postId", "/user/123/post/456", params));
+    REQUIRE(params.size() == 2);
+    REQUIRE(params["id"] == "123");
+    REQUIRE(params["postId"] == "456");
+  }
+
+  SECTION("No match due to different structure")
+  {
+    REQUIRE_FALSE(match_pattern("/user/:id/profile", "/user/123", params));
+  }
+
+  SECTION("Trailing slash in input")
+  {
+    REQUIRE(match_pattern("/user/:id/profile", "/user/123/profile/", params));
+    REQUIRE(params.size() == 1);
+    REQUIRE(params["id"] == "123");
+  }
+
+  SECTION("No match due to different characters")
+  {
+    REQUIRE_FALSE(match_pattern("/user/:id/profile", "/user/abc/settings", params));
+  }
+
+  SECTION("Empty pattern")
+  {
+    REQUIRE_FALSE(match_pattern("", "/user/123/profile", params));
+  }
+
+  SECTION("Empty input")
+  {
+    REQUIRE_FALSE(match_pattern("/user/:id/profile", "", params));
+  }
+}
+
 TEST_CASE("url_decode correctly decodes URL-encoded strings", "[url_decode]")
 {
   std::string output;
@@ -197,18 +250,18 @@ TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
 
   auto make_handler = [&calls](int id) {
     return [id, &calls](const request& req, std::ostream& /*os*/) {
-      calls.emplace_back(id, req.resource("1")+req.resource("2")+req.resource("3"));
+      calls.emplace_back(id, req.resource("1")+req.resource("2"));
     };
   };
 
   path_router router;
-  router.add("/foo", get({"1","2","3"}, make_handler(1)));
-  router.add("/foo/bar", get({"1","2","3"}, make_handler(2)));
-  router.add("/bar", get({"1","2","3"}, make_handler(3)));
-  router.add("/bar/foo/aaa", get({"1","2","3"}, make_handler(4)));
-  router.add("/bar/foo/bbb", get({"1","2","3"}, make_handler(5)));
-  router.add("/bar/foo/bbb/ccc", get({"1","2","3"}, make_handler(6)));
-  router.add("/foo/bar/aaa", get({"1","2","3"}, make_handler(7)));
+  router.add("/foo/:1", get(make_handler(1)));
+  router.add("/foo/bar/:1", get(make_handler(2)));
+  router.add("/bar/:1/:2", get(make_handler(3)));
+  router.add("/bar/foo/aaa/:1", get(make_handler(4)));
+  router.add("/bar/foo/bbb/:1", get(make_handler(5)));
+  router.add("/bar/foo/bbb/ccc/:1", get(make_handler(6)));
+  router.add("/foo/bar/aaa/:1", get(make_handler(7)));
   
   auto test_request = [&](const std::string& uri, reply::status_type expected_status, const std::string& method = "GET") {
     CAPTURE(method, uri, expected_status);
@@ -257,7 +310,7 @@ TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
 
 TEST_CASE("dynamic_content handles request correctly", "[dynamic_content][serve]") // NOLINT
 {
-  auto handler = get({ "resource1", "resource2" }, [](const request& req, std::ostream& os) {
+  auto handler = get([](const request& req, std::ostream& os) {
     os << "Resource1: " << req.resource("resource1") << "\n";
     os << "Resource2: " << req.resource("resource2") << "\n";
     os << "QueryParam: " << req.query("param") << "\n";
@@ -268,7 +321,7 @@ TEST_CASE("dynamic_content handles request correctly", "[dynamic_content][serve]
 
   SECTION("Handles path and query parameters")
   {
-    handler.serve("/res1/res2?param=value", http_req, rep);
+    handler.serve_if_match("/foo/:resource1/:resource2", "/foo/res1/res2?param=value", http_req, rep);
 
     REQUIRE(rep.status == reply::ok);
     REQUIRE(rep.content == "Resource1: res1\nResource2: res2\nQueryParam: value\n");
@@ -281,7 +334,7 @@ TEST_CASE("dynamic_content handles request correctly", "[dynamic_content][serve]
 
   SECTION("Handles path without query parameters")
   {
-    handler.serve("/res1/res2", http_req, rep);
+    handler.serve_if_match("/foo/:resource1/:resource2", "/foo/res1/res2", http_req, rep);
 
     REQUIRE(rep.status == reply::ok);
     REQUIRE(rep.content == "Resource1: res1\nResource2: res2\nQueryParam: \n");
@@ -294,7 +347,7 @@ TEST_CASE("dynamic_content handles request correctly", "[dynamic_content][serve]
 
   SECTION("Handles query parameters without path")
   {
-    handler.serve("?param=value", http_req, rep);
+    handler.serve_if_match("/foo/res", "/foo/res?param=value", http_req, rep);
 
     REQUIRE(rep.status == reply::ok);
     REQUIRE(rep.content == "Resource1: \nResource2: \nQueryParam: value\n");

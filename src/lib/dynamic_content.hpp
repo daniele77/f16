@@ -60,47 +60,30 @@ struct reply;
 class dynamic_content
 {
 public:
-  dynamic_content(std::string action, std::vector<std::string> params, std::function<void(const request& req, response_stream&)> _handler);
-  void serve(const std::string& request_path, const http_request& req, reply& rep) const;
+  dynamic_content(std::string action, std::function<void(const request& req, response_stream&)> _handler);
+  bool serve_if_match(const std::string& location, const std::string& request_path, const http_request& req, reply& rep) const;
   [[nodiscard]] std::string method() const { return action; }
 
 private:
-  bool get_path_components(const std::string& resources, request& req) const;
   static void handle_query_parameters(const std::string& query, request& req);
 
   std::string action;
   std::function<void(const request&, response_stream&)> handler;
-  std::vector<std::string> param_keys;
 };
 
 inline dynamic_content get(std::function<void(const request& req, response_stream&)> _handler)
 {
-  return dynamic_content("GET", std::vector<std::string>{}, _handler);
-}
-
-inline dynamic_content get(std::vector<std::string> params, std::function<void(const request& req, response_stream&)> _handler)
-{
-  return dynamic_content("GET", std::move(params), _handler);
+  return dynamic_content("GET", _handler);
 }
 
 inline dynamic_content post(std::function<void(const request& req, response_stream&)> _handler)
 {
-  return dynamic_content("POST", std::vector<std::string>{}, _handler);
-}
-
-inline dynamic_content post(std::vector<std::string> params, std::function<void(const request& req, response_stream&)> _handler)
-{
-  return dynamic_content("POST", std::move(params), _handler);
+  return dynamic_content("POST", _handler);
 }
 
 inline dynamic_content put(std::function<void(const request& req, response_stream&)> _handler)
 {
-  return dynamic_content("PUT", std::vector<std::string>{}, _handler);
-}
-
-inline dynamic_content put(std::vector<std::string> params, std::function<void(const request& req, response_stream&)> _handler)
-{
-  return dynamic_content("PUT", std::move(params), _handler);
+  return dynamic_content("PUT", _handler);
 }
 
 } // namespace f16::http::server

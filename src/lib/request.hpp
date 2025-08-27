@@ -50,16 +50,7 @@ struct request
    */
   explicit request(http_request r) : orig_request{std::move(r)} {}
 
-  /**
-   * @brief Adds a resource to the resources map.
-   * 
-   * This function adds a key-value pair to the resources map.
-   * 
-   * @param key The key for the resource.
-   * @param value The value for the resource.
-   */
-  void add_resource(const std::string& key, const std::string& value) { resources[key] = value; }
-
+  
   /**
    * @brief Adds a query value to the querystring map.
    * 

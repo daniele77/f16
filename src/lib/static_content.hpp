@@ -19,7 +19,7 @@ class static_content
 {
 public:
   explicit static_content(std::string _doc_root);
-  void serve(const std::string& _request_path, const http_request& req, reply& rep) const;
+  bool serve_if_match(const std::string& location, const std::string& _request_path, const http_request& req, reply& rep) const;
   [[nodiscard]] static std::string method() { return "GET"; }
 
 private:

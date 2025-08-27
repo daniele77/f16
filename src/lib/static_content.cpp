@@ -19,9 +19,14 @@ static_content::static_content(std::string _doc_root)
 {
 }
 
-void static_content::serve(const std::string& _request_path, const http_request& req, reply& rep) const
+bool static_content::serve_if_match(const std::string& location, const std::string& _request_path, const http_request& req, reply& rep) const
 {
-  fs::path request_path{_request_path};
+  if (!_request_path.rfind(location, 0) == 0) // starts with
+    return false;
+
+  const std::string resource_path = _request_path.substr(location.size());
+
+  fs::path request_path{resource_path};
   request_path = doc_root / request_path.relative_path();
 
   if (fs::is_directory(request_path))
@@ -49,6 +54,8 @@ void static_content::serve(const std::string& _request_path, const http_request&
 
   if (req.method == "HEAD")
     rep.content.clear();
+
+  return true;
 }
 
 void static_content::list_directory(const fs::path& full_path, reply& rep)

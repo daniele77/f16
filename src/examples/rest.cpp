@@ -25,19 +25,20 @@ int main()
     router.add("/bad", get([](const request& /*req*/, f16::response_stream& os) { os << f16::bad_request; }));
     // GET <ip>/hello
     router.add("/hello", get([](const request& /*req*/, std::ostream& os) { os << "Hello, world!\n"; }));
-    router.add("/hello", get({"name"}, [](const request& req, std::ostream& os) { os << "Hello, " << req.resource("name") << "!\n"; }));
+    // GET <ip>/hello/<name>
+    router.add("/hello/:name", get([](const request& req, std::ostream& os) { os << "Hello, " << req.resource("name") << "!\n"; }));
     // GET <ip>/print/?name=<name>&country=<country>
     router.add("/print", get([](const request& req, std::ostream& os) {
         os << "Hi, " << req.query("name") << " from " << req.query("country") << "!\n";
       })
     );
     // GET <ip>/greet/<name>/<country>
-    router.add("/greet", get({"name", "country"}, [](const request& req, std::ostream& os) {
+    router.add("/greet/:name/:country", get([](const request& req, std::ostream& os) {
         os << "Hi, " << req.resource("name") << " from " << req.resource("country") << "!\n";
       })
     );
     // PUT <ip>/person/<name>/<country>
-    router.add("/person", put({"name", "country"}, [](const request& req, std::ostream& os) {
+    router.add("/person/:name/:country", put([](const request& req, std::ostream& os) {
         std::cout << "Insert person " << req.resource("name") << " from " << req.resource("country") << "\n";
         os << "ok";
       })

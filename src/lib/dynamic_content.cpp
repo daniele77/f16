@@ -13,26 +13,22 @@
 
 namespace f16::http::server {
 
-dynamic_content::dynamic_content(std::string _action, std::vector<std::string> _params, std::function<void(const request&, response_stream&)> _handler) : 
+dynamic_content::dynamic_content(std::string _action, std::function<void(const request&, response_stream&)> _handler) : 
   action{std::move(_action)},
-  handler{std::move(_handler)},
-  param_keys{std::move(_params)}
+  handler{std::move(_handler)}
 {
 }
 
-void dynamic_content::serve(const std::string& request_path, const http_request& http_req, reply& rep) const
+bool dynamic_content::serve_if_match(const std::string& location, const std::string& request_path, const http_request& http_req, reply& rep) const
 {
-  request req{http_req};
-
   auto res_query = split_string(request_path);
   const auto& resources = res_query.first;
   const auto& query = res_query.second;
 
-  if (!get_path_components(resources, req))
-  {
-    rep = reply::stock_reply(reply::bad_request); // 400
-    return;
-  }
+  request req{http_req};
+  if (!match_pattern(location, resources, req.resources))
+    return false;
+
   handle_query_parameters(query, req);
 
   response_stream ss;
@@ -44,24 +40,6 @@ void dynamic_content::serve(const std::string& request_path, const http_request&
     // {"Content-Type", mime_types::extension_to_type(".txt")} // TODO: use a more appropriate content type
     {"Content-Type", ss.content_type}
   };
-}
-
-bool dynamic_content::get_path_components(const std::string& resources, request& req) const {
-  static const char delimiter = '/';
-  std::string temp;
-  std::stringstream stringstream{resources};
-  std::vector<std::string> components_vec;
-
-  while (std::getline(stringstream, temp, delimiter)) {
-    if (!temp.empty())
-      components_vec.push_back(temp);
-  }
-
-  if (param_keys.size() != components_vec.size())
-    return false;
-
-  for (std::size_t i = 0; i < param_keys.size() && i < components_vec.size(); ++i)
-    req.add_resource(param_keys[i], components_vec[i]);
 
   return true;
 }

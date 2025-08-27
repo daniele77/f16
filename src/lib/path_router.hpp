@@ -48,11 +48,11 @@ private:
         "Invalid handler type passed to resource_entry");      
     }
 
-    void serve(const std::string& resource_path, const http_request& req, reply& rep) const
+    bool serve_if_match(const std::string& resource_path, const http_request& req, reply& rep) const
     {
-      std::visit(
+      return std::visit(
         [&](auto&& _handler) {
-          _handler.serve(resource_path, req, rep);
+          return _handler.serve_if_match(location, resource_path, req, rep);
         },
         handler);
     }
