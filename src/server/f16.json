@@ -3,6 +3,18 @@
   [
     {
       "listen_address": "0.0.0.0",
+      "listen_port": "3000",
+      "return":
+      {
+        "status": "moved_permanently", // 301
+        "headers":
+        [
+          { "Location": "https://$host:4000$request_uri" }
+        ]
+      }
+    },
+    {
+      "listen_address": "0.0.0.0",
       "listen_port": "4000",
       "ssl":
       {
@@ -46,6 +58,5 @@
         }
       ]
     }
-
   ]
 }

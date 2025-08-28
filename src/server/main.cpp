@@ -19,6 +19,9 @@
 
 #include "static_content.hpp"
 
+#include "http_request.hpp"
+#include "mime_types.hpp"
+
 // This file will be generated automatically when you run the CMake configuration step.
 // It creates a namespace called `f16`.
 // You can modify the source template at `configured_files/config.hpp.in`.
@@ -100,7 +103,8 @@ int main(int argc, const char **argv)
     {
       const std::string cfg_file = args["<cfg_file>"].asString();
       std::ifstream ifs(cfg_file);
-      if (!ifs) throw std::runtime_error{"Configuration file " + cfg_file + " not fouund"};
+      if (!ifs)
+        throw std::runtime_error{"Configuration file " + cfg_file + " not fouund"};
       const nlohmann::json cfg = nlohmann::json::parse(ifs,
         nullptr, // callback
         true, // allow exceptions
@@ -141,17 +145,99 @@ int main(int argc, const char **argv)
 
           server = std::make_unique<https_server>(ioc, ssl_s);
         }
-        else server = std::make_unique<http_server>(ioc);
+        else
+          server = std::make_unique<http_server>(ioc);
 
-        path_router router;
-        for (const auto& location_entry: server_entry.at("locations"))
+        if (server_entry.contains("return"))
         {
-          const std::string root_doc = location_entry.at("root");
-          const std::string path = location_entry.at("location");
-          spdlog::info("  Serving root doc {} at path: {}", root_doc, path);
-          router.add(path, static_content(root_doc));
+          const auto& return_section = server_entry.at("return");
+          const std::string status_s = return_section.value("status", "ok");
+          const reply::status_type status = 
+          (status_s == "ok" ? reply::ok :
+            status_s == "created" ? reply::created :
+            status_s == "accepted" ? reply::accepted :
+            status_s == "no_content" ? reply::no_content :
+            status_s == "multiple_choices" ? reply::multiple_choices :
+            status_s == "moved_permanently" ? reply::moved_permanently :
+            // status_s == "found" ? reply::found :
+            // status_s == "see_other" ? reply::see_other :
+            status_s == "not_modified" ? reply::not_modified :
+            status_s == "bad_request" ? reply::bad_request :
+            status_s == "unauthorized" ? reply::unauthorized :
+            status_s == "forbidden" ? reply::forbidden :
+            status_s == "not_found" ? reply::not_found :
+            status_s == "internal_server_error" ? reply::internal_server_error :
+            status_s == "not_implemented" ? reply::not_implemented :
+            status_s == "bad_gateway" ? reply::bad_gateway :
+            status_s == "service_unavailable" ? reply::service_unavailable :
+            /*else*/ reply::ok);
+            spdlog::info("  Serving status '{}'", status_s);
+            const auto headers = return_section.value("headers", nlohmann::json::array());
+            server->set(
+              [status, headers](const http_request& req, reply& res)
+              {
+                res = reply::stock_reply(status);
+                for (const auto& header_entry: headers)
+                {
+                  std::string name;
+                  std::string value;
+                  for (auto& [k,v] : header_entry.items()) {
+                    name = k;
+                    value = v;
+                  }
+                  
+                  // replace $host and $request_uri
+                  if (value.find("$host") != std::string::npos)
+                  {
+                    std::string host = req.get_header("host");
+                    if (host.empty())
+                    {
+                      res = reply::stock_reply(reply::bad_request); // 400
+                      res.content = "Missing 'Host' header in the request";
+                      res.headers = {
+                        {"Content-Length", std::to_string(res.content.size())},
+                        {"Content-Type", mime_types::extension_to_type(".txt")}
+                      };
+                      return;
+                    }
+                    if (auto pos = host.find(':'); pos != std::string::npos)
+                    host.erase(pos); // Erases everything after the ':' character
+                    value.replace(value.find("$host"), 5, host);
+                  }
+                  if (value.find("$request_uri") != std::string::npos)
+                  {
+                    value.replace(value.find("$request_uri"), 12, req.uri);
+                  }
+                  res.headers.push_back({name, value});
+                }
+                
+                /*
+                spdlog::info("  Request: {} {}", req.method, req.uri);
+                for (const auto& h: req.headers)
+                spdlog::info("    {}: {}", h.name, h.value);
+                spdlog::info("  Response: {} {}", static_cast<int>(res.status), res.content);
+                for (const auto& h: res.headers)
+                spdlog::info("    {}: {}", h.name, h.value);
+                */
+              }
+            );
         }
-        server->set(std::move(router));
+        else if (server_entry.contains("locations"))
+        {
+          path_router router;
+          for (const auto& location_entry: server_entry.at("locations"))
+          {
+            const std::string root_doc = location_entry.at("root");
+            const std::string path = location_entry.at("location");
+            spdlog::info("  Serving root doc {} at path: {}", root_doc, path);
+            router.add(path, static_content(root_doc));
+          }
+          server->set(std::move(router));
+        }
+        else
+        {
+          spdlog::warn("No 'return' or 'locations' section found for this server entry: this server will not handle any request"); 
+        }
         server->listen(port, address);
         server_set.push_back(std::move(server));
       }
