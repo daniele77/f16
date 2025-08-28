@@ -118,7 +118,7 @@ jobs:
 
       - name: Cleanup Conan system packages (they are not properly cached)
         run: |
-          conan remove -f '*/system'
+          conan remove -f '*/system' || true
 
       - name: Non macos - Setup conan
         if: runner.os != 'macos'
