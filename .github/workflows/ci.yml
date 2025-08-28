@@ -116,9 +116,9 @@ jobs:
           gcovr: true
           opencppcoverage: true
 
-      - name: Cleanup Conan system packages (they are not properly cached)
+      - name: Detect default Conan profile
         run: |
-          conan remove -f '*/system' || true
+          conan profile detect  # crea ~/.conan2/profiles/default
 
       - name: Non macos - Setup conan
         if: runner.os != 'macos'

@@ -83,9 +83,9 @@ jobs:
         gcovr: false
         opencppcoverage: false
 
-    - name: Cleanup Conan system packages (they are not properly cached)
+    - name: Detect default Conan profile
       run: |
-        conan remove -f '*/system' || true
+        conan profile detect  # crea ~/.conan2/profiles/default
 
     - name: Setup conan
       run: |
