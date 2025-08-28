@@ -42,6 +42,10 @@ static const std::string bad_gateway = // NOLINT
   "HTTP/1.0 502 Bad Gateway\r\n";
 static const std::string service_unavailable = // NOLINT
   "HTTP/1.0 503 Service Unavailable\r\n";
+static const std::string gateway_timeout = // NOLINT
+  "HTTP/1.0 504 Gateway Timeout\r\n";
+static const std::string http_version_not_supported = // NOLINT
+  "HTTP/1.0 505 HTTP Version Not Supported\r\n";
 
 static asio::const_buffer to_buffer(reply::status_type status)
 {
@@ -79,6 +83,10 @@ static asio::const_buffer to_buffer(reply::status_type status)
     return asio::buffer(bad_gateway);
   case reply::service_unavailable:
     return asio::buffer(service_unavailable);
+  case reply::gateway_timeout:
+    return asio::buffer(gateway_timeout);
+  case reply::http_version_not_supported:
+    return asio::buffer(http_version_not_supported);
   default:
     return asio::buffer(internal_server_error);
   }
@@ -187,6 +195,16 @@ static const std::string service_unavailable = // NOLINT
   "<head><title>Service Unavailable</title></head>"
   "<body><h1>503 Service Unavailable</h1></body>"
   "</html>";
+static const std::string gateway_timeout = // NOLINT
+  "<html>"
+  "<head><title>Gateway Timeout</title></head>"
+  "<body><h1>504 Gateway Timeout</h1></body>"
+  "</html>";
+static const std::string http_version_not_supported = // NOLINT
+  "<html>"
+  "<head><title>HTTP Version Not Supported</title></head>"
+  "<body><h1>505 HTTP Version Not Supported</h1></body>"
+  "</html>";
 
 static std::string to_string(reply::status_type status)
 {
@@ -241,6 +259,34 @@ reply reply::stock_reply(reply::status_type status)
     {"Content-Type", "text/html"}
   };
   return rep;
+}
+
+reply::status_type reply::status_from_string(const std::string& s)
+{
+  static const std::unordered_map<std::string, reply::status_type> status_map = {
+    {"ok", reply::ok},
+    {"created", reply::created},
+    {"accepted", reply::accepted},
+    {"no_content", reply::no_content},
+    {"multiple_choices", reply::multiple_choices},
+    {"moved_permanently", reply::moved_permanently},
+    {"moved_temporarily", reply::moved_temporarily},
+    {"not_modified", reply::not_modified},
+    {"bad_request", reply::bad_request},
+    {"unauthorized", reply::unauthorized},
+    {"forbidden", reply::forbidden},
+    {"not_found", reply::not_found},
+    {"internal_server_error", reply::internal_server_error},
+    {"not_implemented", reply::not_implemented},
+    {"bad_gateway", reply::bad_gateway},
+    {"service_unavailable", reply::service_unavailable},
+    {"gateway_timeout", reply::gateway_timeout},
+    {"http_version_not_supported", reply::http_version_not_supported}
+  };
+  auto it = status_map.find(s);
+  if (it != status_map.end())
+    return it->second;
+  throw std::invalid_argument("Unknown status: " + s);
 }
 
 } // namespace f16::http::server
