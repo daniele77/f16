@@ -21,7 +21,7 @@ static_content::static_content(std::string _doc_root)
 
 bool static_content::serve_if_match(const std::string& location, const std::string& _request_path, const http_request& req, reply& rep) const
 {
-  if (!_request_path.rfind(location, 0) == 0) // starts with
+  if (_request_path.rfind(location, 0) != 0) // does not starts with
     return false;
 
   const std::string resource_path = _request_path.substr(location.size());

@@ -29,7 +29,8 @@ struct http_request
       {
         std::string header_name = h.name;
         std::transform(header_name.begin(), header_name.end(), header_name.begin(),
-                [](char c){ return std::tolower(c); });
+          [](unsigned char c) -> char { return static_cast<char>(std::toupper(c)); });
+
         return header_name == name;
       }
     );
