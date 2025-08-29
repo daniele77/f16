@@ -83,6 +83,12 @@ if(NOT DISABLE_ELF_PROTECTION)
   set(ENABLE_ELF_PROTECTION "ENABLE_ELF_PROTECTION")
 endif()
 
+option(DISABLE_COVERAGE "Disable coverage" OFF)
+
+if(NOT DISABLE_COVERAGE)
+  set(ENABLE_COVERAGE "ENABLE_COVERAGE")
+endif()
+
 # Adding the tests:
 option(ENABLE_TESTING "Enable the tests" ON)
 
@@ -105,7 +111,6 @@ option(ENABLE_DEVELOPER_MODE "Enable sanitizers, static analyzers and warning as
 if(ENABLE_DEVELOPER_MODE)
   set(ENABLE_CLANG_TIDY "ENABLE_CLANG_TIDY")
   set(ENABLE_CPPCHECK "ENABLE_CPPCHECK")
-  set(ENABLE_COVERAGE "ENABLE_COVERAGE")
   set(WARNINGS_AS_ERRORS "WARNINGS_AS_ERRORS")
 
   check_sanitizers_support(

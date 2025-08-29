@@ -133,6 +133,7 @@ jobs:
         # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
         # has meaningful results
       - name: Configure CMake
+        shell: bash
         run: |
           cmake \
             -S . \
@@ -143,7 +144,7 @@ jobs:
             -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} \
             -DDISABLE_STACK_PROTECTION:BOOL=${{ runner.os == 'macos' }} \
             -DDISABLE_ELF_PROTECTION:BOOL=${{ runner.os == 'macos' }} \
-            -DOPT_ENABLE_COVERAGE:BOOL=${{ runner.os == 'macos' }} \
+            -DDISABLE_COVERAGE:BOOL=${{ runner.os == 'macos' }} \
             -DGIT_SHA:STRING=${{ github.sha }}
 
       - name: Build
