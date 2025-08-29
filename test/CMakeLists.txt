@@ -29,16 +29,23 @@ target_link_libraries(tests
 # automatically discover tests that are defined in catch based test files you can modify the unittests. Set TEST_PREFIX
 # to whatever you want, or use different for different binaries
 
-if(Catch2_VERSION VERSION_LESS "3.0.0")
-  set(TEST_REPORTER junit)
-else()
-  set(TEST_REPORTER xml)
-endif()
+# if(Catch2_VERSION VERSION_LESS "3.0.0")
+#   set(TEST_REPORTER junit)
+# else()
+#   set(TEST_REPORTER xml)
+# endif()
+# 
+# if (CATCH_VERSION VERSION_GREATER_EQUAL 3)
+#     set(TEST_REPORTER "xml")
+# else()
+#     set(TEST_REPORTER "junit")
+# endif()
 
 catch_discover_tests(
   tests
   TEST_PREFIX "unittests."
-  REPORTER ${TEST_REPORTER}
+  # REPORTER ${TEST_REPORTER}
   OUTPUT_DIR .
   OUTPUT_PREFIX "unittests."
-  OUTPUT_SUFFIX .xml)
+  OUTPUT_SUFFIX .xml
+)
