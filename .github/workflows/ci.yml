@@ -30,7 +30,7 @@ jobs:
       # and your own projects needs
       matrix:
         os:
-          - ubuntu-20.04
+          - ubuntu-24.04
           - macos-13
         compiler:
           # you can specify the version after `-` like "llvm-13.0.0".
@@ -49,7 +49,7 @@ jobs:
           # mingw is determined by this author to be too buggy to support
           - os: macos-13
             compiler: gcc-11
-          - os: ubuntu-20.04
+          - os: ubuntu-24.04
             compiler: llvm-13.0.0
 
         include:
