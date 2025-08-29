@@ -7,6 +7,8 @@
 #define F16_HTTP_STRING_HPP
 
 #include <string>
+#include <unordered_map>
+#include <utility>
 
 namespace f16::http::server {
 
