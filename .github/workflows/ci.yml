@@ -136,10 +136,24 @@ jobs:
         run: |
           cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} -DDISABLE_STACK_PROTECTION:BOOL=${{ runner.os == 'macos' }} -DDISABLE_ELF_PROTECTION:BOOL=${{ runner.os == 'macos' }} -DGIT_SHA:STRING=${{ github.sha }}
 
+      - name: Debug C++ standard flags
+        run: |
+          echo "🔎 Checking CMakeCache for CXX flags..."
+          grep CMAKE_CXX_STANDARD build/CMakeCache.txt || true
+          grep CMAKE_CXX_FLAGS build/CMakeCache.txt || true
+
+          echo "🔎 Searching for -std= in build directory..."
+          grep -R "\-std=" build/ || true
+
+          echo "🔎 Showing compile commands (if available)..."
+          if [ -f build/compile_commands.json ]; then
+            grep "\-std=" build/compile_commands.json || true
+          fi
+
       - name: Build
         # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: |
-          cmake --build ./build --config ${{matrix.build_type}}
+          cmake --build ./build --config ${{matrix.build_type}} --verbose
 
       - name: Unix - Test and coverage
         if: runner.os != 'Windows'
