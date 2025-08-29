@@ -30,9 +30,9 @@ target_link_libraries(tests
 # to whatever you want, or use different for different binaries
 
 if(Catch2_VERSION VERSION_LESS "3.0.0")
-  set(TEST_REPORTER xml)
-else()
   set(TEST_REPORTER junit)
+else()
+  set(TEST_REPORTER xml)
 endif()
 
 catch_discover_tests(
