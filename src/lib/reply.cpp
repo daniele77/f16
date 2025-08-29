@@ -5,6 +5,7 @@
 
 #include "reply.hpp"
 #include <string>
+#include <unordered_map>
 
 namespace f16::http::server {
 
