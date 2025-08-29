@@ -33,8 +33,7 @@ jobs:
           - ubuntu-24.04
           - macos-13
         compiler:
-          # you can specify the version after `-` like "llvm-13.0.0".
-          - llvm-13.0.0
+          - clang
           - gcc-11
         generator:
           - "Ninja Multi-Config"
@@ -57,7 +56,7 @@ jobs:
           # if you try to use a compiler that does not have gcov set
           - compiler: gcc-11
             gcov_executable: gcov
-          - compiler: llvm-13.0.0
+          - compiler: clang
             gcov_executable: "llvm-cov gcov"
 
           # Set up preferred package generators, for given build configurations
@@ -144,7 +143,6 @@ jobs:
             -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} \
             -DDISABLE_STACK_PROTECTION:BOOL=${{ runner.os == 'macos' }} \
             -DDISABLE_ELF_PROTECTION:BOOL=${{ runner.os == 'macos' }} \
-            -DDISABLE_COVERAGE:BOOL=${{ runner.os == 'macos' }} \
             -DGIT_SHA:STRING=${{ github.sha }}
 
       - name: Build
