@@ -34,7 +34,7 @@ jobs:
           - macos-13
         compiler:
           - clang
-          - gcc-11
+          - gcc-13
         generator:
           - "Ninja Multi-Config"
         build_type:
@@ -47,13 +47,13 @@ jobs:
         exclude:
           # mingw is determined by this author to be too buggy to support
           - os: macos-13
-            compiler: gcc-11
+            compiler: gcc-13
 
         include:
           # Add appropriate variables for gcov version required. This will intentionally break
           # if you try to use a compiler that does not have gcov set
-          - compiler: gcc-11
-            gcov_executable: gcov
+          - compiler: gcc-13
+            gcov_executable: gcov-13
           - compiler: clang
             gcov_executable: "llvm-cov gcov"
 
@@ -94,6 +94,12 @@ jobs:
           build_type: ${{ matrix.build_type }}
           developer_mode: ${{ matrix.developer_mode }}
           generator: ${{ matrix.generator }}
+
+      - name: Install matching gcc/gcov version
+        if: runner.os == 'Linux' && startsWith(matrix.compiler, 'gcc')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.compiler }} ${{ matrix.gcov_executable }}
 
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
