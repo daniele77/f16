@@ -48,8 +48,6 @@ jobs:
           # mingw is determined by this author to be too buggy to support
           - os: macos-13
             compiler: gcc-11
-          - os: ubuntu-24.04
-            compiler: llvm-13.0.0
 
         include:
           # Add appropriate variables for gcov version required. This will intentionally break
@@ -157,15 +155,15 @@ jobs:
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
         run: |
           ctest -C ${{matrix.build_type}}
-#          gcovr \
-#            -j ${{ env.nproc }} \
-#            --delete \
-#            --root ./build \
-#            --print-summary \
-#            --xml-pretty \
-#            --xml coverage.xml \
-#            --gcov-executable '${{ matrix.gcov_executable }}' \
-#            --verbose
+          gcovr \
+            -j ${{ env.nproc }} \
+            --delete \
+            --root ./build \
+            --print-summary \
+            --xml-pretty \
+            --xml coverage.xml \
+            --gcov-executable '${{ matrix.gcov_executable }}' \
+            --verbose
 
       - name: Windows - Test and coverage
         if: runner.os == 'Windows'
