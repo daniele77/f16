@@ -95,12 +95,6 @@ jobs:
           developer_mode: ${{ matrix.developer_mode }}
           generator: ${{ matrix.generator }}
 
-      - name: Install matching gcc/gcov version
-        if: runner.os == 'Linux' && startsWith(matrix.compiler, 'gcc')
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ${{ matrix.compiler }} ${{ matrix.gcov_executable }}
-
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
         with:
