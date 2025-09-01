@@ -158,11 +158,12 @@ jobs:
           gcovr \
             -j ${{ env.nproc }} \
             --delete \
-            --root ./build \
+            --root .. \
             --print-summary \
             --xml-pretty \
             --xml coverage.xml \
             --gcov-executable '${{ matrix.gcov_executable }}' \
+            --exclude '.*conan.*' \
             --verbose
 
       - name: Windows - Test and coverage
