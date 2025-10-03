@@ -31,7 +31,7 @@ jobs:
       matrix:
         os:
           - ubuntu-24.04
-          - macos-15
+          - macos-14
         compiler:
           - clang
           - gcc-13
@@ -46,7 +46,7 @@ jobs:
 
         exclude:
           # mingw is determined by this author to be too buggy to support
-          - os: macos-15
+          - os: macos-14
             compiler: gcc-13
 
         include:
@@ -125,8 +125,7 @@ jobs:
       - name: Macos - Setup conan
         if: runner.os == 'macos'
         run: |
-          conan --version
-          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.libcxx=libc++ -s compiler.cppstd=17 --conf tools.cmake.cmaketoolchain:generator_minimum_version=3.5
+          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.libcxx=libc++ -s compiler.cppstd=17
 
         # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
         # has meaningful results
