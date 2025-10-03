@@ -125,7 +125,7 @@ jobs:
       - name: Macos - Setup conan
         if: runner.os == 'macos'
         run: |
-          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.libcxx=libc++ -s compiler.cppstd=17 --conf=tools.cmake:cmake_args='-DCMAKE_POLICY_VERSION_MINIMUM=3.5'
+          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.libcxx=libc++ -s compiler.cppstd=17 --tool-options="cmake:cmake_args=-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
 
         # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
         # has meaningful results
