@@ -125,7 +125,7 @@ jobs:
       - name: Macos - Setup conan
         if: runner.os == 'macos'
         run: |
-          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.libcxx=libc++ -s compiler.cppstd=17 -c tools.cmake:cmake_policy_version_minimum=3.5
+          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.libcxx=libc++ -s compiler.cppstd=17
 
         # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
         # has meaningful results
@@ -141,6 +141,7 @@ jobs:
             -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} \
             -DDISABLE_STACK_PROTECTION:BOOL=${{ runner.os == 'macos' }} \
             -DDISABLE_ELF_PROTECTION:BOOL=${{ runner.os == 'macos' }} \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DGIT_SHA:STRING=${{ github.sha }}
 
       - name: Build
