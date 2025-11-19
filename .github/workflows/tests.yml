@@ -75,7 +75,7 @@ jobs:
       # Install Conan
       # -------------------------------------------------------------
       - name: Install Conan
-        uses: turtlebrowser/get-conan@v1
+        uses: turtlebrowser/get-conan@main
 
       - name: Conan profile setup
         run: |
