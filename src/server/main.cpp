@@ -177,9 +177,9 @@ int main(int argc, const char** argv)
   {
     app.require_subcommand(0); // Allows 0 or 1 subcommand
 
-    app.add_flag(
+    app.add_flag_function(
       "-v,--version",
-      [](int) {
+      [](int /* count */) {
         fmt::print("{} web server v. {}\n",
           f16::cmake::project_name,
           f16::cmake::project_version); // version string, acquired from config.hpp via CMake
