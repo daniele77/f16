@@ -122,6 +122,11 @@ jobs:
         run: |
           conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.cppstd=17
 
+      - name: Macos - Setup conan
+        if: runner.os == 'macos'
+        run: |
+          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.libcxx=libc++ -s compiler.cppstd=17
+
       - name: MacOS - Setup Conan (clang + libc++, dynamic OpenSSL)
         if: runner.os == 'macos'
         run: |
@@ -151,7 +156,8 @@ jobs:
             -DENABLE_COVERAGE:BOOL=$([[ "${{matrix.build_type}}" == "Debug" && runner.os != "macos" ]] && echo "ON" || echo "OFF") \
             -DDISABLE_STACK_PROTECTION:BOOL=${{ runner.os == 'macos' }} \
             -DDISABLE_ELF_PROTECTION:BOOL=${{ runner.os == 'macos' }} \
-            -DGIT_SHA:STRING=${{ github.sha }}
+            -DGIT_SHA:STRING=${{ github.sha }} \
+            $([[ $RUNNER_OS == "macOS" ]] && echo "-DCMAKE_CXX_FLAGS='-stdlib=libc++' -DCMAKE_EXE_LINKER_FLAGS='-lc++ -lc++abi'" )
 
       - name: Build
         # Execute the build.  You can specify a specific target with "--target <NAME>"
