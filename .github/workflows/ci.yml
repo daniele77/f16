@@ -113,9 +113,30 @@ jobs:
           gcovr: true
           opencppcoverage: true
 
-      - name: Detect default Conan profile
+      - name: non macOS - Detect default Conan profile
+        if: runner.os != 'macos'
         run: |
           conan profile detect  # crea ~/.conan2/profiles/default
+
+      - name: macOS - Force correct Conan profile (clang + libc++)
+        if: runner.os == 'macos'
+        run: |
+          conan profile detect --force
+          # Overwrite ~/.conan2/profiles/default with correct settings for macOS + clang + libc++
+          cat > ~/.conan2/profiles/default << 'EOF'
+          [settings]
+          os=Macos
+          arch=armv8
+          build_type=Release
+          compiler=clang
+          compiler.version=20
+          compiler.cppstd=17
+          compiler.libcxx=libc++
+
+          [conf]
+          tools.build:cxxflags=["-stdlib=libc++"]
+          tools.build:ldflags=["-lc++","-lc++abi"]
+          EOF
 
       - name: Non macos - Setup conan
         if: runner.os != 'macos'
@@ -127,11 +148,15 @@ jobs:
         run: |
           conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.libcxx=libc++ -s compiler.cppstd=17
 
-        # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
-        # has meaningful results
+      # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
+      # has meaningful results
       - name: Configure CMake
         shell: bash
         run: |
+          CXX_FLAGS=""
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            CXX_FLAGS="-stdlib=libc++"
+          fi
           cmake \
             -S . \
             -B ./build \
