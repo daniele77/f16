@@ -113,29 +113,9 @@ jobs:
           gcovr: true
           opencppcoverage: true
 
-      - name: non macOS - Detect default Conan profile
-        if: runner.os != 'macos'
+      - name: Detect default Conan profile
         run: |
           conan profile detect  # crea ~/.conan2/profiles/default
-
-      - name: macOS - Force correct Conan profile (clang + libc++)
-        if: runner.os == 'macos'
-        run: |
-          conan profile detect --force
-          # Overwrite ~/.conan2/profiles/default with correct settings for macOS + clang + libc++
-          cat > ~/.conan2/profiles/default << 'EOF'
-          [settings]
-          os=Macos
-          arch=armv8
-          build_type=Release
-          compiler=clang
-          compiler.version=20
-          compiler.cppstd=17
-          compiler.libcxx=libc++
-
-          [conf]
-          tools.build:cxxflags=["-stdlib=libc++"]
-          EOF
 
       - name: Non macos - Setup conan
         if: runner.os != 'macos'
