@@ -1,29 +1,26 @@
 find_package(fmt CONFIG)
 find_package(spdlog CONFIG)
 find_package(nlohmann_json CONFIG)
-
-# load DOCOPT
-find_package(docopt CONFIG)
-include_directories(${DOCOPT_INCLUDE_DIRS})
+find_package(CLI11 REQUIRED)
 
 add_executable(f16
-  main.cpp)
+main.cpp)
 
 # link project_options/warnings
 target_link_libraries(f16
-  PRIVATE f16_project_options f16_project_warnings
+PRIVATE f16_project_options f16_project_warnings
 )
 
 target_link_libraries(
   f16
   PRIVATE
-    f16lib
-)
-
+  f16lib
+  )
+  
 target_link_system_libraries(
   f16
   PRIVATE
-    docopt_s
+    CLI11::CLI11
     fmt::fmt
     spdlog::spdlog
     nlohmann_json::nlohmann_json

@@ -134,12 +134,13 @@ RUN git clone --branch v2.13.10 https://github.com/catchorg/Catch2.git && \
     cd .. && \
     rm -rf Catch2
 
-RUN git clone https://github.com/docopt/docopt.cpp.git --depth 1 --branch v0.6.3 && \
-    cd docopt.cpp && \
-    cmake -Bbuild -H. -DCMAKE_CXX_STANDARD=17 -DCMAKE_POLICY_VERSION_MINIMUM=3.5 && \
+# Last version of cli11
+RUN git clone https://github.com/CLIUtils/CLI11.git && \
+    cd CLI11 && \
+    cmake -Bbuild -H. -DBUILD_TESTING=OFF && \
     cmake --build build/ --target install && \
     cd .. && \
-    rm -rf docopt.cpp
+    rm -rf CLI11
 
 ## Cleanup cached apt data we don't need anymore
 RUN apt-get autoremove -y && apt-get clean && \
