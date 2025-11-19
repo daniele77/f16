@@ -1,0 +1,106 @@
+name: C++ CMake CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    name: "${{ matrix.os }} | ${{ matrix.compiler }} | ${{ matrix.build_type }} | DEV=${{ matrix.developer_mode }}"
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        compiler: [gcc, clang, msvc]
+        build_type: [Debug, Release]
+        developer_mode: [ON, OFF]
+
+        exclude:
+          # Windows usa solo MSVC
+          - os: windows-latest
+            compiler: gcc
+          - os: windows-latest
+            compiler: clang
+          # macOS non usa msvc
+          - os: macos-latest
+            compiler: msvc
+          # Ubuntu gcc/clang ok; macOS usa clang di default
+          - os: macos-latest
+            compiler: gcc
+
+    env:
+      BUILD_TYPE: ${{ matrix.build_type }}
+      DEVELOPER_MODE: ${{ matrix.developer_mode }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -------------------------------------------------------------
+      # Install compilers
+      # -------------------------------------------------------------
+      - name: Setup compiler (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            sudo apt-get update
+            sudo apt-get install -y g++ gcc
+            export CC=gcc
+            export CXX=g++
+          elif [ "${{ matrix.compiler }}" = "clang" ]; then
+            sudo apt-get update
+            sudo apt-get install -y clang
+            export CC=clang
+            export CXX=clang++
+          fi
+        shell: bash
+
+      - name: Setup compiler (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          if [ "${{ matrix.compiler }}" = "clang" ]; then
+            export CC=clang
+            export CXX=clang++
+          fi
+        shell: bash
+
+      - name: Setup compiler (Windows MSVC)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      # -------------------------------------------------------------
+      # Install Conan
+      # -------------------------------------------------------------
+      - name: Install Conan
+        uses: turtlebrowser/get-conan@v1
+
+      - name: Conan profile setup
+        run: |
+          conan profile detect --force
+        shell: bash
+
+      # -------------------------------------------------------------
+      # Configure with CMake + Conan
+      # -------------------------------------------------------------
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build \
+                -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+                -DENABLE_DEVELOPER_MODE=${DEVELOPER_MODE} \
+                -DCMAKE_TOOLCHAIN_FILE="$(conan config home)/profiles/default"
+        shell: bash
+
+      # -------------------------------------------------------------
+      # Build
+      # -------------------------------------------------------------
+      - name: Build
+        run: cmake --build build --config ${BUILD_TYPE}
+
+      # -------------------------------------------------------------
+      # Test
+      # -------------------------------------------------------------
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure --config ${BUILD_TYPE}
