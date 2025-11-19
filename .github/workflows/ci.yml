@@ -122,10 +122,15 @@ jobs:
         run: |
           conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.cppstd=17
 
-      - name: Macos - Setup conan
+      - name: MacOS - Setup Conan (clang + libc++, dynamic OpenSSL)
         if: runner.os == 'macos'
         run: |
-          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.libcxx=libc++ -s compiler.cppstd=17
+          conan install . -of build \
+          --settings=build_type=${{matrix.build_type}} \
+          --settings=compiler.cppstd=17 \
+          --settings=compiler.libcxx=libc++ \
+          --build=missing \
+          -o openssl*:shared=True
 
       # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
       # has meaningful results
