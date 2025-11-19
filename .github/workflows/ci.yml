@@ -135,7 +135,6 @@ jobs:
 
           [conf]
           tools.build:cxxflags=["-stdlib=libc++"]
-          tools.build:ldflags=["-lc++","-lc++abi"]
           EOF
 
       - name: Non macos - Setup conan
