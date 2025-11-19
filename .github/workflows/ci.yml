@@ -132,6 +132,10 @@ jobs:
       - name: Configure CMake
         shell: bash
         run: |
+          CXX_FLAGS=""
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            CXX_FLAGS="-stdlib=libc++"
+          fi
           cmake \
             -S . \
             -B ./build \
@@ -139,6 +143,7 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake" \
             -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
             -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} \
+            -DENABLE_COVERAGE:BOOL=$([[ "${{matrix.build_type}}" == "Debug" && runner.os != "macos" ]] && echo "ON" || echo "OFF") \
             -DDISABLE_STACK_PROTECTION:BOOL=${{ runner.os == 'macos' }} \
             -DDISABLE_ELF_PROTECTION:BOOL=${{ runner.os == 'macos' }} \
             -DGIT_SHA:STRING=${{ github.sha }}

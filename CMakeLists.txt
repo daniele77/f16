@@ -193,6 +193,7 @@ if(MSVC)
   set_target_properties(${all_targets} PROPERTIES VS_DEBUGGER_ENVIRONMENT "PATH=$(VC_ExecutablePath_x64);%PATH%")
   # Set the minimum required Windows version to Windows 7
   add_compile_definitions(_WIN32_WINNT=0x0601)
+  add_definitions(-D_WIN32_WINNT=0x0601)
 endif()
 
 # set the startup project for the "play" button in MSVC
