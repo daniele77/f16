@@ -14,53 +14,27 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Install Python (per Conan)
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      - name: Install Conan
+      - name: Install Homebrew dependencies
         run: |
-          pip install conan
-          conan --version
+          # Aggiorna Homebrew
+          brew update
+          
+          # Installazione librerie principali
+          brew install cmake openssl fmt catch2 cli11 spdlog nlohmann-json asio
 
-      - name: Configure Conan profile
-        run: |
-          conan profile detect --force
-
-      - name: Install dependencies using Conan
-        run: |
-          conan install . -of build \
-            --build=missing \
-            --settings=build_type=Release \
-            --settings=os=Macos
-
-      - name: FIX - Remove Linux-only linker flags (-z) incorrectly injected by some packages
-        run: |
-          cd build
-          echo "Searching for Linux -z flags..."
-          grep -R --line-number -- "-z" . || true
-           echo "Removing '-z' flags from Conan-generated CMake toolchain files..."
-          # macOS sed requires: -i ''
-          sed -i '' -E 's/(-Wl,)?-z[[:alnum:]_,-]*//g' conan_toolchain.cmake 2>/dev/null || true
-          sed -i '' -E 's/(-Wl,)?-z[[:alnum:]_,-]*//g' conanbuildinfo.cmake 2>/dev/null || true
-          sed -i '' -E 's/(-Wl,)?-z[[:alnum:]_,-]*//g' generators/*.cmake 2>/dev/null || true
-           echo "Post-cleanup check:"
-          grep -R --line-number -- "-z" . || true
+          # Verifica le versioni installate
+          cmake --version
+          brew list --versions
 
       - name: Configure CMake
         run: |
-          cmake \
-            -S . \
-            -B ./build \
-            -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake" \
-            -DCMAKE_BUILD_TYPE=Release 
+          cmake -S . -B ./build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$(brew --prefix)
 
       - name: Build
         run: |
-          cmake --build ./build --config Release -- -j$(sysctl -n hw.ncpu)
+          cmake --build ./build --config Release
 
       - name: Run tests
         working-directory: ./build
