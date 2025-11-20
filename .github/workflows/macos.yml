@@ -47,6 +47,10 @@ jobs:
             --build=missing \
             --settings=build_type=${{ matrix.build_type }}
 
+      - name: Install developer tools
+        run: |
+          brew install llvm cppcheck
+
       - name: Configure CMake
         run: |
           cmake \
@@ -57,8 +61,9 @@ jobs:
             -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
             -DENABLE_COVERAGE:BOOL=OFF \
             -DDISABLE_STACK_PROTECTION:BOOL=ON \
-            -DDISABLE_ELF_PROTECTION:BOOL=ON
-
+            -DDISABLE_ELF_PROTECTION:BOOL=ON \
+            -DCLANG_TIDY_EXECUTABLE=$(brew --prefix llvm)/bin/clang-tidy \
+  
       - name: Build
         run: |
           cmake --build ./build --config ${{ matrix.build_type }} -- -j$(sysctl -n hw.ncpu)
