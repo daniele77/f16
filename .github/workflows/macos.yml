@@ -30,23 +30,21 @@ jobs:
         run: |
           conan profile detect --force
 
-      - name: Install dependencies con Conan
+      - name: Install dependencies using Conan
         run: |
-          mkdir build
-          cd build
-          conan install .. --build=missing --settings build_type=Release
+          conan install . -of build \
+            --build=missing \
+            --settings=build_type=Release
 
       - name: Configure CMake
         run: |
-          cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release
+          cmake -S . -B ./build -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         run: |
-          cd build
-          cmake --build . --config Release -- -j$(sysctl -n hw.ncpu)
+          cmake --build ./build --config Release -- -j$(sysctl -n hw.ncpu)
 
       - name: Run tests
+        working-directory: ./build
         run: |
-          cd build
-          ctest --output-on-failure
+          ctest -C Release --output-on-failure
