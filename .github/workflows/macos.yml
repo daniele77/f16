@@ -37,6 +37,19 @@ jobs:
             --settings=build_type=Release \
             --settings=os=Macos
 
+      - name: FIX - Remove Linux-only linker flags (-z) incorrectly injected by some packages
+        run: |
+          cd build
+          echo "Searching for Linux -z flags..."
+          grep -R --line-number -- "-z" . || true
+           echo "Removing '-z' flags from Conan-generated CMake toolchain files..."
+          # macOS sed requires: -i ''
+          sed -i '' -E 's/(-Wl,)?-z[[:alnum:]_,-]*//g' conan_toolchain.cmake 2>/dev/null || true
+          sed -i '' -E 's/(-Wl,)?-z[[:alnum:]_,-]*//g' conanbuildinfo.cmake 2>/dev/null || true
+          sed -i '' -E 's/(-Wl,)?-z[[:alnum:]_,-]*//g' generators/*.cmake 2>/dev/null || true
+           echo "Post-cleanup check:"
+          grep -R --line-number -- "-z" . || true
+
       - name: Configure CMake
         run: |
           cmake \

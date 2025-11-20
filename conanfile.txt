@@ -12,6 +12,3 @@ openssl/3.2.2
 [generators]
 CMakeDeps
 CMakeToolchain
-
-[options]
-openssl*:no_fPIC=True
