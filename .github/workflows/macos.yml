@@ -14,31 +14,41 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install Homebrew dependencies
+      - name: Install Python (per Conan)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Conan
         run: |
-          # Aggiorna Homebrew
-          brew update
-          
-          # Installazione librerie principali
-          brew install cmake openssl fmt catch2 cli11 spdlog nlohmann-json asio
+          pip install conan
+          conan --version
 
-          # Verifica le versioni installate
-          cmake --version
-          brew list --versions
+      - name: Configure Conan profile
+        run: |
+          conan profile detect --force
+
+      - name: Install dependencies using Conan
+        run: |
+          conan install . -of build \
+            --build=missing \
+            --settings=build_type=Release
 
       - name: Configure CMake
         run: |
-          cmake -S . -B ./build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_PREFIX_PATH=$(brew --prefix) \
+          cmake \
+            -S . \
+            -B ./build \
+            -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake" \
+            -DCMAKE_BUILD_TYPE=Release  \
             -DDISABLE_STACK_PROTECTION:BOOL=ON \
             -DDISABLE_ELF_PROTECTION:BOOL=ON
 
       - name: Build
         run: |
-          cmake --build ./build --config Release
+          cmake --build ./build --config Release -- -j$(sysctl -n hw.ncpu)
 
       - name: Run tests
         working-directory: ./build
