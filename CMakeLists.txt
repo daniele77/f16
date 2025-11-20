@@ -127,6 +127,22 @@ if(ENABLE_DEVELOPER_MODE)
     SUPPORTED_MEMORY
   )
 
+  include(CheckCXXCompilerFlag)
+
+  check_cxx_compiler_flag("-fsanitize=leak" SUPPORTS_LSAN)
+  check_cxx_compiler_flag("-fsanitize=address" SUPPORTS_ASAN)
+  check_cxx_compiler_flag("-fsanitize=undefined" SUPPORTS_UBSAN)
+  check_cxx_compiler_flag("-fsanitize=thread" SUPPORTS_TSAN)
+  check_cxx_compiler_flag("-fsanitize=memory" SUPPORTS_MSAN)
+  message("Sanitizers support check:")
+  message("  AddressSanitizer supported: ${SUPPORTS_ASAN}")
+  message("  UndefinedBehaviorSanitizer supported: ${SUPPORTS_UBSAN}")
+  message("  LeakSanitizer supported: ${SUPPORTS_LSAN}")
+  message("  ThreadSanitizer supported: ${SUPPORTS_TSAN}")
+  message("  MemorySanitizer supported: ${SUPPORTS_MSAN}")
+
+  set(SUPPORTED_LEAK FALSE)
+
   # Abilita solo quelli supportati
   set(ENABLE_SANITIZER_ADDRESS ${SUPPORTED_ADDRESS})
   set(ENABLE_SANITIZER_UNDEFINED_BEHAVIOR ${SUPPORTED_UNDEFINED_BEHAVIOR})
