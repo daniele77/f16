@@ -64,7 +64,10 @@ jobs:
             -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
             -DENABLE_COVERAGE:BOOL=OFF \
             -DDISABLE_STACK_PROTECTION:BOOL=ON \
-            -DDISABLE_ELF_PROTECTION:BOOL=ON
+            -DDISABLE_ELF_PROTECTION:BOOL=ON \
+            -DENABLE_SANITIZER_LEAK:BOOL=OFF \
+            -DENABLE_SANITIZER_THREAD:BOOL=OFF \
+            -DENABLE_SANITIZER_MEMORY:BOOL=OFF
   
       - name: Build
         run: |
