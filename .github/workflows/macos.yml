@@ -30,7 +30,11 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake -S . -B ./build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$(brew --prefix)
+          cmake -S . -B ./build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH=$(brew --prefix) \
+            -DDISABLE_STACK_PROTECTION:BOOL=ON \
+            -DDISABLE_ELF_PROTECTION:BOOL=ON
 
       - name: Build
         run: |
