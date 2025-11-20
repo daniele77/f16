@@ -34,7 +34,8 @@ jobs:
         run: |
           conan install . -of build \
             --build=missing \
-            --settings=build_type=Release
+            --settings=build_type=Release \
+            --settings=os=Macos
 
       - name: Configure CMake
         run: |
