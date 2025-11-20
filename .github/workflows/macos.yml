@@ -12,6 +12,17 @@ jobs:
   build:
     runs-on: macos-latest
 
+    strategy:
+      fail-fast: false
+
+      matrix:
+        build_type:
+            - Release
+            - Debug
+        developer_mode:
+            - ON
+            - OFF
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -34,7 +45,7 @@ jobs:
         run: |
           conan install . -of build \
             --build=missing \
-            --settings=build_type=Release
+            --settings=build_type=${{ matrix.build_type }}
 
       - name: Configure CMake
         run: |
@@ -42,15 +53,16 @@ jobs:
             -S . \
             -B ./build \
             -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake" \
-            -DCMAKE_BUILD_TYPE=Release  \
+            -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} \
+            -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
             -DDISABLE_STACK_PROTECTION:BOOL=ON \
             -DDISABLE_ELF_PROTECTION:BOOL=ON
 
       - name: Build
         run: |
-          cmake --build ./build --config Release -- -j$(sysctl -n hw.ncpu)
+          cmake --build ./build --config ${{ matrix.build_type }} -- -j$(sysctl -n hw.ncpu)
 
       - name: Run tests
         working-directory: ./build
         run: |
-          ctest -C Release --output-on-failure
+          ctest -C ${{ matrix.build_type }} --output-on-failure
