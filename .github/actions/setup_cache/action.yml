@@ -1,6 +1,5 @@
-
 name: 'setup_cache'
-description: 'sets up the shared cache'
+description: 'Sets up the shared cache for Conan and pip'
 inputs:
   compiler:
     required: true
@@ -8,31 +7,20 @@ inputs:
   build_type:
     required: true
     type: string
-  generator:
-    required: true
-    type: string
   developer_mode:
     required: true
     type: string
 
-
 runs:
   using: "composite"
   steps:
-    - name: Cache
+    - name: Cache Conan and pip
       uses: actions/cache@v4
       with:
-        # You might want to add .ccache to your cache configuration?
+        # Cache Conan packages
         path: |
-          ~/vcpkg
-          ./build/vcpkg_installed
           ${{ env.CONAN_USER_HOME }}
-          ~/.cache/pip
-          ${{ env.HOME }}/.cache/vcpkg/archives
-          ${{ env.XDG_CACHE_HOME }}/vcpkg/archives
-          ${{ env.LOCALAPPDATA }}\vcpkg\archives
-          ${{ env.APPDATA }}\vcpkg\archives
-        key: ${{ runner.os }}-${{ inputs.compiler }}-${{ inputs.build_type }}-${{ hashFiles('./conanfile.txt')}}-${{ inputs.generator }}-${{ inputs.developer_mode }}-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('./vcpkg.json')}}
+          ~/.cache/pip       # cache pip solo se necessario
+        key: ${{ runner.os }}-${{ inputs.compiler }}-${{ inputs.build_type }}-${{ hashFiles('./conanfile.txt')}}-${{ inputs.developer_mode }}
         restore-keys: |
           ${{ runner.os }}-${{ inputs.compiler }}-${{ inputs.build_type }}-${{ hashFiles('./conanfile.txt') }}
-
