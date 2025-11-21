@@ -8,6 +8,7 @@ on:
     branches:
       - main
       - develop
+      - macos-github-actions-tests
 
 env:
   # Conan cache environment variables
@@ -31,7 +32,6 @@ jobs:
       matrix:
         os:
           - ubuntu-24.04
-          - macos-14
         compiler:
           - clang
           - gcc-13
@@ -44,10 +44,6 @@ jobs:
           - ON
           - OFF
 
-        exclude:
-          # mingw is determined by this author to be too buggy to support
-          - os: macos-14
-            compiler: gcc-13
 
         include:
           # Add appropriate variables for gcov version required. This will intentionally break
@@ -93,21 +89,11 @@ jobs:
           compiler: ${{ matrix.compiler }}
           build_type: ${{ matrix.build_type }}
           developer_mode: ${{ matrix.developer_mode }}
-          generator: ${{ matrix.generator }}
-
-      # This step sets Apple Clang as the compiler on macOS runners.
-      - name: Set Apple Clang for macOS
-        if: runner.os == 'macOS'
-        run: |
-          echo "CC=/usr/bin/clang" >> $GITHUB_ENV
-          echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
 
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
         with:
-          # If we are on macOS, pass an empty string ('') to NOT install LLVM.
-          # If we are not on macOS, use the matrix compiler (e.g., gcc, clang on linux).
-          compiler: ${{ runner.os == 'macOS' && '' || matrix.compiler }}
+          compiler: ${{ matrix.compiler }}
           vcvarsall: ${{ contains(matrix.os, 'windows' )}}
 
           cmake: true
@@ -126,19 +112,9 @@ jobs:
         run: |
           conan profile detect  # Create ~/.conan2/profiles/default
 
-      - name: Non macos - Setup conan
-        if: runner.os != 'macos'
+      - name: Setup conan
         run: |
           conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.cppstd=17
-
-      - name: MacOS - Setup Conan (clang + libc++, dynamic OpenSSL)
-        if: runner.os == 'macos'
-        run: |
-          conan install . -of build \
-          --settings=build_type=${{matrix.build_type}} \
-          --settings=compiler.cppstd=17 \
-          --build=missing \
-          -o openssl*:shared=True
 
       # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
       # has meaningful results
@@ -152,9 +128,7 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake" \
             -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
             -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} \
-            -DENABLE_COVERAGE:BOOL=$([[ "${{matrix.build_type}}" == "Debug" && runner.os != "macos" ]] && echo "ON" || echo "OFF") \
-            -DDISABLE_STACK_PROTECTION:BOOL=${{ runner.os == 'macos' }} \
-            -DDISABLE_ELF_PROTECTION:BOOL=${{ runner.os == 'macos' }} \
+            -DENABLE_COVERAGE:BOOL=$([[ "${{matrix.build_type}}" == "Debug" ]] && echo "ON" || echo "OFF") \
             -DGIT_SHA:STRING=${{ github.sha }}
 
       - name: Build
