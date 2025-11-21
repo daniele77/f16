@@ -1,0 +1,152 @@
+name: Ubuntu CI
+on:
+  pull_request:
+  release:
+    types: [published]
+  push:
+    # tags: [v*.*.*] # Uncomment and specify valid tags if needed, or remove this line
+    branches:
+      - main
+      - develop
+      - macos-github-actions-tests
+
+env:
+  # Conan cache environment variables
+  CONAN_SYSREQUIRES_MODE: enabled
+  CONAN_USER_HOME: "${{ github.workspace }}/conan-cache"
+  CONAN_USER_HOME_SHORT: "${{ github.workspace }}/conan-cache/short"
+
+jobs:
+  Test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:     
+      fail-fast: false
+
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
+        compiler:
+          - clang
+          - gcc
+        generator:
+          - "Ninja Multi-Config"
+        build_type:
+          - Release
+          - Debug
+        developer_mode:
+          - ON
+          - OFF
+        standard:
+            - 17
+            - 20
+            - 23
+            - 26
+
+        include:
+          # Add appropriate variables for gcov version required. This will intentionally break
+          # if you try to use a compiler that does not have gcov set
+          - compiler: gcc
+            gcov_executable: gcov
+          - compiler: clang
+            gcov_executable: "llvm-cov gcov"
+
+          # Set up preferred package generators, for given build configurations
+          - build_type: Release
+            developer_mode: OFF
+            package_generator: TBZ2
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Cache
+        uses: ./.github/actions/setup_cache
+        with:
+          compiler: ${{ matrix.compiler }}
+          build_type: ${{ matrix.build_type }}
+          developer_mode: ${{ matrix.developer_mode }}
+
+      - name: Setup Cpp
+        uses: aminya/setup-cpp@v1
+        with:
+          compiler: ${{ matrix.compiler }}
+          vcvarsall: false
+          cmake: true
+          ninja: true
+          conan: true
+          vcpkg: false
+          ccache: true
+          clangtidy: true
+          cppcheck: true
+          gcovr: true
+          opencppcoverage: true
+
+      - name: Detect default Conan profile
+        run: |
+          conan profile detect  # Create ~/.conan2/profiles/default
+
+      - name: Setup conan
+        run: |
+          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.cppstd={{ matrix.standard }}
+
+      # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
+      # has meaningful results
+      - name: Configure CMake
+        shell: bash
+        run: |
+          cmake \
+            -S . \
+            -B ./build \
+            -G "${{matrix.generator}}" \
+            -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake" \
+            -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
+            -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} \
+            -DENABLE_COVERAGE:BOOL=$([[ "${{matrix.build_type}}" == "Debug" ]] && echo "ON" || echo "OFF") \
+            -DCMAKE_CXX_STANDARD=${{ matrix.standard }} \
+            -DGIT_SHA:STRING=${{ github.sha }}
+
+      - name: Build
+        run: |
+          cmake --build ./build --config ${{matrix.build_type}} --verbose
+
+      - name: Test and coverage
+        working-directory: ./build
+        # Execute tests defined by the CMake configuration.
+        # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+        run: |
+          ctest -C ${{matrix.build_type}}
+          gcovr \
+            -j ${{ env.nproc }} \
+            --delete \
+            --root .. \
+            --print-summary \
+            --xml-pretty \
+            --xml coverage.xml \
+            --gcov-executable '${{ matrix.gcov_executable }}' \
+            --exclude '.*conan.*' \
+            --verbose
+
+      - name: CPack
+        if: matrix.package_generator != ''
+        working-directory: ./build
+        run: |
+          cpack -C ${{matrix.build_type}} -G ${{matrix.package_generator}}
+
+      - name: Publish Tagged Release
+        uses: softprops/action-gh-release@v1
+        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.package_generator != '' }}
+        with:
+          files: |
+            build/*-*${{ matrix.build_type }}*-*.*
+
+      - name: Publish to codecov
+        uses: codecov/codecov-action@v4
+        with:
+          flags: ${{ runner.os }}
+          name: ${{ runner.os }}-coverage
+          files: ./build/coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }} # required
+          verbose: true # optional (default = false)
+          fail_ci_if_error: false # optional (default = false)

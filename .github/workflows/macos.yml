@@ -1,4 +1,4 @@
-name: macos-build
+name: macOS CI
 on:
   pull_request:
   release:
@@ -6,10 +6,18 @@ on:
   push:
     # tags: [v*.*.*] # Uncomment and specify valid tags if needed, or remove this line
     branches:
+      - main
+      - develop
       - macos-github-actions-tests
 
+env:
+  # Conan cache environment variables
+  CONAN_SYSREQUIRES_MODE: enabled
+  CONAN_USER_HOME: "${{ github.workspace }}/conan-cache"
+  CONAN_USER_HOME_SHORT: "${{ github.workspace }}/conan-cache/short"
+
 jobs:
-  build:
+  Test:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -20,8 +28,6 @@ jobs:
             - macos-14
             - macos-15
             - macos-26
-            - macos-14-large
-            - macos-15-large
         build_type:
             - Release
             - Debug
@@ -38,7 +44,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Python (per Conan)
+      - name: Setup Cache
+        uses: ./.github/actions/setup_cache
+        with:
+          compiler: clang
+          build_type: ${{ matrix.build_type }}
+          developer_mode: ${{ matrix.developer_mode }}
+
+      - name: Install Python (for Conan)
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"

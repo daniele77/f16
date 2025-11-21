@@ -1,0 +1,129 @@
+name: Windows CI
+on:
+  pull_request:
+  release:
+    types: [published]
+  push:
+    # tags: [v*.*.*] # Uncomment and specify valid tags if needed, or remove this line
+    branches:
+      - main
+      - develop
+      - macos-github-actions-tests
+
+env:
+  # Conan cache environment variables
+  CONAN_SYSREQUIRES_MODE: enabled
+  CONAN_USER_HOME: "${{ github.workspace }}/conan-cache"
+  CONAN_USER_HOME_SHORT: "${{ github.workspace }}/conan-cache/short"
+
+jobs:
+  Test:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os:
+          - windows-2022
+          - windows-2025
+        compiler:
+          - msvc
+        build_type:
+          - Release
+          - Debug
+        developer_mode:
+          - ON
+          - OFF
+
+        include:
+
+          - os: windows-2022
+            generator: "Visual Studio 17 2022"
+          - os: windows-2025
+            generator: "Visual Studio 18 2026"
+          - compiler: msvc
+            build_type: Release
+            developer_mode: OFF
+            package_generator: ZIP
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Cache
+        uses: ./.github/actions/setup_cache
+        with:
+          compiler: ${{ matrix.compiler }}
+          build_type: ${{ matrix.build_type }}
+          developer_mode: ${{ matrix.developer_mode }}
+
+      - name: Setup Cpp
+        uses: aminya/setup-cpp@v1
+        with:
+          vcvarsall: true
+          cmake: true
+          ninja: true
+          conan: true
+          vcpkg: false
+          ccache: true
+          clangtidy: true
+          cppcheck: true
+          gcovr: true
+          opencppcoverage: true
+
+      - name: Detect default Conan profile
+        run: |
+          conan profile detect  # Create ~/.conan2/profiles/default
+
+      - name: Setup conan
+        run: |
+          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.cppstd=17
+
+
+      # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
+      # has meaningful results
+      - name: Configure CMake
+        shell: bash
+        run: |
+          cmake \
+            -S . \
+            -B ./build \
+            -G "${{matrix.generator}}" \
+            -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake" \
+            -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
+            -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} \
+            -DENABLE_COVERAGE:BOOL=$([[ "${{matrix.build_type}}" == "Debug" ]] && echo "ON" || echo "OFF") \
+            -DGIT_SHA:STRING=${{ github.sha }}
+
+      - name: Build
+        run: |
+          cmake --build ./build --config ${{matrix.build_type}} --verbose
+
+      - name: Test and coverage
+        working-directory: ./build
+        run: |
+          OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- ctest -C ${{matrix.build_type}}
+
+      - name: CPack
+        if: matrix.package_generator != ''
+        working-directory: ./build
+        run: |
+          cpack -C ${{matrix.build_type}} -G ${{matrix.package_generator}}
+
+      - name: Publish Tagged Release
+        uses: softprops/action-gh-release@v1
+        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.package_generator != '' }}
+        with:
+          files: |
+            build/*-*${{ matrix.build_type }}*-*.*
+
+      - name: Publish to codecov
+        uses: codecov/codecov-action@v4
+        with:
+          flags: ${{ runner.os }}
+          name: ${{ runner.os }}-coverage
+          files: ./build/coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }} # required
+          verbose: true # optional (default = false)
+          fail_ci_if_error: false # optional (default = false)
