@@ -20,6 +20,8 @@ jobs:
             - macos-14
             - macos-15
             - macos-26
+            - macos-14-large
+            - macos-15-large
         build_type:
             - Release
             - Debug
