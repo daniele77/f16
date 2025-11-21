@@ -50,9 +50,6 @@ jobs:
       - name: Install developer tools
         run: |
           brew install llvm cppcheck
-      - name: Add llvm to PATH
-        run: |
-          echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
 
       - name: Configure CMake
         run: |
