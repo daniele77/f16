@@ -126,7 +126,11 @@ if(ENABLE_DEVELOPER_MODE)
   message("  ThreadSanitizer supported: ${SUPPORTS_TSAN}")
   message("  MemorySanitizer supported: ${SUPPORTS_MSAN}")
 
-  set(SUPPORTS_ASAN TRUE) # Force ASAN support
+  if(MSVC)
+    set(SUPPORTS_ASAN FALSE)
+  else()
+    set(SUPPORTS_ASAN TRUE) # Force ASAN support
+  endif()
 
   # Enable all supported sanitizers by default
   if (SUPPORTS_UBSAN)
