@@ -112,35 +112,50 @@ if(ENABLE_DEVELOPER_MODE)
   set(ENABLE_CPPCHECK "ENABLE_CPPCHECK")
   set(WARNINGS_AS_ERRORS "WARNINGS_AS_ERRORS")
 
-  # Controlla quali sanitizzatori sono supportati dal compilatore
-  check_sanitizers_support(
-    SUPPORTED_ADDRESS
-    SUPPORTED_UNDEFINED_BEHAVIOR
-    SUPPORTED_LEAK
-    SUPPORTED_THREAD
-    SUPPORTED_MEMORY
-  )
+  # Check individual sanitizer support
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag("-fsanitize=leak" SUPPORTS_LSAN)
+  #check_cxx_compiler_flag("-fsanitize=address" SUPPORTS_ASAN)
+  check_cxx_compiler_flag("-fsanitize=undefined" SUPPORTS_UBSAN)
+  check_cxx_compiler_flag("-fsanitize=thread" SUPPORTS_TSAN)
+  check_cxx_compiler_flag("-fsanitize=memory" SUPPORTS_MSAN)
+  message("Sanitizers support check:")
+  message("  AddressSanitizer supported: ${SUPPORTS_ASAN}")
+  message("  UndefinedBehaviorSanitizer supported: ${SUPPORTS_UBSAN}")
+  message("  LeakSanitizer supported: ${SUPPORTS_LSAN}")
+  message("  ThreadSanitizer supported: ${SUPPORTS_TSAN}")
+  message("  MemorySanitizer supported: ${SUPPORTS_MSAN}")
 
-  # Abilita solo quelli supportati
-  set(ENABLE_SANITIZER_ADDRESS ${SUPPORTED_ADDRESS})
-  set(ENABLE_SANITIZER_UNDEFINED_BEHAVIOR ${SUPPORTED_UNDEFINED_BEHAVIOR})
-  set(ENABLE_SANITIZER_LEAK ${SUPPORTED_LEAK})
-  set(ENABLE_SANITIZER_THREAD ${SUPPORTED_THREAD})
-  set(ENABLE_SANITIZER_MEMORY ${SUPPORTED_MEMORY})
+  set(SUPPORTS_ASAN TRUE) # Force ASAN support
 
-  # Logica ThreadSanitizer: se attivo, disabilita solo quelli che confliggono
-  if(ENABLE_THREAD_SANITIZER)
-    if(ENABLE_SANITIZER_ADDRESS)
-      unset(ENABLE_SANITIZER_ADDRESS)
-    endif()
-    if(ENABLE_SANITIZER_LEAK)
-      unset(ENABLE_SANITIZER_LEAK)
-    endif()
+  # Enable all supported sanitizers by default
+  if (SUPPORTS_UBSAN)
+    set(ENABLE_SANITIZER_UNDEFINED_BEHAVIOR "ENABLE_SANITIZER_UNDEFINED_BEHAVIOR")
+  endif()
+  if (SUPPORTS_MSAN)
+    set(ENABLE_SANITIZER_MEMORY "ENABLE_SANITIZER_MEMORY")
+  endif()
+  if (SUPPORTS_TSAN AND ENABLE_THREAD_SANITIZER)
+    set(ENABLE_SANITIZER_THREAD "ENABLE_SANITIZER_THREAD")
   else()
-    unset(ENABLE_SANITIZER_THREAD)
+    # AddressSanitizer and LeakSanitizer conflict with ThreadSanitizer
+    if (SUPPORTS_LSAN) 
+      set(ENABLE_SANITIZER_LEAK "ENABLE_SANITIZER_LEAK")
+    endif()
+    if (SUPPORTS_ASAN)
+      set(ENABLE_SANITIZER_ADDRESS "ENABLE_SANITIZER_ADDRESS")
+    endif()
   endif()
 
-  message("Developer mode enabled: CLANG_TIDY=${ENABLE_CLANG_TIDY} CPPCHECK=${ENABLE_CPPCHECK} WARNINGS_AS_ERRORS=${WARNINGS_AS_ERRORS} ASAN=${ENABLE_SANITIZER_ADDRESS} UBSAN=${ENABLE_SANITIZER_UNDEFINED_BEHAVIOR} LSan=${ENABLE_SANITIZER_LEAK} TSan=${ENABLE_SANITIZER_THREAD} MSan=${ENABLE_SANITIZER_MEMORY}")
+  message("Developer mode enabled:")
+  message("  CLANG_TIDY=${ENABLE_CLANG_TIDY}")
+  message("  CPPCHECK=${ENABLE_CPPCHECK}")
+  message("  WARNINGS_AS_ERRORS=${WARNINGS_AS_ERRORS}")
+  message("  ASAN=${ENABLE_SANITIZER_ADDRESS}")
+  message("  UBSAN=${ENABLE_SANITIZER_UNDEFINED_BEHAVIOR}")
+  message("  LSan=${ENABLE_SANITIZER_LEAK}")
+  message("  TSan=${ENABLE_SANITIZER_THREAD}")
+  message("  MSan=${ENABLE_SANITIZER_MEMORY}")
 
 endif()
 
