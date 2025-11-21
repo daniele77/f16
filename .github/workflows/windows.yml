@@ -29,6 +29,8 @@ jobs:
           - windows-2025
         compiler:
           - msvc
+        generator:
+          - "Visual Studio 17 2022"
         build_type:
           - Release
           - Debug
@@ -37,11 +39,6 @@ jobs:
           - OFF
 
         include:
-
-          - os: windows-2022
-            generator: "Visual Studio 17 2022"
-          - os: windows-2025
-            generator: "Visual Studio 18 2026"
           - compiler: msvc
             build_type: Release
             developer_mode: OFF

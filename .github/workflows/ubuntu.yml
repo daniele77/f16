@@ -89,7 +89,7 @@ jobs:
 
       - name: Setup conan
         run: |
-          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.cppstd={{ matrix.standard }}
+          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.cppstd=${{ matrix.standard }}
 
       # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
       # has meaningful results
