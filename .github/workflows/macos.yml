@@ -10,12 +10,16 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
 
       matrix:
+        os:
+            - macos-14
+            - macos-15
+            - macos-26
         build_type:
             - Release
             - Debug
