@@ -1,18 +1,12 @@
-cmake_minimum_required(VERSION 3.7...3.28)
+cmake_minimum_required(VERSION 3.8...3.28)
 
 if(${CMAKE_VERSION} VERSION_LESS 3.12)
   cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 endif()
 
-# Not ideal to use this global variable, but necessary to make sure
-# that tooling and projects use the same version
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# strongly encouraged to enable this globally to avoid conflicts between
-# -Wpedantic being enabled and -std=c++20 and -std=gnu++20 for example
-# when compiling with PCH enabled
-set(CMAKE_CXX_EXTENSIONS OFF)
+# Include the module to configure the C++ standard
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(SetCppStandard)
 
 include(FetchContent)
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
