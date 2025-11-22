@@ -126,6 +126,7 @@ if(ENABLE_DEVELOPER_MODE)
   message("  ThreadSanitizer supported: ${SUPPORTS_TSAN}")
   message("  MemorySanitizer supported: ${SUPPORTS_MSAN}")
 
+  # The check above for ASAN sometimes gives false positives on MSVC
   if(MSVC)
     set(SUPPORTS_ASAN FALSE)
   else()
