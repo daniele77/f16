@@ -47,8 +47,12 @@ jobs:
         include:
           # Add appropriate variables for gcov version required. This will intentionally break
           # if you try to use a compiler that does not have gcov set
-          - compiler: gcc
-            gcov_executable: gcov-13
+          - os: ubuntu-22.04
+            compiler: gcc
+            gcov_executable: gcov-12
+          - os: ubuntu-24.04
+            compiler: gcc
+            gcov_executable: gcov-14
           - compiler: clang
             gcov_executable: "llvm-cov gcov"
 
