@@ -230,7 +230,7 @@ int main(int argc, const char** argv)
     }
     else
     {
-      fmt::print(app.help());
+      fmt::print("{}", app.help());
       return 1;
     }
 
