@@ -20,7 +20,7 @@ runs:
         # Cache Conan packages
         path: |
           ${{ env.CONAN_USER_HOME }}
-          ~/.cache/pip       # cache pip solo se necessario
-        key: ${{ runner.os }}-${{ inputs.compiler }}-${{ inputs.build_type }}-${{ hashFiles('./conanfile.txt')}}-${{ inputs.developer_mode }}
+          ~/.cache/pip
+        key: ${{ runner.os }}-${{ inputs.compiler }}-${{ inputs.build_type }}-${{ hashFiles('conanfile.txt') }}-${{ inputs.developer_mode }}
         restore-keys: |
-          ${{ runner.os }}-${{ inputs.compiler }}-${{ inputs.build_type }}-${{ hashFiles('./conanfile.txt') }}
+          ${{ runner.os }}-${{ inputs.compiler }}-${{ inputs.build_type }}-
