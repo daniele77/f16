@@ -14,13 +14,26 @@ inputs:
 runs:
   using: "composite"
   steps:
+    # STEP 1: Robust hash calculation
+    # We use Python to read the file and calculate the SHA256.
+    # This avoids the "Fail to hash files" error because the shell waits
+    # for the command to finish before proceeding.
+    - name: Calculate Conan Hash
+      shell: bash
+      run: |
+        python3 -c "import hashlib; print('CONAN_HASH=' + hashlib.sha256(open('conanfile.txt','rb').read()).hexdigest())" >> $GITHUB_ENV
+
+    # STEP 2: Cache using the calculated hash
     - name: Cache Conan and pip
       uses: actions/cache@v4
       with:
-        # Cache Conan packages
         path: |
           ${{ env.CONAN_USER_HOME }}
           ~/.cache/pip
-        key: ${{ runner.os }}-${{ inputs.compiler }}-${{ inputs.build_type }}-${{ hashFiles('conanfile.txt') }}-${{ inputs.developer_mode }}
+        # Here we use ${{ env.CONAN_HASH }} instead of calling the hashFiles function
+        key: ${{ runner.os }}-${{ inputs.compiler }}-${{ inputs.build_type }}-${{ env.CONAN_HASH }}-${{ inputs.developer_mode }}
+        
+        # Generic restore keys: if the hash changes, still download the most 
+        # recent cache for this configuration to save time.
         restore-keys: |
           ${{ runner.os }}-${{ inputs.compiler }}-${{ inputs.build_type }}-
