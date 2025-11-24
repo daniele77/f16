@@ -79,19 +79,23 @@ jobs:
         run: |
           echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
 
-      - name: Configure CMake
-        run: |
-          cmake \
-            -S . \
-            -B ./build \
-            -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake" \
-            -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} \
-            -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
-            -DENABLE_COVERAGE:BOOL=OFF \
-            -DDISABLE_STACK_PROTECTION:BOOL=ON \
-            -DDISABLE_ELF_PROTECTION:BOOL=ON \
-            -DCMAKE_CXX_STANDARD=${{ matrix.standard }} \
-            -DGIT_SHA:STRING=${{ github.sha }}
+      - name: Configure CMake (with Retry for External Downloads)
+        uses: nick-invision/retry@v3
+        with:
+          max_attempts: 3
+          delay_seconds: 10
+          command: |
+            cmake \
+              -S . \
+              -B ./build \
+              -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake" \
+              -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} \
+              -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
+              -DENABLE_COVERAGE:BOOL=OFF \
+              -DDISABLE_STACK_PROTECTION:BOOL=ON \
+              -DDISABLE_ELF_PROTECTION:BOOL=ON \
+              -DCMAKE_CXX_STANDARD=${{ matrix.standard }} \
+              -DGIT_SHA:STRING=${{ github.sha }}
   
       - name: Build
         run: |
