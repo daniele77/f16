@@ -48,7 +48,7 @@ jobs:
           # Add appropriate variables for gcov version required. This will intentionally break
           # if you try to use a compiler that does not have gcov set
           - compiler: gcc
-            gcov_executable: gcov
+            gcov_executable: gcov-13
           - compiler: clang
             gcov_executable: "llvm-cov gcov"
 

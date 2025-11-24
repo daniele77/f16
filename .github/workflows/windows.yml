@@ -86,6 +86,7 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 10
           timeout_minutes: 2
+          shell: bash
           command: |
             cmake \
               -S . \
