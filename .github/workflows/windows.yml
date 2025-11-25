@@ -40,7 +40,6 @@ jobs:
           - 17
           - 20
           - 23
-          - 26
 
         include:
           - compiler: msvc
