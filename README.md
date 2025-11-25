@@ -1,6 +1,8 @@
 # f16
 
-[![ci](https://github.com/daniele77/f16/actions/workflows/ci.yml/badge.svg)](https://github.com/daniele77/f16/actions/workflows/ci.yml)
+[![ci linux](https://github.com/daniele77/f16/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/daniele77/f16/actions/workflows/ubuntu.yml)
+[![ci win](https://github.com/daniele77/f16/actions/workflows/windows.yml/badge.svg)](https://github.com/daniele77/f16/actions/workflows/windows.yml)
+[![ci macos](https://github.com/daniele77/f16/actions/workflows/macos.yml/badge.svg)](https://github.com/daniele77/f16/actions/workflows/macos.yml)
 [![codecov](https://codecov.io/gh/daniele77/f16/branch/main/graph/badge.svg)](https://codecov.io/gh/daniele77/f16)
 [![CodeQL](https://github.com/daniele77/f16/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/daniele77/f16/actions/workflows/codeql-analysis.yml)
 

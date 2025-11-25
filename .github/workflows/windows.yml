@@ -36,6 +36,11 @@ jobs:
         developer_mode:
           - ON
           - OFF
+        standard:
+          - 17
+          - 20
+          - 23
+          - 26
 
         include:
           - compiler: msvc
@@ -74,7 +79,7 @@ jobs:
 
       - name: Setup conan
         run: |
-          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.cppstd=17
+          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.cppstd=${{ matrix.standard }}
 
 
       # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
@@ -95,6 +100,7 @@ jobs:
               -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
               -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} \
               -DENABLE_COVERAGE:BOOL=$([[ "${{matrix.build_type}}" == "Debug" ]] && echo "ON" || echo "OFF") \
+              -DCMAKE_CXX_STANDARD=${{ matrix.standard }} \
               -DGIT_SHA:STRING=${{ github.sha }}
 
       - name: Build
