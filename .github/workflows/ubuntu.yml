@@ -97,7 +97,12 @@ jobs:
 
       - name: Setup conan
         run: |
-          conan install . -of build --settings=build_type=${{matrix.build_type}} --build missing -s compiler.cppstd=${{ matrix.standard }}
+          conan install . \
+            -of build \
+            --build missing \
+            -s build_type=${{ matrix.build_type }} \
+            -s compiler.cppstd=${{ matrix.standard }} \
+            -o fmt/*:header_only=True
 
       # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
       # has meaningful results
