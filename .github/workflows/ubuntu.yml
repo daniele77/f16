@@ -101,8 +101,7 @@ jobs:
             -of build \
             --build missing \
             -s build_type=${{ matrix.build_type }} \
-            -s compiler.cppstd=${{ matrix.standard }} \
-            -o fmt/*:header_only=True
+            -s compiler.cppstd=${{ matrix.standard }}
 
       # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
       # has meaningful results
