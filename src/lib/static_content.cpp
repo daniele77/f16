@@ -8,7 +8,11 @@
 #include "reply.hpp"
 #include "mime_types.hpp"
 #include "http_request.hpp"
+#include "string.hpp"
 #include <fstream>
+#include <filesystem>
+
+#include <iostream>
 
 namespace fs = std::filesystem;
 
@@ -19,25 +23,26 @@ static_content::static_content(std::string _doc_root)
 {
 }
 
-bool static_content::serve_if_match(const std::string& location, const std::string& _request_path, const http_request& req, reply& rep) const
+bool static_content::serve_if_match(const std::string& location, const std::string& request_path, const http_request& req, reply& rep) const
 {
-  if (_request_path.rfind(location, 0) != 0) // does not starts with
+  auto res_query = split_string(request_path);
+  const auto& resource = res_query.first;
+
+  if (resource.rfind(location, 0) != 0) // does not starts with
     return false;
 
-  const std::string resource_path = _request_path.substr(location.size());
+  fs::path resource_path{resource.substr(location.size())};
+  resource_path = doc_root / resource_path.relative_path();
 
-  fs::path request_path{resource_path};
-  request_path = doc_root / request_path.relative_path();
-
-  if (fs::is_directory(request_path))
+  if (fs::is_directory(resource_path))
   {
     // try adding index.html
-    const fs::path index_path = request_path / "index.html";
+    const fs::path index_path = resource_path / "index.html";
 
     if (fs::exists(index_path))
       serve_file(index_path, rep);
     else if (!req.uri.empty() && req.uri.back() == '/')
-      list_directory(request_path, rep);
+      list_directory(resource_path, rep);
     else
     {
       // directory w/o trailing slash
@@ -49,7 +54,7 @@ bool static_content::serve_if_match(const std::string& location, const std::stri
   else
   {
     // Open the file to send back.
-    serve_file(request_path, rep);
+    serve_file(resource_path, rep);
   }
 
   if (req.method == "HEAD")
