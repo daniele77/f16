@@ -1,0 +1,256 @@
+#!/usr/bin/env python3
+
+import argparse
+import http.client
+import json
+import socket
+import subprocess
+import time
+import unittest
+from typing import Optional, Tuple
+
+
+def _wait_until_ready(host: str, port: int, timeout_seconds: float = 8.0) -> None:
+    deadline = time.time() + timeout_seconds
+    while time.time() < deadline:
+        try:
+            conn = http.client.HTTPConnection(host, port, timeout=1)
+            conn.request("GET", "/health")
+            response = conn.getresponse()
+            body = response.read().decode("utf-8")
+            conn.close()
+            if response.status == 200 and "ok" in body:
+                return
+        except OSError:
+            time.sleep(0.1)
+        except Exception:
+            time.sleep(0.1)
+    raise TimeoutError("Server did not become ready in time")
+
+
+def _reserve_free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("127.0.0.1", 0))
+        return int(s.getsockname()[1])
+
+
+class BlackBoxHttpServerTests(unittest.TestCase):
+    app_path: str = ""
+    host: str = "127.0.0.1"
+    port: int = 18080
+    doc_root: str = "."
+    process: Optional[subprocess.Popen] = None
+
+    @classmethod
+    def configure(cls, app_path: str, host: str, port: int, doc_root: str) -> None:
+        cls.app_path = app_path
+        cls.host = host
+        cls.port = port
+        cls.doc_root = doc_root
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.process = subprocess.Popen(
+            [
+                cls.app_path,
+                "--host",
+                cls.host,
+                "--port",
+                str(cls.port),
+                "--doc-root",
+                cls.doc_root,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        _wait_until_ready(cls.host, cls.port)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        if cls.process is None:
+            return
+
+        if cls.process.poll() is None:
+            cls.process.terminate()
+            try:
+                cls.process.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                cls.process.kill()
+                cls.process.wait(timeout=3)
+
+    def _request(self, method: str, path: str, body: Optional[str] = None, headers=None) -> Tuple[int, dict, str]:
+        headers = headers or {}
+        conn = http.client.HTTPConnection(self.host, self.port, timeout=3)
+        conn.request(method, path, body=body, headers=headers)
+        response = conn.getresponse()
+        payload = response.read().decode("utf-8")
+        response_headers = {k.lower(): v for k, v in response.getheaders()}
+        status = response.status
+        conn.close()
+        return status, response_headers, payload
+
+    def _raw_request(self, request_bytes: bytes) -> bytes:
+        with socket.create_connection((self.host, self.port), timeout=3) as sock:
+            sock.sendall(request_bytes)
+            chunks = []
+            while True:
+                part = sock.recv(4096)
+                if not part:
+                    break
+                chunks.append(part)
+        return b"".join(chunks)
+
+    def test_health_endpoint_json(self) -> None:
+        """Test that the /health endpoint returns the expected JSON response with correct headers."""
+        status, headers, body = self._request("GET", "/health")
+        self.assertEqual(status, 200)
+        self.assertEqual(headers.get("content-type"), "application/json")
+        self.assertEqual(json.loads(body), {"status": "ok"})
+
+    def test_health_endpoint_json_trailing_slash(self) -> None:
+        """Test that the /health/ endpoint (with trailing slash) returns the expected JSON response with correct headers."""
+        status, headers, body = self._request("GET", "/health/")
+        self.assertEqual(status, 200)
+        self.assertEqual(headers.get("content-type"), "application/json")
+        self.assertEqual(json.loads(body), {"status": "ok"})
+
+    def test_dynamic_path_parameter(self) -> None:
+        """Test that the /hello/{name} endpoint correctly extracts the name parameter and returns the expected greeting."""
+        status, _, body = self._request("GET", "/hello/Daniele")
+        self.assertEqual(status, 200)
+        self.assertEqual(body, "Hello Daniele!")
+
+    def test_query_parameter_sum(self) -> None:
+        """Test that the /sum endpoint correctly parses query parameters a and b, computes their sum, and returns the expected JSON response with correct headers."""
+        status, headers, body = self._request("GET", "/sum?a=4&b=5")
+        self.assertEqual(status, 200)
+        self.assertEqual(headers.get("content-type"), "application/json")
+        self.assertEqual(json.loads(body), {"sum": 9})
+
+    def test_query_parameter_validation(self) -> None:
+        """Test that the /sum endpoint returns a 400 Bad Request status and an appropriate error message when the query parameters a and b are not valid integers."""
+        status, _, body = self._request("GET", "/sum?a=foo&b=5")
+        self.assertEqual(status, 400)
+        self.assertEqual(body, "invalid integers")
+
+    def test_post_and_put_routes(self) -> None:
+        """Test that the /items/{id} endpoint correctly handles POST and PUT requests, extracting the id parameter and returning the expected JSON response with correct headers."""
+        post_status, post_headers, post_body = self._request("POST", "/items/42")
+        self.assertEqual(post_status, 200)
+        self.assertEqual(post_headers.get("content-type"), "application/json")
+        self.assertEqual(json.loads(post_body), {"method": "POST", "id": "42"})
+
+        put_status, put_headers, put_body = self._request("PUT", "/items/42")
+        self.assertEqual(put_status, 200)
+        self.assertEqual(put_headers.get("content-type"), "application/json")
+        self.assertEqual(json.loads(put_body), {"method": "PUT", "id": "42"})
+
+    def test_post_with_json_body(self) -> None:
+        """Test that a POST request with a JSON body is properly accepted and the server returns the expected response."""
+        # TODO: Implement /api/user/{id} endpoint to handle POST requests with JSON body
+        # json_payload = json.dumps({"name": "John", "email": "john@example.com"})
+        # status, headers, body = self._request(
+        #     "POST",
+        #     "/api/user/123",
+        #     body=json_payload,
+        #     headers={"Content-Type": "application/json"}
+        # )
+        # self.assertEqual(status, 200)
+        # self.assertEqual(headers.get("content-type"), "application/json")
+        # response_data = json.loads(body)
+        # self.assertEqual(response_data["action"], "user_created")
+        # self.assertEqual(response_data["id"], "123")
+        # self.assertEqual(response_data.get("name"), "John")
+        # self.assertEqual(response_data.get("email"), "john@example.com")
+        self.skipTest("Endpoint /api/user/{id} not yet implemented")
+
+    def test_header_access(self) -> None:
+        """Test that the /headers/user-agent endpoint correctly reads the User-Agent header from the request and returns it in the response body."""
+        status, _, body = self._request("GET", "/headers/user-agent", headers={"User-Agent": "blackbox-suite/1.0"})
+        self.assertEqual(status, 200)
+        self.assertEqual(body, "blackbox-suite/1.0")
+
+    def test_static_content_and_head(self) -> None:
+        """Test that static files are served correctly with the expected content and headers, and that HEAD requests return the correct headers without a body."""
+        get_status, get_headers, get_body = self._request("GET", "/static/index.html")
+        self.assertEqual(get_status, 200)
+        self.assertEqual(get_headers.get("content-type"), "text/html")
+        self.assertIn("f16 blackbox", get_body)
+
+        head_status, head_headers, head_body = self._request("HEAD", "/static/index.html")
+        self.assertEqual(head_status, 200)
+        self.assertEqual(head_headers.get("content-type"), "text/html")
+        self.assertEqual(head_body, "")
+
+    def test_directory_redirect(self) -> None:
+        """Test that requests to a directory path without a trailing slash are redirected to the same path with a trailing slash, and that the Location header is set correctly."""
+        status, headers, _ = self._request("GET", "/static")
+        self.assertEqual(status, 301)
+        self.assertEqual(headers.get("location"), "/static/")
+
+    def test_directory_redirect_preserves_query(self) -> None:
+        """Test that requests to a directory path without a trailing slash that include query parameters are redirected to the same path with a trailing slash, and that the Location header preserves the query parameters."""
+        status, headers, _ = self._request("GET", "/static?source=bb")
+        self.assertEqual(status, 301)
+        self.assertEqual(headers.get("location"), "/static/?source=bb")
+
+    def test_directory_redirect_head(self) -> None:
+        """Test that HEAD requests to a directory path without a trailing slash are redirected to the same path with a trailing slash, and that the Location header is set correctly, while the body is empty."""
+        status, headers, body = self._request("HEAD", "/static")
+        self.assertEqual(status, 301)
+        self.assertEqual(headers.get("location"), "/static/")
+        self.assertEqual(body, "")
+
+    def test_directory_redirect_head_preserves_query(self) -> None:
+        """Test that HEAD requests to a directory path without a trailing slash that include query parameters are redirected to the same path with a trailing slash, and that the Location header preserves the query parameters, while the body is empty."""
+        status, headers, body = self._request("HEAD", "/static?source=bb")
+        self.assertEqual(status, 301)
+        self.assertEqual(headers.get("location"), "/static/?source=bb")
+        self.assertEqual(body, "")
+
+    def test_not_found_dynamic_route(self) -> None:
+        """Test that requests to non-existent dynamic routes return a 404 Not Found status."""
+        status, _, _ = self._request("GET", "/nonexistent/route")
+        self.assertEqual(status, 404)
+
+    def test_not_found_static_file(self) -> None:
+        """Test that requests to non-existent static files return a 404 Not Found status."""
+        status, _, _ = self._request("GET", "/static/missing_file.txt")
+        self.assertEqual(status, 404)
+
+    def test_bad_request_for_parent_path(self) -> None:
+        """Test that requests containing parent path segments (e.g., /../secret) are rejected with a 400 Bad Request status to prevent directory traversal attacks."""
+        response = self._raw_request(
+            b"GET /../secret HTTP/1.0\r\n"
+            b"Host: localhost\r\n"
+            b"\r\n"
+        )
+        self.assertIn(b"400 Bad Request", response)
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Run black-box tests for f16 sample app")
+    parser.add_argument("--app", required=True, help="Path to the blackbox sample executable")
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=18080)
+    parser.add_argument("--doc-root", required=True)
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = _parse_args()
+    port = args.port if args.port != 0 else _reserve_free_port()
+    BlackBoxHttpServerTests.configure(
+        app_path=args.app,
+        host=args.host,
+        port=port,
+        doc_root=args.doc_root,
+    )
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(BlackBoxHttpServerTests)
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    return 0 if result.wasSuccessful() else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -15,9 +15,9 @@ In simple mode, `f16-server` serves static files from a specified root directory
 f16 simple <root_doc> [--bind=<address> --port=<port>]
 ```
 
-- <root_doc>: The root directory to serve files from.
-- --bind=<address>: The binding address (default: 0.0.0.0).
-- --port=<port>: The port to listen on (default: 80).
+- `<root_doc>`: The root directory to serve files from.
+- `--bind=<address>`: The binding address (default: `0.0.0.0`).
+- `--port=<port>`: The port to listen on (default: `80`).
 
 ### Advanced Mode
 In advanced mode, `f16-server` loads a JSON configuration file to define multiple servers with custom settings.
@@ -26,7 +26,7 @@ In advanced mode, `f16-server` loads a JSON configuration file to define multipl
 f16 advanced <cfg_file>
 ```
 
-- <cfg_file>: The path to the JSON configuration file.
+- `<cfg_file>`: The path to the JSON configuration file.
 
 ### Example JSON configuration:
 
@@ -86,10 +86,10 @@ f16 advanced <cfg_file>
 
 ### Configuration options:
 
-- listen_address: The binding address.
-- listen_port: The listening port.
-- ssl: SSL/TLS configuration.
-- locations: A list of location-root mappings.
+- `listen_address`: The binding address.
+- `listen_port`: The listening port.
+- `ssl`: SSL/TLS configuration.
+- `locations`: A list of location-root mappings.
 
 ### Command-line options
 

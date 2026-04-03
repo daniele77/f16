@@ -133,11 +133,39 @@ For Visual Studio, give the build configuration (Release, RelWithDeb, Debug, etc
 
 ### Running the tests
 
-You can use the `ctest` command run the tests.
+You can run tests with `ctest`.
 
 ```shell
 cd ./build
 ctest -C Debug
+cd ../
+```
+
+### Running black-box tests (Python)
+
+The project includes a black-box test suite in `tests/blackbox` that validates a full HTTP app built with the library (`example-blackbox_app`).
+
+Requirements:
+- Python 3
+- CMake build with tests enabled (`ENABLE_TESTING=ON`, default)
+
+Run only the black-box suite with CTest:
+
+```shell
+cd ./build
+ctest -R blackbox --output-on-failure
+cd ../
+```
+
+Notes:
+- The suite starts/stops `example-blackbox_app` automatically.
+- It verifies dynamic routes, static content, status codes, `HEAD`, and directory redirects (including query-string preservation).
+
+To run all available tests from the same build directory, use:
+
+```shell
+cd ./build
+ctest --output-on-failure
 cd ../
 ```
 

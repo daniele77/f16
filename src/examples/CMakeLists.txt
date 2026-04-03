@@ -3,6 +3,7 @@ set(EXAMPLES
   https_static
   rest
   complete
+  blackbox_app
 )
 
 foreach(example ${EXAMPLES})

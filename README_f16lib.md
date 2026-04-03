@@ -2,128 +2,58 @@
 
 ## About f16lib
 
-f16lib is a versatile and lightweight C++17 library for building efficient HTTP and HTTPS servers, ideal for REST APIs and custom web applications.
-It provides a simple and intuitive API for defining routes, handling requests, and serving static or dynamic content.
+`f16lib` is a lightweight C++17 library to build HTTP/HTTPS servers.
+It provides routing primitives for dynamic handlers and static content serving.
 
-### Basic Server:
+## Key concepts
 
-This example demonstrates a basic HTTP server that listens on port 7000 and serves the content of the current directory:
+- `http_server` / `https_server`: server entry points.
+- `path_router`: route matcher by method and path.
+- `dynamic_content`: `GET`, `POST`, `PUT` handlers implemented as lambdas.
+- `static_content`: filesystem-backed static resources.
+- `request`: path parameters (`resource`) and query parameters (`query`).
 
-```c++
-#include "f16asio.hpp"
-#include <iostream>
-#include "static_content.hpp"
+## Example applications
 
-int main() {
-  try {
-    asio::io_context ioc;
+The repository includes ready-to-run examples in `src/examples`:
 
-    using namespace f16::http::server;
-    http_server app(ioc);
-    app.add("/", static_content("."));
-    app.listen("7000", "localhost");
+- `static.cpp`: static content server.
+- `https_static.cpp`: HTTPS static server.
+- `rest.cpp`: dynamic REST-style routes.
+- `complete.cpp`: mixed static + dynamic server.
+- `blackbox_app.cpp`: complete sample used by black-box tests.
 
-    ioc.run();
-  } catch (const std::exception& e) {
-    std::cerr << "Error: " << e.what() << std::endl;
-    return 1;
-  }
+Each example is built as an executable named `example-<name>` (for example `example-rest`).
 
-  return 0;
-}
+## Build and run an example
+
+```shell
+cmake -S . -B ./build_conan
+cmake --build ./build_conan --target example-rest
+./build_conan/src/examples/example-rest
 ```
 
-### Handling Requests:
+## Black-box validation sample
 
-You can define routes that handle specific HTTP methods and extract data from requests. Here's an example that serves different content based on the requested path:
+`src/examples/blackbox_app.cpp` is a full sample that combines:
 
-```c++
-#include "f16asio.hpp"
-#include <iostream>
-#include "http_server.hpp"
-#include "dynamic_content.hpp"
+- dynamic routes,
+- static content under `/static`,
+- query and path parameter parsing,
+- custom statuses/content types,
+- header inspection.
 
-int main() {
-  try {
-    asio::io_context ioc;
+This sample is validated end-to-end by Python tests in `tests/blackbox/test_blackbox.py`.
 
-    using namespace f16::http::server;
-    http_server server(ioc);
+Run only the black-box suite:
 
-    // GET /version
-    server.add("/version", get([](const request& /*req*/, std::ostream& os) {
-      os << "1.0.0\n";
-    }));
-
-    // GET /hello
-    server.add("/hello", get([](const request& /*req*/, std::ostream& os) {
-      os << "Hello, world!\n";
-    }));
-
-    server.listen("7000", "0.0.0.0");
-
-    ioc.run();
-  } catch (const std::exception& e) {
-    std::cerr << "Error: " << e.what() << std::endl;
-    return 1;
-  }
-
-  return 0;
-}
+```shell
+cd ./build_conan
+ctest -R blackbox --output-on-failure
+cd ../
 ```
 
-In this example, the `/version` route returns the server version, and the `/hello` route returns a simple greeting message.
+## Related docs
 
-### Extracting Query Parameters and Path Variables:
-
-f16 allows you to extract query parameters and path variables from requests. Here's an example that greets a user by name and country:
-
-```c++
-#include "f16asio.hpp"
-#include <iostream>
-#include "http_server.hpp"
-
-int main() {
-  try {
-    asio::io_context ioc;
-
-    using namespace f16::http::server;
-    http_server server(ioc);
-
-    // GET /print/?name=<name>&country=<country>
-    server.add("/print", get([](const request& req, std::ostream& os) {
-      os << "Hi, " << req.query("name") << " from " << req.query("country") << "!\n";
-    }));
-
-    server.listen("7000", "0.0.0.0");
-
-    ioc.run();
-  } catch (const std::exception& e) {
-    std::cerr << "Error: " << e.what() << std::endl;
-    return 1;
-  }
-
-  return 0;
-}
-```
-
-Similarly, you can define routes that capture path variables:
-
-```c++
-#include "f16asio.hpp"
-#include <iostream>
-#include "http_server.hpp"
-
-int main() {
-  try {
-    asio::io_context ioc;
-
-    using namespace f16::http::server;
-    http_server server(ioc);
-
-    // GET /greet/<name>/<country>
-    server.add("/greet", get({"name", "country"}, [](const request& req, std::ostream& os) {
-        os << "Hi, " << req.resource("name") << " from " << req.resource("country") << "!\n";
-      })
-    );    
-```
+- Main project guide: [README.md](README.md)
+- Server CLI guide: [README_f16server.md](README_f16server.md)

@@ -12,8 +12,6 @@
 #include <fstream>
 #include <filesystem>
 
-#include <iostream>
-
 namespace fs = std::filesystem;
 
 namespace f16::http::server {
@@ -27,6 +25,7 @@ bool static_content::serve_if_match(const std::string& location, const std::stri
 {
   auto res_query = split_string(request_path);
   const auto& resource = res_query.first;
+  const auto& query = res_query.second;
 
   if (resource.rfind(location, 0) != 0) // does not starts with
     return false;
@@ -36,19 +35,27 @@ bool static_content::serve_if_match(const std::string& location, const std::stri
 
   if (fs::is_directory(resource_path))
   {
-    // try adding index.html
-    const fs::path index_path = resource_path / "index.html";
-
-    if (fs::exists(index_path))
-      serve_file(index_path, rep);
-    else if (!req.uri.empty() && req.uri.back() == '/')
-      list_directory(resource_path, rep);
-    else
+    if (!req.uri.empty() && req.uri.back() != '/')
     {
       // directory w/o trailing slash
       rep = reply::stock_reply(reply::moved_permanently);
-      const header h{"Location", req.uri + '/'};
+
+      std::string redirect_target = resource + '/';
+      if (!query.empty())
+        redirect_target += '?' + query;
+
+      const header h{"Location", redirect_target};
       rep.headers.push_back(h);
+    }
+    else
+    {
+      // try adding index.html
+      const fs::path index_path = resource_path / "index.html";
+
+      if (fs::exists(index_path))
+        serve_file(index_path, rep);
+      else
+        list_directory(resource_path, rep);
     }
   }
   else

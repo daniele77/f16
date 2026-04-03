@@ -92,14 +92,15 @@ option(ENABLE_TESTING "Enable the tests" ON)
 if(ENABLE_TESTING)
   enable_testing()
   message("Building Tests. testing")
-  add_subdirectory(test)
+  add_subdirectory(tests/unit)
+  add_subdirectory(tests/blackbox)
 endif()
 
 option(ENABLE_FUZZING "Enable the fuzz tests" OFF)
 
 if(ENABLE_FUZZING)
   message("Building Fuzz Tests, using fuzzing sanitizer https://www.llvm.org/docs/LibFuzzer.html")
-  add_subdirectory(fuzz_test)
+  add_subdirectory(tests/fuzz)
 endif()
 
 option(ENABLE_DEVELOPER_MODE "Enable sanitizers, static analyzers and warning as errors" OFF)
