@@ -12,6 +12,9 @@ namespace f16::http::server {
 
 struct header
 {
+  header() = default;
+  header(const std::string& n, const std::string& v)
+  : name(n), value(v) {}
   std::string name;
   std::string value;
 };
