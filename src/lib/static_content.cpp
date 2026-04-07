@@ -44,8 +44,7 @@ bool static_content::serve_if_match(const std::string& location, const std::stri
       if (!query.empty())
         redirect_target += '?' + query;
 
-      const header h{"Location", redirect_target};
-      rep.headers.push_back(h);
+      rep.add_header("Location", redirect_target);
     }
     else
     {
@@ -65,7 +64,7 @@ bool static_content::serve_if_match(const std::string& location, const std::stri
   }
 
   if (req.method == "HEAD")
-    rep.content.clear();
+    rep.clear_content();
 
   return true;
 }
@@ -74,29 +73,34 @@ void static_content::list_directory(const fs::path& full_path, reply& rep)
 {
   try
   {
-    rep.status = reply::ok;
     std::ostringstream ss;
 
-    ss << 
+    ss <<
       "<!DOCTYPE html>\r\n"
-      "<html>\r\n"
-      "<head><title>Directory listing</title></head>\r\n"
-      "<body>\r\n";
+      "<html lang=\"en\">\r\n"
+      "<head>\r\n"
+      "<meta charset=\"utf-8\">\r\n"
+      "<title>Directory listing</title>\r\n"
+      "</head>\r\n"
+      "<body>\r\n"
+      "<h1>Directory listing</h1>\r\n"
+      "<hr>\r\n"
+      "<ul>\r\n";
     for (const auto& entry : fs::directory_iterator(full_path))
     {
-      if (!entry.is_regular_file()) continue;
-      const auto name = entry.path().filename().string();
-      ss << "<a href=\"" << name << "\">" << name << "</a><br>\r\n";
+      if (!entry.is_regular_file() && !entry.is_directory()) continue;
+      auto name = entry.path().filename().string();
+      if (entry.is_directory())
+        name += '/';
+      ss << "<li><a href=\"" << name << "\">" << name << "</a></li>\r\n";
     }
     ss <<
+      "</ul>\r\n"
+      "<hr>\r\n"
       "</body>\r\n"
       "</html> \r\n";
 
-    rep.content = ss.str();
-    rep.headers = {
-      {"Content-Length", std::to_string(rep.content.size())},
-      {"Content-Type", mime_types::extension_to_type(".html")}
-    };
+    rep = reply(ss.str(), reply::ok, mime_types::extension_to_type(".html"));
   }
   catch (const std::exception&)
   {
@@ -126,14 +130,11 @@ void static_content::serve_file(const fs::path& full_path, reply& rep)
   const auto extension = full_path.extension();
 
   // Fill out the reply to be sent to the client.
-  rep.status = reply::ok;
+  std::string content;
   std::array<char, 512> buf; // NOLINT
   while (is.read(buf.data(), buf.size()).gcount() > 0)
-    rep.content.append(buf.data(), static_cast<long unsigned int>(is.gcount()));
-  rep.headers = {
-    {"Content-Length", std::to_string(rep.content.size())},
-    {"Content-Type", mime_types::extension_to_type(extension.string())}
-  };
+    content.append(buf.data(), static_cast<long unsigned int>(is.gcount()));
+  rep = reply(content, reply::ok, mime_types::extension_to_type(extension.string()));
 }
 
 } // namespace f16::http::server

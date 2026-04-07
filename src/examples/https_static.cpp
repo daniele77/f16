@@ -50,7 +50,7 @@ int main(int /*argc*/, const char** /*argv*/)
           if (auto pos = host.find(':'); pos != std::string::npos)
             host.erase(pos); // Erases everything after the ':' character
           res = reply::stock_reply(reply::moved_permanently); // 301
-          res.headers.push_back({"Location", "https://" + host + ":7000" + req.uri});
+          res.add_header("Location", "https://" + host + ":7000" + req.uri);
         }
       }
     );

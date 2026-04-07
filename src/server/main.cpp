@@ -129,12 +129,7 @@ static void build_advanced_server(asio::io_context& ioc, std::vector<std::unique
               std::string host = req.get_header("host");
               if (host.empty())
               {
-                res = reply::stock_reply(reply::bad_request); // 400
-                res.content = "Missing 'Host' header in the request";
-                res.headers = {
-                  { "Content-Length", std::to_string(res.content.size()) },
-                  { "Content-Type", mime_types::extension_to_type(".txt") }
-                };
+                res = reply("Missing 'Host' header in the request", reply::bad_request, mime_types::extension_to_type(".txt"));
                 return;
               }
               if (auto pos = host.find(':'); pos != std::string::npos)
@@ -145,7 +140,7 @@ static void build_advanced_server(asio::io_context& ioc, std::vector<std::unique
             {
               value.replace(value.find("$request_uri"), 12, req.uri);
             }
-            res.headers.push_back({ name, value });
+            res.add_header(name, value);
           }
         });
     }

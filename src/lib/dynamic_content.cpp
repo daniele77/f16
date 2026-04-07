@@ -33,13 +33,7 @@ bool dynamic_content::serve_if_match(const std::string& location, const std::str
 
   response_stream ss;
   handler(req, ss);
-  rep.content = ss.str();
-  rep.status = ss.status;
-  rep.headers = {
-    {"Content-Length", std::to_string(rep.content.size())},
-    // {"Content-Type", mime_types::extension_to_type(".txt")} // TODO: use a more appropriate content type
-    {"Content-Type", ss.content_type}
-  };
+  rep = reply(ss.str(), ss.status, ss.content_type);
 
   return true;
 }

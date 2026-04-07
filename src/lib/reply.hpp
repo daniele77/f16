@@ -58,8 +58,8 @@ struct reply
     | "503"  ; Section 10.5.4: Service Unavailable
     | "504"  ; Section 10.5.5: Gateway Time-out
     | "505"  ; Section 10.5.6: HTTP Version not supported
-  */
-
+    */
+   
   /// The status of the reply.
   enum status_type
   {
@@ -83,21 +83,33 @@ struct reply
     http_version_not_supported = 505
   } status;
 
-  /// The headers to be included in the reply.
-  std::vector<header> headers;
+  reply();
 
-  /// The content to be sent in the reply.
-  std::string content;
+  reply(std::string content, status_type status = ok, std::string content_type = "text/plain");
 
+  void clear_content();
+  
   /// Convert the reply into a vector of buffers. The buffers do not own the
   /// underlying memory blocks, therefore the reply object must remain valid and
   /// not be changed until the write operation has completed.
   std::vector<asio::const_buffer> to_buffers();
-
+  
+  void add_header(const std::string& name, const std::string& value)
+  {
+    headers.emplace_back(name, value);
+  }
+  
   /// Get a stock reply.
   static reply stock_reply(status_type status);
-
+  
   static status_type status_from_string(const std::string& s);
+    
+  /// The content to be sent in the reply.
+  std::string content;
+
+private:
+  /// The headers to be included in the reply.
+  std::vector<header> headers;
 };
 
 } // namespace f16::http::server

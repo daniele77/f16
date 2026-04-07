@@ -7,6 +7,8 @@ import socket
 import subprocess
 import time
 import unittest
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from typing import Optional, Tuple
 
 
@@ -35,6 +37,8 @@ def _reserve_free_port() -> int:
 
 
 class BlackBoxHttpServerTests(unittest.TestCase):
+    DATE_MAX_SKEW_SECONDS = 10
+
     app_path: str = ""
     host: str = "127.0.0.1"
     port: int = 18080
@@ -85,7 +89,10 @@ class BlackBoxHttpServerTests(unittest.TestCase):
         conn.request(method, path, body=body, headers=headers)
         response = conn.getresponse()
         payload = response.read().decode("utf-8")
-        response_headers = {k.lower(): v for k, v in response.getheaders()}
+        raw_headers = response.getheaders()
+        self._assert_no_duplicate_headers(raw_headers)
+        response_headers = {k.lower(): v for k, v in raw_headers}
+        self._assert_date_header_format(response_headers.get("date"))
         status = response.status
         conn.close()
         return status, response_headers, payload
@@ -99,7 +106,74 @@ class BlackBoxHttpServerTests(unittest.TestCase):
                 if not part:
                     break
                 chunks.append(part)
-        return b"".join(chunks)
+        response_bytes = b"".join(chunks)
+        self._assert_raw_response_has_valid_date(response_bytes)
+        return response_bytes
+
+    def _assert_date_header_format(self, date_value: Optional[str]) -> None:
+        self.assertIsNotNone(date_value, "Missing Date header")
+
+        assert date_value is not None
+        self.assertRegex(
+            date_value,
+            r"^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{2} "
+            r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) "
+            r"\d{4} \d{2}:\d{2}:\d{2} GMT$",
+            "Date header is not in IMF-fixdate format",
+        )
+
+        try:
+            parsed_dt = parsedate_to_datetime(date_value)
+        except (TypeError, ValueError) as exc:
+            self.fail(f"Date header is not parseable: {date_value!r} ({exc})")
+
+        if parsed_dt.tzinfo is None:
+            parsed_dt = parsed_dt.replace(tzinfo=timezone.utc)
+
+        now_utc = datetime.now(timezone.utc)
+        skew_seconds = abs((now_utc - parsed_dt).total_seconds())
+        self.assertLessEqual(
+            skew_seconds,
+            self.DATE_MAX_SKEW_SECONDS,
+            f"Date header time skew is too large: {skew_seconds:.3f}s (max {self.DATE_MAX_SKEW_SECONDS}s)",
+        )
+
+    def _assert_raw_response_has_valid_date(self, response_bytes: bytes) -> None:
+        header_section = response_bytes.split(b"\r\n\r\n", 1)[0]
+        header_text = header_section.decode("iso-8859-1", errors="replace")
+
+        header_lines = header_text.split("\r\n")
+        self._assert_no_duplicate_raw_headers(header_lines[1:])
+
+        date_value = None
+        for line in header_lines:
+            if line.lower().startswith("date:"):
+                date_value = line.split(":", 1)[1].strip()
+                break
+
+        self._assert_date_header_format(date_value)
+
+    def _assert_no_duplicate_headers(self, headers: list[tuple[str, str]]) -> None:
+        seen = set()
+        duplicates = []
+
+        for name, _ in headers:
+            normalized = name.lower()
+            if normalized in seen:
+                duplicates.append(name)
+            else:
+                seen.add(normalized)
+
+        self.assertEqual(duplicates, [], f"Duplicate headers found: {duplicates}")
+
+    def _assert_no_duplicate_raw_headers(self, header_lines: list[str]) -> None:
+        names = []
+        for line in header_lines:
+            if not line or ":" not in line:
+                continue
+            names.append((line.split(":", 1)[0], ""))
+
+        self._assert_no_duplicate_headers(names)
 
     def test_health_endpoint_json(self) -> None:
         """Test that the /health endpoint returns the expected JSON response with correct headers."""

@@ -4,8 +4,10 @@
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "reply.hpp"
+#include "http_date.hpp"
 #include <string>
 #include <unordered_map>
+#include <cassert>
 
 namespace f16::http::server {
 
@@ -105,6 +107,7 @@ static const std::string crlf = "\r\n"; // NOLINT
 std::vector<asio::const_buffer> reply::to_buffers()
 {
   std::vector<asio::const_buffer> buffers;
+  buffers.reserve(4 * headers.size() + 3);
   buffers.push_back(status_strings::to_buffer(status));
   for (const header& h: headers)
   {
@@ -115,6 +118,7 @@ std::vector<asio::const_buffer> reply::to_buffers()
   }
   buffers.push_back(asio::buffer(misc_strings::crlf));
   buffers.push_back(asio::buffer(content)); // NOLINT
+  assert(buffers.size() == 4 * headers.size() + 3);
   return buffers;
 }
 
@@ -250,15 +254,25 @@ static std::string to_string(reply::status_type status)
 
 } // namespace stock_replies
 
+reply::reply()
+  : headers{{"Date", http_date()}}
+{
+}
+
+reply::reply(std::string _content, status_type _status, std::string content_type)
+  : status(_status),
+    content(std::move(_content)),
+    headers{
+      {"Date", http_date()},
+      {"Content-Length", std::to_string(this->content.size())},
+      {"Content-Type", std::move(content_type)}
+    }
+{
+}
+
 reply reply::stock_reply(reply::status_type status)
 {
-  reply rep;
-  rep.status = status;
-  rep.content = stock_replies::to_string(status);
-  rep.headers = {
-    {"Content-Length", std::to_string(rep.content.size())},
-    {"Content-Type", "text/html"}
-  };
+  reply rep(stock_replies::to_string(status), status, "text/html");
   return rep;
 }
 
@@ -288,6 +302,21 @@ reply::status_type reply::status_from_string(const std::string& s)
   if (it != status_map.end())
     return it->second;
   throw std::invalid_argument("Unknown status: " + s);
+}
+
+void reply::clear_content()
+{
+  content.clear();
+  for (auto it = headers.begin(); it != headers.end(); ++it)
+  {
+    if (it->name == "Content-Length")
+    {
+      it->value = "0";
+      return;
+    }
+  }
+  // If Content-Length header is not found, add it
+  headers.emplace_back("Content-Length", "0");
 }
 
 } // namespace f16::http::server
