@@ -307,16 +307,6 @@ reply::status_type reply::status_from_string(const std::string& s)
 void reply::clear_content()
 {
   content.clear();
-  for (auto it = headers.begin(); it != headers.end(); ++it)
-  {
-    if (it->name == "Content-Length")
-    {
-      it->value = "0";
-      return;
-    }
-  }
-  // If Content-Length header is not found, add it
-  headers.emplace_back("Content-Length", "0");
 }
 
 } // namespace f16::http::server
