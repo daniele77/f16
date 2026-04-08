@@ -239,6 +239,18 @@ class BlackBoxHttpServerTests(unittest.TestCase):
         # self.assertEqual(response_data.get("email"), "john@example.com")
         self.skipTest("Endpoint /api/user/{id} not yet implemented")
 
+    def test_path_variables(self) -> None:
+        """Test that the /path/{var1}/to/{var2} endpoint correctly extracts multiple path variables and returns them in the response."""
+        status, _, body = self._request("GET", "/path/foo/to/bar")
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(body), {"method": "GET", "parameters": "yes", "var1": "foo", "var2": "bar"})
+
+    def test_common_prefix_routes(self) -> None:
+        """Test that routes with common prefixes (e.g., /path/foo/to/bar and /path) are correctly distinguished and return the expected responses."""
+        status, _, body = self._request("GET", "/path")
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(body), {"method": "GET", "parameters": "no"})
+
     def test_header_access(self) -> None:
         """Test that the /headers/user-agent endpoint correctly reads the User-Agent header from the request and returns it in the response body."""
         status, _, body = self._request("GET", "/headers/user-agent", headers={"User-Agent": "blackbox-suite/1.0"})
@@ -256,6 +268,15 @@ class BlackBoxHttpServerTests(unittest.TestCase):
         self.assertEqual(head_status, 200)
         self.assertEqual(head_headers.get("content-type"), "text/html")
         self.assertEqual(head_body, "")
+
+    def test_directory_listing_content(self) -> None:
+        """Test that a directory without index.html is listed and contains only regular files."""
+        status, headers, body = self._request("GET", "/static/listing/")
+        self.assertEqual(status, 200)
+        self.assertEqual(headers.get("content-type"), "text/html")
+        self.assertIn('href="alpha.txt"', body)
+        self.assertIn('href="beta.json"', body)
+        self.assertNotIn('href="subdir"', body)
 
     def test_directory_redirect(self) -> None:
         """Test that requests to a directory path without a trailing slash are redirected to the same path with a trailing slash, and that the Location header is set correctly."""

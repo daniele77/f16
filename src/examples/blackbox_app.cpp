@@ -107,6 +107,14 @@ int main(int argc, char* argv[])
       os << f16::json << "{\"method\":\"PUT\",\"id\":\"" << req.resource("id") << "\"}";
     }));
 
+    router.add("/path/:var1/to/:var2", get([](const request& req, f16::response_stream& os) {
+      os << f16::json << "{\"method\":\"GET\",\"parameters\":\"yes\",\"var1\":\"" << req.resource("var1") << "\",\"var2\":\"" << req.resource("var2") << "\"}";
+    }));
+
+    router.add("/path", get([](const request& /*req*/, f16::response_stream& os) {
+      os << f16::json << "{\"method\":\"GET\",\"parameters\":\"no\"}";
+    }));
+
     router.add("/api/user/:id", post([](const request& req, f16::response_stream& os) {
       os << f16::json << "{\"action\":\"user_created\",\"id\":\"" << req.resource("id") << "\"}";
     }));
