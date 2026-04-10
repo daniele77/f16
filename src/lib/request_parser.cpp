@@ -23,40 +23,6 @@ void request_parser::reset()
   body_bytes_remaining_ = 0;
 }
 
-#if 0
-std::tuple<bool, std::size_t> request_parser::parse_content_length(const http_request& req) const
-{
-  std::size_t content_length = 0;
-  bool has_content_length = false;
-
-  for (const auto& h : req.headers)
-  {
-    std::string name = h.name;
-    std::transform(name.begin(), name.end(), name.begin(),
-      [](unsigned char c) -> char { return static_cast<char>(std::tolower(c)); });
-
-    if (name != "content-length")
-      continue;
-
-    if (has_content_length)
-      return std::make_tuple(false, 0);
-
-    has_content_length = true;
-
-    const auto* begin = h.value.data();
-    const auto* end = begin + h.value.size();
-    std::size_t parsed_value = 0;
-    const auto result = std::from_chars(begin, end, parsed_value);
-    if (result.ec != std::errc{} || result.ptr != end)
-      return std::make_tuple(false, 0);
-
-    content_length = parsed_value;
-  }
-
-  return std::make_tuple(true, content_length);
-}
-#endif
-
 request_parser::result_type request_parser::consume(http_request& req, char input) // NOLINT
 {
   switch (state_)
@@ -327,22 +293,6 @@ request_parser::result_type request_parser::consume(http_request& req, char inpu
       return bad;
 
     {
-#if 0
-      bool ok = true;
-      std::size_t content_length = 0;
-      std::tie(ok, content_length) = parse_content_length(req);
-      if (!ok)
-        return bad;
-
-      if (content_length == 0)
-        return good;
-
-      body_bytes_remaining_ = content_length;
-      req.body.clear();
-      req.body.reserve(content_length);
-      state_ = body;
-      return indeterminate;
-#else
       if (content_length_ == 0)
         return good;
       body_bytes_remaining_ = content_length_;
@@ -350,7 +300,6 @@ request_parser::result_type request_parser::consume(http_request& req, char inpu
       req.body.reserve(content_length_);
       state_ = body;
       return indeterminate;
-#endif
     }
   case body:
     req.body.push_back(input);
