@@ -220,24 +220,13 @@ class BlackBoxHttpServerTests(unittest.TestCase):
         self.assertEqual(put_headers.get("content-type"), "application/json")
         self.assertEqual(json.loads(put_body), {"method": "PUT", "id": "42"})
 
-    def test_post_with_json_body(self) -> None:
-        """Test that a POST request with a JSON body is properly accepted and the server returns the expected response."""
-        # TODO: Implement /api/user/{id} endpoint to handle POST requests with JSON body
-        # json_payload = json.dumps({"name": "John", "email": "john@example.com"})
-        # status, headers, body = self._request(
-        #     "POST",
-        #     "/api/user/123",
-        #     body=json_payload,
-        #     headers={"Content-Type": "application/json"}
-        # )
-        # self.assertEqual(status, 200)
-        # self.assertEqual(headers.get("content-type"), "application/json")
-        # response_data = json.loads(body)
-        # self.assertEqual(response_data["action"], "user_created")
-        # self.assertEqual(response_data["id"], "123")
-        # self.assertEqual(response_data.get("name"), "John")
-        # self.assertEqual(response_data.get("email"), "john@example.com")
-        self.skipTest("Endpoint /api/user/{id} not yet implemented")
+    def test_echo_post_body(self) -> None:
+        """Test that the /echo endpoint correctly echoes back the body of a POST request."""
+        payload = "This is a test."
+        status, headers, body = self._request("POST", "/echo", body=payload)
+        self.assertEqual(status, 200)
+        self.assertEqual(headers.get("content-type"), "text/plain")
+        self.assertEqual(body, payload)
 
     def test_path_variables(self) -> None:
         """Test that the /path/{var1}/to/{var2} endpoint correctly extracts multiple path variables and returns them in the response."""

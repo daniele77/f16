@@ -237,6 +237,66 @@ TEST_CASE("parser works properly", "[request_parser]") // NOLINT
   REQUIRE(req.headers.size() == 1);
   CHECK(req.headers[0].name == "Accept-Language");
   CHECK(req.headers[0].value == "en-us");
+  CHECK(req.body.empty());
+}
+
+TEST_CASE("parser works properly with body", "[request_parser]") // NOLINT
+{
+  // Request-Line = Method SP Request-URI SP HTTP-Version CRLF 
+
+  request_parser grammar;
+  http_request req;
+  const std::string input{ 
+    "GET /hello.htm HTTP/1.1\r\nAccept-Language: en-us\r\nContent-Length: 12\r\n\r\nhello world!"
+  };
+  const auto result = grammar.parse(req, input.begin(), input.end());
+  CHECK(std::get<0>(result) == request_parser::good);
+  CHECK(std::get<1>(result) == input.end());
+  CHECK(req.method == "GET");
+  CHECK(req.uri == "/hello.htm");
+  CHECK(req.http_version_major == 1);
+  CHECK(req.http_version_minor == 1);
+  REQUIRE(req.headers.size() == 2);
+  CHECK(req.headers[0].name == "Accept-Language");
+  CHECK(req.headers[0].value == "en-us");
+  CHECK(req.headers[1].name == "Content-Length");
+  CHECK(req.headers[1].value == "12");
+  CHECK(req.body == "hello world!");
+}
+
+TEST_CASE("parser works properly with binary body", "[request_parser]") // NOLINT
+{
+  // Request-Line = Method SP Request-URI SP HTTP-Version CRLF 
+
+  request_parser grammar;
+  http_request req;
+  const std::string input{ 
+    "POST /upload HTTP/1.1\r\nContent-Length: 4\r\n\r\n\x01\x02\x03\x04"
+  };
+  const auto result = grammar.parse(req, input.begin(), input.end());
+  CHECK(std::get<0>(result) == request_parser::good);
+  CHECK(std::get<1>(result) == input.end());
+  CHECK(req.method == "POST");
+  CHECK(req.uri == "/upload");
+  CHECK(req.http_version_major == 1);
+  CHECK(req.http_version_minor == 1);
+  REQUIRE(req.headers.size() == 1);
+  CHECK(req.headers[0].name == "Content-Length");
+  CHECK(req.headers[0].value == "4");
+  CHECK(req.body == std::string("\x01\x02\x03\x04", 4));
+} 
+
+TEST_CASE("parser works properly with wrong body size", "[request_parser]") // NOLINT
+{
+  // Request-Line = Method SP Request-URI SP HTTP-Version CRLF 
+
+  request_parser grammar;
+  http_request req;
+  const std::string input{ 
+    "GET /hello.htm HTTP/1.1\r\nAccept-Language: en-us\r\nContent-Length: 20\r\n\r\nhello world!"
+  };
+  const auto result = grammar.parse(req, input.begin(), input.end());
+  CHECK(std::get<0>(result) == request_parser::indeterminate);
 }
 
 TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT

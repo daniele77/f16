@@ -7,6 +7,7 @@
 #define F16_HTTP_REQUEST_PARSER_HPP
 
 #include <tuple>
+#include <cstddef> // for std::size_t
 
 namespace f16::http::server {
 
@@ -80,8 +81,12 @@ private:
     space_before_header_value,
     header_value,
     expecting_newline_2,
-    expecting_newline_3
+    expecting_newline_3,
+    body
   } state_;
+
+  std::size_t content_length_;
+  std::size_t body_bytes_remaining_;
 };
 
 } // namespace f16::http::server
