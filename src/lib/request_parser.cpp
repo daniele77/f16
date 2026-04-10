@@ -6,22 +6,27 @@
 #include "request_parser.hpp"
 #include "http_request.hpp"
 #include <charconv>
+#include <algorithm>
+#include <cctype>
+#include <cassert>
 
 namespace f16::http::server {
 
 request_parser::request_parser()
   : state_(method_start),
-    content_length_(0),
+    content_length_(std::nullopt),
     body_bytes_remaining_(0)
 {
 }
 
+/*
 void request_parser::reset()
 {
   state_ = method_start;
-  content_length_ = 0;
+  content_length_ = std::nullopt;
   body_bytes_remaining_ = 0;
 }
+*/
 
 request_parser::result_type request_parser::consume(http_request& req, char input) // NOLINT
 {
@@ -254,6 +259,9 @@ request_parser::result_type request_parser::consume(http_request& req, char inpu
     {
       state_ = expecting_newline_2;
       
+      if (content_length_.has_value())
+        return indeterminate;
+
       std::string name = req.headers.back().name;
       std::transform(name.begin(), name.end(), name.begin(),
         [](unsigned char c) -> char { return static_cast<char>(std::tolower(c)); });
@@ -262,9 +270,11 @@ request_parser::result_type request_parser::consume(http_request& req, char inpu
       {
         const auto* begin = req.headers.back().value.data();
         const auto* end = begin + req.headers.back().value.size();
-        const auto result = std::from_chars(begin, end, content_length_);
+        std::size_t parsed_value = 0;
+        const auto result = std::from_chars(begin, end, parsed_value);
         if (result.ec != std::errc{} || result.ptr != end)
           return bad;
+        content_length_ = parsed_value;
       }
 
       return indeterminate;
@@ -293,11 +303,12 @@ request_parser::result_type request_parser::consume(http_request& req, char inpu
       return bad;
 
     {
-      if (content_length_ == 0)
+      if (!content_length_.has_value() || content_length_.value() == 0)
         return good;
-      body_bytes_remaining_ = content_length_;
+      assert(content_length_.has_value());
+      body_bytes_remaining_ = content_length_.value();
       req.body.clear();
-      req.body.reserve(content_length_);
+      req.body.reserve(content_length_.value());
       state_ = body;
       return indeterminate;
     }

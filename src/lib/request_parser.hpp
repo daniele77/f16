@@ -8,6 +8,7 @@
 
 #include <tuple>
 #include <cstddef> // for std::size_t
+#include <optional>
 
 namespace f16::http::server {
 
@@ -21,7 +22,7 @@ public:
   request_parser();
 
   /// Reset to initial parser state.
-  void reset();
+  // void reset();
 
   /// Result of parse.
   enum result_type { good, bad, indeterminate };
@@ -85,7 +86,7 @@ private:
     body
   } state_;
 
-  std::size_t content_length_;
+  std::optional<std::size_t> content_length_;
   std::size_t body_bytes_remaining_;
 };
 
