@@ -46,11 +46,12 @@ public:
   https_server& operator=(const https_server&) = delete;
 
   /// Construct the server
-  https_server(asio::io_context& ioc, const ssl_settings& ssl_s);
+  https_server(asio::io_context& ioc, const ssl_settings& ssl_s, logger_ptr log = nullptr);
 
 protected:
 
   connection_ptr create_connection(asio::ip::tcp::socket socket, connection_manager& cm, request_handler& rh) override;
+  std::string protocol_name() const override { return "HTTPS"; }
 
 private:
 

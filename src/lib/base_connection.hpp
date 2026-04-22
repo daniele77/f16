@@ -13,6 +13,7 @@
 #include "request_handler.hpp"
 #include "reply.hpp"
 #include "connection.hpp"
+#include "logger.hpp"
 
 namespace f16::http::server {
 
@@ -30,10 +31,11 @@ public:
 
 protected:
 
-  base_connection(SocketType socket, connection_manager& manager, request_handler& handler)
+  base_connection(SocketType socket, connection_manager& manager, request_handler& handler, logger_ptr log)
     : socket_(std::move(socket)),
       connection_manager_(manager),
       request_handler_(handler),
+      log_(log),
       buffer_{},
       request_{},
       reply_{}
@@ -48,6 +50,19 @@ protected:
         {
           if (!ec)
           {
+            // Populate client IP from socket (once per read cycle)
+            if (request_.client_ip.empty())
+            {
+              try
+              {
+                request_.client_ip = socket_.lowest_layer().remote_endpoint().address().to_string();
+              }
+              catch (...)
+              {
+                request_.client_ip = "unknown";
+              }
+            }
+
             request_parser::result_type result = request_parser::bad;
             std::tie(result, std::ignore) = request_parser_.parse(
                 request_, buffer_.begin(), buffer_.begin() + bytes_transferred);
@@ -55,11 +70,23 @@ protected:
             if (result == request_parser::good)
             {
               request_handler_.handle_request(request_, reply_);
+
+              // Emit access log
+              log_->access({
+                request_.client_ip,
+                request_.method,
+                request_.uri,
+                static_cast<int>(reply_.status),
+                reply_.content.size(),
+                request_.get_header("user-agent")
+              });
+
               do_write();
             }
             else if (result == request_parser::bad)
             {
               reply_ = reply::stock_reply(reply::bad_request);
+              log_->warn("Bad request from " + request_.client_ip);
               do_write();
             }
             else
@@ -102,6 +129,9 @@ protected:
 
   /// The handler used to process the incoming request.
   request_handler& request_handler_;
+
+  /// Logger
+  logger_ptr log_;
 
   /// Buffer for incoming data.
   std::array<char, 8192> buffer_;

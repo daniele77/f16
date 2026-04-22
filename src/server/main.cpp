@@ -16,6 +16,7 @@
 
 #include "http_server.hpp"
 #include "https_server.hpp"
+#include "spdlog_logger.hpp"
 
 #include "static_content.hpp"
 
@@ -41,11 +42,11 @@ static f16::http::server::ssl_settings::ssl_proto protocol_from_string(const std
   throw std::invalid_argument("Unknown protocol: " + s);
 }
 
-static void build_simple_server(asio::io_context& ioc, std::vector<std::unique_ptr<http_server>>& server_set, const std::string& root_doc, const std::string& bind_address, int port)
+static void build_simple_server(asio::io_context& ioc, std::vector<std::unique_ptr<http_server>>& server_set, const std::string& root_doc, const std::string& bind_address, int port, logger_ptr log)
 {
   spdlog::info("Serving root doc {} on {}:{}", root_doc, bind_address, port);
 
-  auto server = std::make_unique<http_server>(ioc);
+  auto server = std::make_unique<http_server>(ioc, log);
 
   path_router router;
   router.add("/", static_content(root_doc));
@@ -55,7 +56,7 @@ static void build_simple_server(asio::io_context& ioc, std::vector<std::unique_p
   server_set.push_back(std::move(server));
 }
 
-static void build_advanced_server(asio::io_context& ioc, std::vector<std::unique_ptr<http_server>>& server_set, const std::string& cfg_file)
+static void build_advanced_server(asio::io_context& ioc, std::vector<std::unique_ptr<http_server>>& server_set, const std::string& cfg_file, logger_ptr log)
 {
   std::ifstream ifs(cfg_file);
   if (!ifs)
@@ -71,7 +72,7 @@ static void build_advanced_server(asio::io_context& ioc, std::vector<std::unique
     const std::string address = server_entry.at("listen_address");
     const bool has_ssl = server_entry.contains("ssl");
     const std::string port = server_entry.value("listen_port", (has_ssl ? "443" : "80"));
-    spdlog::info("New {} server listening on {}:{}", (has_ssl ? "https" : "http"), address, port);
+    spdlog::info("New {} server created listening on {}:{}", (has_ssl ? "HTTPS" : "HTTP"), address, port);
     std::unique_ptr<http_server> server;
     if (has_ssl)
     {
@@ -98,10 +99,10 @@ static void build_advanced_server(asio::io_context& ioc, std::vector<std::unique
       ssl_s.session_cache = ssl_section.value("session_cache", false);
       ssl_s.session_cache_size = ssl_section.value("session_cache_size", -1L);
 
-      server = std::make_unique<https_server>(ioc, ssl_s);
+      server = std::make_unique<https_server>(ioc, ssl_s, log);
     }
     else
-      server = std::make_unique<http_server>(ioc);
+      server = std::make_unique<http_server>(ioc, log);
 
     if (server_entry.contains("return"))
     {
@@ -210,6 +211,10 @@ int main(int argc, const char** argv)
 
     app.parse(argc, argv);
 
+    // Create logger
+    auto spdlog_instance = spdlog::default_logger();
+    auto logger = std::make_shared<spdlog_logger>(spdlog_instance);
+
     // http server
     asio::io_context ioc;
 
@@ -217,11 +222,11 @@ int main(int argc, const char** argv)
 
     if (serve_cmd->parsed())
     {
-      build_simple_server(ioc, server_set, root_doc, bind_address, port);
+      build_simple_server(ioc, server_set, root_doc, bind_address, port, logger);
     }
     else if (config_cmd->parsed())
     {
-      build_advanced_server(ioc, server_set, config_path);
+      build_advanced_server(ioc, server_set, config_path, logger);
     }
     else
     {

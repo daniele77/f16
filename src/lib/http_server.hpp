@@ -10,6 +10,7 @@
 #include <string>
 #include "connection_manager.hpp"
 #include "request_handler.hpp"
+#include "logger.hpp"
 
 namespace f16::http::server {
 
@@ -21,8 +22,8 @@ public:
   http_server(const http_server&) = delete;
   http_server& operator=(const http_server&) = delete;
 
-  /// Construct the server
-  explicit http_server(asio::io_context& ioc);
+  /// Construct the server with optional logger
+  explicit http_server(asio::io_context& ioc, logger_ptr log = nullptr);
 
   /// Cancel all outstanding asynchronous operations.
   /// Once all operations have finished the destructor will exit.
@@ -40,9 +41,13 @@ public:
   /// For IPv6, try address: 0::0
   void listen(const std::string& port = "80", const std::string& address = "0.0.0.0");
 
+  /// Get the logger
+  logger_ptr get_logger() const { return log_; }
+
 protected:
 
   virtual connection_ptr create_connection(asio::ip::tcp::socket socket, connection_manager& cm, request_handler& rh);
+  virtual std::string protocol_name() const { return "HTTP"; }
 
 private:
   /// Perform an asynchronous accept operation.
@@ -59,6 +64,9 @@ private:
 
   /// The handler for all incoming requests.
   request_handler request_handler_;
+
+  /// Logger instance
+  logger_ptr log_;
 };
 
 } // namespace f16::http::server

@@ -25,7 +25,7 @@ public:
   /// Construct a connection with the given socket.
   explicit ssl_connection(asio::ip::tcp::socket socket,
       connection_manager& manager, request_handler& handler,
-      asio::ssl::context& ctx);
+      asio::ssl::context& ctx, logger_ptr log);
 
   void start() override;
 

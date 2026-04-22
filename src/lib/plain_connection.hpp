@@ -23,7 +23,7 @@ public:
 
   /// Construct a plain_connection with the given socket.
   explicit plain_connection(asio::ip::tcp::socket socket,
-      connection_manager& manager, request_handler& handler);
+      connection_manager& manager, request_handler& handler, logger_ptr log);
 
   void start() override;
 };

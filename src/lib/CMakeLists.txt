@@ -21,6 +21,7 @@ add_library(f16lib
   static_content.hpp static_content.cpp
   dynamic_content.hpp dynamic_content.cpp
   request.hpp
+  logger.hpp
 )
 
 # link project_options/warnings

@@ -9,9 +9,10 @@
 
 namespace f16::http::server {
 
-http_server::http_server(asio::io_context& ioc)
+http_server::http_server(asio::io_context& ioc, logger_ptr log)
   : io_context_(ioc),
-    acceptor_(io_context_)
+    acceptor_(io_context_),
+    log_(log ? log : std::make_shared<null_logger>())
 {
 }
 
@@ -37,6 +38,9 @@ void http_server::listen(const std::string& port, const std::string& address)
   acceptor_.set_option(asio::ip::tcp::acceptor::reuse_address(true));
   acceptor_.bind(endpoint);
   acceptor_.listen();
+
+  // Log that server is listening
+  log_->info(protocol_name() + " server listening on " + address + ":" + port);
 
   do_accept();
 }
@@ -65,7 +69,7 @@ void http_server::do_accept()
 
 connection_ptr http_server::create_connection(asio::ip::tcp::socket socket, connection_manager& cm, request_handler& rh)
 {
-  return std::make_shared<plain_connection>(std::move(socket), cm, rh);
+  return std::make_shared<plain_connection>(std::move(socket), cm, rh, log_);
 }
 
 } // namespace f16::http::server

@@ -22,6 +22,7 @@ struct http_request
   int http_version_minor;
   std::vector<header> headers;
   std::string body;
+  std::string client_ip;
 
   std::string get_header(const std::string& name) const
   {
