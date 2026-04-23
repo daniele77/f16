@@ -1,10 +1,17 @@
 # f16
 
-[![ci linux](https://github.com/daniele77/f16/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/daniele77/f16/actions/workflows/ubuntu.yml)
-[![ci win](https://github.com/daniele77/f16/actions/workflows/windows.yml/badge.svg)](https://github.com/daniele77/f16/actions/workflows/windows.yml)
-[![ci macos](https://github.com/daniele77/f16/actions/workflows/macos.yml/badge.svg)](https://github.com/daniele77/f16/actions/workflows/macos.yml)
+![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)
+![CMake](https://img.shields.io/badge/CMake-%3E%3D%203.8-brightgreen.svg)
+![License: BSL-1.0](https://img.shields.io/badge/License-BSL--1.0-lightgrey.svg)
+[![CI Ubuntu](https://github.com/daniele77/f16/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/daniele77/f16/actions/workflows/ubuntu.yml)
+[![CI Windows](https://github.com/daniele77/f16/actions/workflows/windows.yml/badge.svg)](https://github.com/daniele77/f16/actions/workflows/windows.yml)
+[![CI macOS](https://github.com/daniele77/f16/actions/workflows/macos.yml/badge.svg)](https://github.com/daniele77/f16/actions/workflows/macos.yml)
 [![codecov](https://codecov.io/gh/daniele77/f16/branch/main/graph/badge.svg)](https://codecov.io/gh/daniele77/f16)
 [![CodeQL](https://github.com/daniele77/f16/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/daniele77/f16/actions/workflows/codeql-analysis.yml)
+[![Release](https://img.shields.io/github/v/release/daniele77/f16)](https://github.com/daniele77/f16/releases)
+[![Issues](https://img.shields.io/github/issues/daniele77/f16)](https://github.com/daniele77/f16/issues)
+[![Stars](https://img.shields.io/github/stars/daniele77/f16?style=social)](https://github.com/daniele77/f16/stargazers)
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=githubsponsors)](https://github.com/sponsors/daniele77)
 
 ## About f16
 
