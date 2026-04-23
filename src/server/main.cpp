@@ -5,9 +5,14 @@
 
 #include "f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
 #include <csignal>
+#include <exception>
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+#include <utility>
 
 #include <CLI/CLI.hpp>
 #include <spdlog/spdlog.h>
@@ -16,6 +21,7 @@
 
 #include "http_server.hpp"
 #include "https_server.hpp"
+#include "nlohmann/json_fwd.hpp"
 #include "spdlog_logger.hpp"
 
 #include "static_content.hpp"
@@ -85,7 +91,7 @@ static void build_advanced_server(asio::io_context& ioc, std::vector<std::unique
       if (ssl_section.contains("protocols"))
       {
         const auto& protocols = ssl_section["protocols"];
-        for (std::string protocol : protocols)
+        for (const std::string protocol : protocols)
           ssl_s.protocols.insert(protocol_from_string(protocol));
       }
 
@@ -118,7 +124,7 @@ static void build_advanced_server(asio::io_context& ioc, std::vector<std::unique
           {
             std::string name;
             std::string value;
-            for (auto& [k, v] : header_entry.items())
+            for (const auto& [k, v] : header_entry.items())
             {
               name = k;
               value = v;
@@ -205,7 +211,7 @@ int main(int argc, const char** argv)
     std::string config_path;
 
     // Positional argument mandatory: <cfg_file>
-    config_cmd->add_option("config_path", config_path, "Configurazione file path.")
+    config_cmd->add_option("config_path", config_path, "Configuration file path.")
       ->required()
       ->check(CLI::ExistingFile);
 
@@ -266,12 +272,17 @@ int main(int argc, const char** argv)
   }
   catch (const CLI::ParseError& e)
   {
-    // Print error message and cli help 
+    // Print error message and cli help
     return app.exit(e);
   }
   catch (const std::exception& e)
   {
     fmt::print(stderr, "Unhandled exception in main: {}", e.what());
+    return 1;
+  }
+  catch (...)
+  {
+    fmt::print(stderr, "Unhandled unknown exception in main");
     return 1;
   }
 

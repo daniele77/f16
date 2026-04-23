@@ -4,9 +4,14 @@
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
-#include <iostream>
 #include "http_server.hpp"
 #include "static_content.hpp"
+#include "path_router.hpp"
+#include "dynamic_content.hpp"
+#include "request.hpp"
+#include <exception>
+#include <iostream>
+#include <utility>
 
 int main(int /*argc*/, const char** /*argv*/)
 {
@@ -20,7 +25,7 @@ int main(int /*argc*/, const char** /*argv*/)
     // Serve static content from the current directory
     router.add("/", static_content("."));
     // Add a dynamic content handler for the "/books" endpoint
-    router.add("/books", get([](const request& /*req*/, std::ostream& os) {
+    router.add("/books", get([](const request& /*req*/, f16::response_stream& os) {
       os << "Hello, get api!\n";
     }));
     // Set the router to the server
@@ -28,23 +33,22 @@ int main(int /*argc*/, const char** /*argv*/)
     // Start listening on port 7000
     app.listen("7000", "localhost");
 
-    while(true)
+    while (true)
     {
-        try
-        {
-            ioc.run();
-            break; // run() exited normally
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Exception caugth in io_context scheduler: " << e.what() << std::endl;
-        }
-    }        
-
+      try
+      {
+        ioc.run();
+        break; // run() exited normally
+      }
+      catch (const std::exception& e)
+      {
+        std::cerr << "Exception caugth in io_context scheduler: " << e.what() << '\n';
+      }
+    }
   }
-  catch (const std::exception &e)
+  catch (const std::exception& e)
   {
-    std::cerr << "Unhandled exception in main: " << e.what() << std::endl;
+    std::cerr << "Unhandled exception in main: " << e.what() << '\n';
     return 1;
   }
   return 0;

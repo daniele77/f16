@@ -3,11 +3,14 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include "f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
-#include <iostream>
-#include "http_server.hpp"
 #include "dynamic_content.hpp" // get, post, put
+#include "f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
+#include "http_server.hpp"
+#include "path_router.hpp"
 #include "request.hpp"
+#include <exception>
+#include <iostream>
+#include <utility>
 
 int main()
 {
@@ -29,43 +32,39 @@ int main()
     router.add("/hello/:name", get([](const request& req, std::ostream& os) { os << "Hello, " << req.resource("name") << "!\n"; }));
     // GET <ip>/print/?name=<name>&country=<country>
     router.add("/print", get([](const request& req, std::ostream& os) {
-        os << "Hi, " << req.query("name") << " from " << req.query("country") << "!\n";
-      })
-    );
+      os << "Hi, " << req.query("name") << " from " << req.query("country") << "!\n";
+    }));
     // GET <ip>/greet/<name>/<country>
     router.add("/greet/:name/:country", get([](const request& req, std::ostream& os) {
-        os << "Hi, " << req.resource("name") << " from " << req.resource("country") << "!\n";
-      })
-    );
+      os << "Hi, " << req.resource("name") << " from " << req.resource("country") << "!\n";
+    }));
     // PUT <ip>/person/<name>/<country>
     router.add("/person/:name/:country", put([](const request& req, std::ostream& os) {
-        std::cout << "Insert person " << req.resource("name") << " from " << req.resource("country") << "\n";
-        os << "ok";
-      })
-    );
+      std::cout << "Insert person " << req.resource("name") << " from " << req.resource("country") << "\n";
+      os << "ok";
+    }));
 
     server.set(std::move(router));
 
     // Start listening on port 7000
     server.listen("7000", "0.0.0.0");
 
-    while(true)
+    while (true)
     {
-        try
-        {
-            ioc.run();
-            break; // run() exited normally
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Exception caugth in io_context scheduler: " << e.what() << std::endl;
-        }
-    }        
-
+      try
+      {
+        ioc.run();
+        break; // run() exited normally
+      }
+      catch (const std::exception& e)
+      {
+        std::cerr << "Exception caugth in io_context scheduler: " << e.what() << '\n';
+      }
+    }
   }
-  catch (const std::exception &e)
+  catch (const std::exception& e)
   {
-    std::cerr << "Unhandled exception in main: " << e.what() << std::endl;
+    std::cerr << "Unhandled exception in main: " << e.what() << '\n';
     return 1;
   }
 

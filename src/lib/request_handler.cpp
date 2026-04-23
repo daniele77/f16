@@ -5,10 +5,10 @@
 
 #include "request_handler.hpp"
 #include "http_request.hpp"
+#include <utility>
 
-// #include <iostream> // TODO remove
-
-namespace f16::http::server {
+namespace f16::http::server
+{
 
 void request_handler::set(handler_fn handler)
 {

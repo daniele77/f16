@@ -5,24 +5,28 @@
 
 #include "http_server.hpp"
 #include "plain_connection.hpp"
+#include <memory>
+#include <string>
+#include <system_error>
 #include <utility>
 
-namespace f16::http::server {
+namespace f16::http::server
+{
 
 http_server::http_server(asio::io_context& ioc, logger_ptr log)
-  : io_context_(ioc),
-    acceptor_(io_context_),
-    log_(log ? log : std::make_shared<null_logger>())
+  : io_context_(ioc)
+  , acceptor_(io_context_)
+  , log_(log ? log : std::make_shared<null_logger>())
 {
 }
 
 http_server::~http_server()
 {
   try
-  {    
+  {
     acceptor_.close();
   }
-  catch(...)
+  catch (...)
   {
     // nothing to do in the destructor
   }
@@ -32,8 +36,7 @@ void http_server::listen(const std::string& port, const std::string& address)
 {
   // Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
   asio::ip::tcp::resolver resolver(io_context_);
-  const asio::ip::tcp::endpoint endpoint =
-    *resolver.resolve(address, port).begin();
+  const asio::ip::tcp::endpoint endpoint = *resolver.resolve(address, port).begin();
   acceptor_.open(endpoint.protocol());
   acceptor_.set_option(asio::ip::tcp::acceptor::reuse_address(true));
   acceptor_.bind(endpoint);
@@ -48,8 +51,7 @@ void http_server::listen(const std::string& port, const std::string& address)
 void http_server::do_accept()
 {
   acceptor_.async_accept(
-    [this](std::error_code ec, asio::ip::tcp::socket socket)
-    {
+    [this](std::error_code ec, asio::ip::tcp::socket socket) {
       // Check whether the server was stopped by a signal before this
       // completion handler had a chance to run.
       if (!acceptor_.is_open())
@@ -60,7 +62,7 @@ void http_server::do_accept()
       if (!ec)
       {
         connection_manager_.start(create_connection(
-            std::move(socket), connection_manager_, request_handler_));
+          std::move(socket), connection_manager_, request_handler_));
       }
 
       do_accept();

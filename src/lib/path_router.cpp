@@ -7,17 +7,12 @@
 #include "http_request.hpp"
 #include "url.hpp"
 #include "reply.hpp"
-#include <algorithm>
+#include <string>
 
 namespace f16::http::server {
 
 void path_router::operator()(const http_request& req, reply& rep) const
 {
-  /*
-  std::cout << "http v. " << req.http_version_major << '.' << req.http_version_minor
-            << ' ' << req.method
-            << " " << req.uri << std::endl; // TODO remove
-  */
   // Decode url to path.  
   std::string request_path;
   if (!url_decode(req.uri, request_path))

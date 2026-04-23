@@ -6,6 +6,7 @@
 #include "https_server.hpp"
 #include "ssl_connection.hpp"
 #include <memory>
+#include <utility>
 
 namespace f16::http::server
 {
@@ -17,8 +18,7 @@ https_server::https_server(asio::io_context& ioc, const ssl_settings& ssl_s, log
   ssl_context_.set_options(
     asio::ssl::context::default_workarounds |
     // asio::ssl::context::no_sslv2 |
-    asio::ssl::context::single_dh_use
-  );
+    asio::ssl::context::single_dh_use);
   for (const auto& proto : ssl_s.protocols)
     ssl_context_.set_options(proto);
   if (!ssl_s.ciphers.empty())
@@ -29,8 +29,7 @@ https_server::https_server(asio::io_context& ioc, const ssl_settings& ssl_s, log
   {
     auto psw = ssl_s.password;
     ssl_context_.set_password_callback(
-      [psw](std::size_t /*size*/, asio::ssl::context::password_purpose /*purpose*/) -> std::string { return psw; }
-    );
+      [psw](std::size_t /*size*/, asio::ssl::context::password_purpose /*purpose*/) -> std::string { return psw; });
   }
   ssl_context_.use_certificate_chain_file(ssl_s.certificate);
   ssl_context_.use_private_key_file(ssl_s.certificate_key, asio::ssl::context::pem);

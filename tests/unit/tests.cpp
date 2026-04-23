@@ -8,11 +8,12 @@
 #include "mime_types.hpp"
 #include "path_router.hpp"
 #include "reply.hpp"
+#include "request.hpp"
 #include "request_parser.hpp"
 #include "string.hpp"
 #include "url.hpp"
-#include "request.hpp"
 #include <catch2/catch.hpp>
+#include <ostream>
 
 using namespace f16::http::server;
 
@@ -242,11 +243,11 @@ TEST_CASE("parser works properly", "[request_parser]") // NOLINT
 
 TEST_CASE("parser works properly with body", "[request_parser]") // NOLINT
 {
-  // Request-Line = Method SP Request-URI SP HTTP-Version CRLF 
+  // Request-Line = Method SP Request-URI SP HTTP-Version CRLF
 
   request_parser grammar;
   http_request req;
-  const std::string input{ 
+  const std::string input{
     "GET /hello.htm HTTP/1.1\r\nAccept-Language: en-us\r\nContent-Length: 12\r\n\r\nhello world!"
   };
   const auto result = grammar.parse(req, input.begin(), input.end());
@@ -266,11 +267,11 @@ TEST_CASE("parser works properly with body", "[request_parser]") // NOLINT
 
 TEST_CASE("parser works properly with binary body", "[request_parser]") // NOLINT
 {
-  // Request-Line = Method SP Request-URI SP HTTP-Version CRLF 
+  // Request-Line = Method SP Request-URI SP HTTP-Version CRLF
 
   request_parser grammar;
   http_request req;
-  const std::string input{ 
+  const std::string input{
     "POST /upload HTTP/1.1\r\nContent-Length: 4\r\n\r\n\x01\x02\x03\x04"
   };
   const auto result = grammar.parse(req, input.begin(), input.end());
@@ -284,15 +285,15 @@ TEST_CASE("parser works properly with binary body", "[request_parser]") // NOLIN
   CHECK(req.headers[0].name == "Content-Length");
   CHECK(req.headers[0].value == "4");
   CHECK(req.body == std::string("\x01\x02\x03\x04", 4));
-} 
+}
 
 TEST_CASE("parser works properly with wrong body size", "[request_parser]") // NOLINT
 {
-  // Request-Line = Method SP Request-URI SP HTTP-Version CRLF 
+  // Request-Line = Method SP Request-URI SP HTTP-Version CRLF
 
   request_parser grammar;
   http_request req;
-  const std::string input{ 
+  const std::string input{
     "GET /hello.htm HTTP/1.1\r\nAccept-Language: en-us\r\nContent-Length: 20\r\n\r\nhello world!"
   };
   const auto result = grammar.parse(req, input.begin(), input.end());
@@ -305,7 +306,7 @@ TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
 
   auto make_handler = [&calls](int id) {
     return [id, &calls](const request& req, std::ostream& /*os*/) {
-      calls.emplace_back(id, req.resource("1")+req.resource("2"));
+      calls.emplace_back(id, req.resource("1") + req.resource("2"));
     };
   };
 
@@ -317,7 +318,7 @@ TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
   router.add("/bar/foo/bbb/:1", get(make_handler(5)));
   router.add("/bar/foo/bbb/ccc/:1", get(make_handler(6)));
   router.add("/foo/bar/aaa/:1", get(make_handler(7)));
-  
+
   auto test_request = [&](const std::string& uri, reply::status_type expected_status, const std::string& method = "GET") {
     CAPTURE(method, uri, expected_status);
     http_request req;
@@ -365,7 +366,7 @@ TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
 
 TEST_CASE("dynamic_content handles request correctly", "[dynamic_content][serve]") // NOLINT
 {
-  auto handler = get([](const request& req, std::ostream& os) {
+  auto handler = get([](const request& req, f16::response_stream& os) {
     os << "Resource1: " << req.resource("resource1") << "\n";
     os << "Resource2: " << req.resource("resource2") << "\n";
     os << "QueryParam: " << req.query("param") << "\n";

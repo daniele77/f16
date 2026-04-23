@@ -4,16 +4,18 @@
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "plain_connection.hpp"
-#include <utility>
-#include <vector>
 #include "connection_manager.hpp"
 #include "request_handler.hpp"
+#include <utility>
 
-namespace f16::http::server {
+namespace f16::http::server
+{
 
 plain_connection::plain_connection(asio::ip::tcp::socket socket,
-    connection_manager& manager, request_handler& handler, logger_ptr log)
-  : base_connection(std::move(socket), manager, handler, log)
+  connection_manager& manager,
+  request_handler& handler,
+  logger_ptr log)
+  : base_connection(std::move(socket), manager, handler, std::move(log))
 {
 }
 

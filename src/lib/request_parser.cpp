@@ -5,17 +5,21 @@
 
 #include "request_parser.hpp"
 #include "http_request.hpp"
-#include <charconv>
 #include <algorithm>
-#include <cctype>
 #include <cassert>
+#include <cctype>
+#include <charconv>
+#include <cstddef>
+#include <optional>
+#include <system_error>
 
-namespace f16::http::server {
+namespace f16::http::server
+{
 
 request_parser::request_parser()
-  : state_(method_start),
-    content_length_(std::nullopt),
-    body_bytes_remaining_(0)
+  : state_(method_start)
+  , content_length_(std::nullopt)
+  , body_bytes_remaining_(0)
 {
 }
 
@@ -258,13 +262,12 @@ request_parser::result_type request_parser::consume(http_request& req, char inpu
     if (input == '\r')
     {
       state_ = expecting_newline_2;
-      
+
       if (content_length_.has_value())
         return indeterminate;
 
       std::string name = req.headers.back().name;
-      std::transform(name.begin(), name.end(), name.begin(),
-        [](unsigned char c) -> char { return static_cast<char>(std::tolower(c)); });
+      std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) -> char { return static_cast<char>(std::tolower(c)); });
 
       if (name == "content-length")
       {
@@ -337,10 +340,25 @@ constexpr bool request_parser::is_tspecial(int c)
 {
   switch (c)
   {
-  case '(': case ')': case '<': case '>': case '@':
-  case ',': case ';': case ':': case '\\': case '"':
-  case '/': case '[': case ']': case '?': case '=':
-  case '{': case '}': case ' ': case '\t':
+  case '(':
+  case ')':
+  case '<':
+  case '>':
+  case '@':
+  case ',':
+  case ';':
+  case ':':
+  case '\\':
+  case '"':
+  case '/':
+  case '[':
+  case ']':
+  case '?':
+  case '=':
+  case '{':
+  case '}':
+  case ' ':
+  case '\t':
     return true;
   default:
     return false;

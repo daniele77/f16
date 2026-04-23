@@ -3,18 +3,22 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include <sstream>
 #include "static_content.hpp"
-#include "reply.hpp"
-#include "mime_types.hpp"
 #include "http_request.hpp"
+#include "mime_types.hpp"
+#include "reply.hpp"
 #include "string.hpp"
-#include <fstream>
+#include <exception>
 #include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <utility>
 
 namespace fs = std::filesystem;
 
-namespace f16::http::server {
+namespace f16::http::server
+{
 
 static_content::static_content(std::string _doc_root)
   : doc_root(std::move(_doc_root))
@@ -30,7 +34,7 @@ bool static_content::serve_if_match(const std::string& location, const std::stri
   if (resource.rfind(location, 0) != 0) // does not starts with
     return false;
 
-  fs::path resource_path{resource.substr(location.size())};
+  fs::path resource_path{ resource.substr(location.size()) };
   resource_path = doc_root / resource_path.relative_path();
 
   if (fs::is_directory(resource_path))
@@ -75,17 +79,16 @@ void static_content::list_directory(const fs::path& full_path, reply& rep)
   {
     std::ostringstream ss;
 
-    ss <<
-      "<!DOCTYPE html>\r\n"
-      "<html lang=\"en\">\r\n"
-      "<head>\r\n"
-      "<meta charset=\"utf-8\">\r\n"
-      "<title>Directory listing</title>\r\n"
-      "</head>\r\n"
-      "<body>\r\n"
-      "<h1>Directory listing</h1>\r\n"
-      "<hr>\r\n"
-      "<ul>\r\n";
+    ss << "<!DOCTYPE html>\r\n"
+          "<html lang=\"en\">\r\n"
+          "<head>\r\n"
+          "<meta charset=\"utf-8\">\r\n"
+          "<title>Directory listing</title>\r\n"
+          "</head>\r\n"
+          "<body>\r\n"
+          "<h1>Directory listing</h1>\r\n"
+          "<hr>\r\n"
+          "<ul>\r\n";
     for (const auto& entry : fs::directory_iterator(full_path))
     {
       if (!entry.is_regular_file() && !entry.is_directory()) continue;
@@ -94,11 +97,10 @@ void static_content::list_directory(const fs::path& full_path, reply& rep)
         name += '/';
       ss << "<li><a href=\"" << name << "\">" << name << "</a></li>\r\n";
     }
-    ss <<
-      "</ul>\r\n"
-      "<hr>\r\n"
-      "</body>\r\n"
-      "</html> \r\n";
+    ss << "</ul>\r\n"
+          "<hr>\r\n"
+          "</body>\r\n"
+          "</html> \r\n";
 
     rep = reply(ss.str(), reply::ok, mime_types::extension_to_type(".html"));
   }

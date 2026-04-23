@@ -8,10 +8,14 @@
 #include <string>
 #include <unordered_map>
 #include <cassert>
+#include <utility>
+#include <vector>
 
 namespace f16::http::server {
 
 namespace status_strings {
+
+namespace {
 
 static const std::string ok = // NOLINT
   "HTTP/1.0 200 OK\r\n";
@@ -50,7 +54,7 @@ static const std::string gateway_timeout = // NOLINT
 static const std::string http_version_not_supported = // NOLINT
   "HTTP/1.0 505 HTTP Version Not Supported\r\n";
 
-static asio::const_buffer to_buffer(reply::status_type status)
+asio::const_buffer to_buffer(reply::status_type status)
 {
   switch (status)
   {
@@ -95,6 +99,8 @@ static asio::const_buffer to_buffer(reply::status_type status)
   }
 }
 
+} // namespace
+
 } // namespace status_strings
 
 namespace misc_strings {
@@ -123,6 +129,8 @@ std::vector<asio::const_buffer> reply::to_buffers()
 }
 
 namespace stock_replies {
+
+namespace {
 
 static const std::string ok = ""; // NOLINT
 static const std::string created = // NOLINT
@@ -211,7 +219,7 @@ static const std::string http_version_not_supported = // NOLINT
   "<body><h1>505 HTTP Version Not Supported</h1></body>"
   "</html>";
 
-static std::string to_string(reply::status_type status)
+std::string to_string(reply::status_type status)
 {
   switch (status)
   {
@@ -252,6 +260,8 @@ static std::string to_string(reply::status_type status)
   }
 }
 
+} // namespace
+
 } // namespace stock_replies
 
 reply::reply()
@@ -259,13 +269,13 @@ reply::reply()
 {
 }
 
-reply::reply(std::string _content, status_type _status, std::string content_type)
+reply::reply(std::string _content, status_type _status, const std::string& content_type)
   : status(_status),
     content(std::move(_content)),
     headers{
       {"Date", http_date()},
       {"Content-Length", std::to_string(this->content.size())},
-      {"Content-Type", std::move(content_type)}
+      {"Content-Type", content_type}
     }
 {
 }

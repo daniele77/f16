@@ -4,9 +4,10 @@
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
-#include <iostream>
 #include "http_server.hpp"
+#include "path_router.hpp"
 #include "static_content.hpp"
+#include <iostream>
 
 int main(int /*argc*/, const char** /*argv*/)
 {
@@ -16,34 +17,33 @@ int main(int /*argc*/, const char** /*argv*/)
 
     using namespace f16::http::server;
 
-    http_server server_1{ioc};
+    http_server server_1{ ioc };
     path_router router_1;
     router_1.add("/", static_content("."));
     server_1.set(std::move(router_1));
     server_1.listen("7000", "0.0.0.0");
-    http_server server_2{ioc};
+    http_server server_2{ ioc };
     path_router router_2;
     router_2.add("/", static_content(".."));
     server_2.set(std::move(router_2));
     server_2.listen("7001", "0.0.0.0");
 
-    while(true)
+    while (true)
     {
-        try
-        {
-            ioc.run();
-            break; // run() exited normally
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Exception caugth in io_context scheduler: " << e.what() << std::endl;
-        }
-    }        
-
+      try
+      {
+        ioc.run();
+        break; // run() exited normally
+      }
+      catch (const std::exception& e)
+      {
+        std::cerr << "Exception caugth in io_context scheduler: " << e.what() << '\n';
+      }
+    }
   }
-  catch (const std::exception &e)
+  catch (const std::exception& e)
   {
-    std::cerr << "Unhandled exception in main: " << e.what() << std::endl;
+    std::cerr << "Unhandled exception in main: " << e.what() << '\n';
     return 1;
   }
   return 0;

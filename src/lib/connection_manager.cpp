@@ -4,8 +4,10 @@
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "connection_manager.hpp"
+#include "connection.hpp"
 
-namespace f16::http::server {
+namespace f16::http::server
+{
 
 connection_manager::connection_manager() = default;
 
@@ -29,7 +31,7 @@ void connection_manager::stop(const connection_ptr& c)
 
 void connection_manager::stop_all()
 {
-  for (const auto& c: connections_)
+  for (const auto& c : connections_)
     c->stop();
   connections_.clear();
 }

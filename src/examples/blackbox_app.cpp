@@ -3,15 +3,17 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include "f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
-#include <iostream>
-#include <string>
 #include "dynamic_content.hpp"
+#include "f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
 #include "http_server.hpp"
 #include "request.hpp"
 #include "static_content.hpp"
+#include <cstdlib>
+#include <iostream>
+#include <string>
 
-namespace {
+namespace
+{
 
 struct config
 {
@@ -44,7 +46,7 @@ config parse_args(int argc, char* argv[])
     }
 
     std::cerr << "Unknown/invalid argument: " << arg << '\n'
-              << "Usage: " << argv[0] << " [--host <ip>] [--port <port>] [--doc-root <path>]" << std::endl;
+              << "Usage: " << argv[0] << " [--host <ip>] [--port <port>] [--doc-root <path>]\n";
     std::exit(2);
   }
 
@@ -100,19 +102,19 @@ int main(int argc, char* argv[])
     }));
 
     router.add("/items/:id", post([](const request& req, f16::response_stream& os) {
-      os << f16::json << "{\"method\":\"POST\",\"id\":\"" << req.resource("id") << "\"}";
+      os << f16::json << R"({"method":"POST","id":")" << req.resource("id") << R"("})";
     }));
 
     router.add("/items/:id", put([](const request& req, f16::response_stream& os) {
-      os << f16::json << "{\"method\":\"PUT\",\"id\":\"" << req.resource("id") << "\"}";
+      os << f16::json << R"({"method":"PUT","id":")" << req.resource("id") << R"("})";
     }));
 
     router.add("/path/:var1/to/:var2", get([](const request& req, f16::response_stream& os) {
-      os << f16::json << "{\"method\":\"GET\",\"parameters\":\"yes\",\"var1\":\"" << req.resource("var1") << "\",\"var2\":\"" << req.resource("var2") << "\"}";
+      os << f16::json << R"({"method":"GET","parameters":"yes","var1":")" << req.resource("var1") << R"(","var2":")" << req.resource("var2") << R"("})";
     }));
 
     router.add("/path", get([](const request& /*req*/, f16::response_stream& os) {
-      os << f16::json << "{\"method\":\"GET\",\"parameters\":\"no\"}";
+      os << f16::json << R"({"method":"GET","parameters":"no"})";
     }));
 
     router.add("/echo", post([](const request& req, f16::response_stream& os) {
@@ -137,13 +139,13 @@ int main(int argc, char* argv[])
       }
       catch (const std::exception& e)
       {
-        std::cerr << "Exception caught in io_context scheduler: " << e.what() << std::endl;
+        std::cerr << "Exception caught in io_context scheduler: " << e.what() << '\n';
       }
     }
   }
   catch (const std::exception& e)
   {
-    std::cerr << "Unhandled exception in main: " << e.what() << std::endl;
+    std::cerr << "Unhandled exception in main: " << e.what() << '\n';
     return 1;
   }
 

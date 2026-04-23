@@ -85,7 +85,7 @@ struct reply
 
   reply();
 
-  reply(std::string content, status_type status = ok, std::string content_type = "text/plain");
+  reply(std::string content, status_type status = ok, const std::string& content_type = "text/plain");
 
   void clear_content();
   

@@ -5,35 +5,33 @@
 
 #include "url.hpp"
 #include <cctype>
+#include <cstddef>
 #include <ios>
 #include <sstream>
+#include <string>
 
-namespace f16::http::server {
+namespace f16::http::server
+{
 
-  bool url_decode(const std::string& in, std::string& out)
+bool url_decode(const std::string& in, std::string& out)
+{
+  out.clear();
+  out.reserve(in.size());
+  for (std::size_t i = 0; i < in.size(); ++i)
   {
-    out.clear();
-    out.reserve(in.size());
-    for (std::size_t i = 0; i < in.size(); ++i)
+    if (in[i] == '%')
     {
-      if (in[i] == '%')
+      if (i + 2 < in.size())
       {
-        if (i + 2 < in.size())
+        char hex[3] = { in[i + 1], in[i + 2], '\0' };
+        if (std::isxdigit(hex[0]) && std::isxdigit(hex[1]))
         {
-          char hex[3] = { in[i + 1], in[i + 2], '\0' };
-          if (std::isxdigit(hex[0]) && std::isxdigit(hex[1]))
+          int value = 0;
+          std::istringstream is(hex);
+          if (is >> std::hex >> value)
           {
-            int value = 0;
-            std::istringstream is(hex);
-            if (is >> std::hex >> value)
-            {
-              out += static_cast<char>(value);
-              i += 2;
-            }
-            else
-            {
-              return false;
-            }
+            out += static_cast<char>(value);
+            i += 2;
           }
           else
           {
@@ -45,17 +43,21 @@ namespace f16::http::server {
           return false;
         }
       }
-      else if (in[i] == '+')
-      {
-        out += ' ';
-      }
       else
       {
-        out += in[i];
+        return false;
       }
     }
-    return true;
+    else if (in[i] == '+')
+    {
+      out += ' ';
+    }
+    else
+    {
+      out += in[i];
+    }
   }
+  return true;
+}
 
 } // namespace f16::http::server
-

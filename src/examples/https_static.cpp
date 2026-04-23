@@ -4,12 +4,15 @@
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
-#include <iostream>
-#include "https_server.hpp"
-#include "http_server.hpp"
-#include "static_content.hpp"
-#include "reply.hpp"
 #include "http_request.hpp"
+#include "http_server.hpp"
+#include "https_server.hpp"
+#include "path_router.hpp"
+#include "reply.hpp"
+#include "static_content.hpp"
+#include <exception>
+#include <iostream>
+#include <utility>
 
 int main(int /*argc*/, const char** /*argv*/)
 {
@@ -29,17 +32,16 @@ int main(int /*argc*/, const char** /*argv*/)
       "key.pem",
       "dh4096.pem"
     };
-    https_server server{ioc, ssl_s};
+    https_server server{ ioc, ssl_s };
     path_router router;
     router.add("/", static_content("."));
     server.set(std::move(router));
     server.listen("7000", "0.0.0.0");
 
     // http server redirects to https
-    http_server http_server{ioc};
+    http_server http_server{ ioc };
     http_server.set(
-      [](const http_request& req, reply& res)
-      {
+      [](const http_request& req, reply& res) {
         std::string host = req.get_header("host");
         if (host.empty()) // no host header
         {
@@ -52,27 +54,25 @@ int main(int /*argc*/, const char** /*argv*/)
           res = reply::stock_reply(reply::moved_permanently); // 301
           res.add_header("Location", "https://" + host + ":7000" + req.uri);
         }
-      }
-    );
+      });
     http_server.listen("8002", "0.0.0.0");
 
-    while(true)
+    while (true)
     {
-        try
-        {
-            ioc.run();
-            break; // run() exited normally
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Exception caugth in io_context scheduler: " << e.what() << std::endl;
-        }
-    }        
-
+      try
+      {
+        ioc.run();
+        break; // run() exited normally
+      }
+      catch (const std::exception& e)
+      {
+        std::cerr << "Exception caugth in io_context scheduler: " << e.what() << '\n';
+      }
+    }
   }
-  catch (const std::exception &e)
+  catch (const std::exception& e)
   {
-    std::cerr << "Unhandled exception in main: " << e.what() << std::endl;
+    std::cerr << "Unhandled exception in main: " << e.what() << '\n';
     return 1;
   }
   return 0;
