@@ -104,12 +104,16 @@ Each entry in `sinks` must contain `type`.
 }
 ```
 
-- Supported on Unix-like platforms (`__unix__` / `__APPLE__`)
+- Supported on Unix-like platforms (`__unix__` / `__APPLE__`); on other platforms the sink is skipped with a warning.
 - `ident` optional (default: `"f16"`)
 - `facility` optional (default: `"user"`)
-  - can be string (`auth`, `authpriv`, `cron`, `daemon`, `ftp`, `kern`, `local0`..`local7`, `lpr`, `mail`, `news`, `syslog`, `user`, `uucp`) or integer
+  - accepted strings: `auth`, `cron`, `daemon`, `kern`, `local0`..`local7`, `lpr`, `mail`, `news`, `syslog`, `user`, `uucp`
+  - platform-dependent strings: `authpriv` (Linux/BSD), `ftp` (BSD/macOS)
+  - can also be an integer
 - `option` optional (default: `"pid"`)
-  - can be string (`pid`, `cons`, `ndelay`, `odelay`, `nowait`, `perror`) or integer
+  - accepted strings: `pid`, `cons`
+  - platform-dependent strings: `ndelay`, `odelay`, `nowait`, `perror`
+  - can also be an integer
 - `options` optional alternative to `option` (array of strings/integers, bitwise OR)
 - `enable_formatting` optional (default: `false`)
 - `level` optional (sink-level override)
