@@ -4,21 +4,27 @@ find_package(nlohmann_json CONFIG)
 find_package(CLI11 REQUIRED)
 
 add_executable(f16
-main.cpp)
+  main.cpp
+  server_collection.hpp
+  server_collection.cpp
+  logger_collection.hpp
+  logger_collection.cpp
+  spdlog_logger.hpp
+)
 
 # link project_options/warnings
 target_link_libraries(f16
-PRIVATE f16_project_options f16_project_warnings
+  PRIVATE
+    f16_project_options
+    f16_project_warnings
 )
 
-target_link_libraries(
-  f16
+target_link_libraries(f16
   PRIVATE
-  f16lib
-  )
+    f16lib
+)
   
-target_link_system_libraries(
-  f16
+target_link_system_libraries(f16
   PRIVATE
     CLI11::CLI11
     fmt::fmt
@@ -26,5 +32,9 @@ target_link_system_libraries(
     nlohmann_json::nlohmann_json
 )
 
-target_include_directories(f16 PRIVATE "${CMAKE_BINARY_DIR}/configured_files/include")
+target_include_directories(f16
+  PRIVATE
+    "${CMAKE_BINARY_DIR}/configured_files/include"
+    ${STANDALONE_ASIO_INCLUDE_PATH}
+)
 

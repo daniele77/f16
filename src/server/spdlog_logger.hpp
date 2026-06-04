@@ -6,9 +6,10 @@
 #ifndef F16_HTTP_SERVER_SPDLOG_LOGGER_HPP
 #define F16_HTTP_SERVER_SPDLOG_LOGGER_HPP
 
-#include "../lib/logger.hpp"
+#include "logger.hpp"
 #include <spdlog/spdlog.h>
 #include <memory>
+#include <cassert>
 
 namespace f16::http::server {
 
@@ -16,15 +17,27 @@ namespace f16::http::server {
 class spdlog_logger : public logger
 {
 public:
-  /// Create a logger with the given spdlog logger
+  /// Create a logger with the same backend for access and error logs
   explicit spdlog_logger(std::shared_ptr<spdlog::logger> spdlog_instance)
-    : spdlog_logger_(spdlog_instance)
+    : access_logger_(std::move(spdlog_instance)),
+      error_logger_(access_logger_)
   {
+    assert(access_logger_ != nullptr);
+    assert(error_logger_ != nullptr);
+  }
+
+  /// Create a logger with dedicated backends for access and error logs
+  spdlog_logger(std::shared_ptr<spdlog::logger> access_logger, std::shared_ptr<spdlog::logger> error_logger)
+    : access_logger_(std::move(access_logger)),
+      error_logger_(std::move(error_logger))
+  {
+    assert(access_logger_ != nullptr);
+    assert(error_logger_ != nullptr);
   }
 
   void access(const access_log_event& event) override
   {
-    spdlog_logger_->info("{} {} {} {} {} \"{}\"",
+    access_logger_->info("{} {} {} {} {} \"{}\"",
       event.client_ip,
       event.method,
       event.uri,
@@ -35,26 +48,27 @@ public:
 
   void info(const std::string& message) override
   {
-    spdlog_logger_->info(message);
+    error_logger_->info(message);
   }
 
   void warn(const std::string& message) override
   {
-    spdlog_logger_->warn(message);
+    error_logger_->warn(message);
   }
 
   void error(const std::string& message) override
   {
-    spdlog_logger_->error(message);
+    error_logger_->error(message);
   }
 
   void debug(const std::string& message) override
   {
-    spdlog_logger_->debug(message);
+    error_logger_->debug(message);
   }
 
 private:
-  std::shared_ptr<spdlog::logger> spdlog_logger_;
+  std::shared_ptr<spdlog::logger> access_logger_;
+  std::shared_ptr<spdlog::logger> error_logger_;
 };
 
 } // namespace f16::http::server

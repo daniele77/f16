@@ -2,33 +2,35 @@
 
 ## About f16 server
 
-f16 server is a high-performance static web server,
-which leverages `f16lib` library’s capabilities.
+The `f16` command includes a high-performance static web server,
+which leverages `f16lib` library capabilities.
 
-f16 server is a command-line tool that offers two modes of operation:
-simple and advanced.
+The server supports two modes of operation:
+`serve` and `config`.
 
-### Simple Mode
-In simple mode, `f16-server` serves static files from a specified root directory.
+### Serve mode
+In `serve` mode, `f16` serves static files from a specified root directory.
 
 ```sh
-f16 simple <root_doc> [--bind=<address> --port=<port>]
+f16 serve <root_doc> [--bind=<address> --port=<port>]
 ```
 
 - `<root_doc>`: The root directory to serve files from.
 - `--bind=<address>`: The binding address (default: `0.0.0.0`).
 - `--port=<port>`: The port to listen on (default: `80`).
 
-### Advanced Mode
-In advanced mode, `f16-server` loads a JSON configuration file to define multiple servers with custom settings.
+### Config mode
+In `config` mode, `f16` loads a JSON configuration file to define multiple servers with custom settings.
 
 ```sh
-f16 advanced <cfg_file>
+f16 config <config_path>
 ```
 
-- `<cfg_file>`: The path to the JSON configuration file.
+- `<config_path>`: The path to the JSON configuration file.
 
-### Example JSON configuration:
+For the complete configuration reference, see [README_f16server_config.md](README_f16server_config.md).
+
+### Example JSON configuration
 
 ```json
 {
@@ -84,19 +86,23 @@ f16 advanced <cfg_file>
 }
 ```
 
-### Configuration options:
+### Configuration options
 
 - `listen_address`: The binding address.
 - `listen_port`: The listening port.
+- `logs`: Optional global logging configuration (`flush_interval_ms`, `access`, `error`).
 - `ssl`: SSL/TLS configuration.
+- `return`: Optional fixed reply configuration.
 - `locations`: A list of location-root mappings.
+
+Each server entry should define one of `return` or `locations`.
 
 ### Command-line options
 
 ```sh
 Usage:
-  f16 simple <root_doc> [--bind=<address> --port=<port>]
-  f16 advanced <cfg_file>
+  f16 serve <root_doc> [--bind=<address> --port=<port>]
+  f16 config <config_path>
   f16 (-h | --help)
   f16 --version
 

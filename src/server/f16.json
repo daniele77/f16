@@ -1,4 +1,47 @@
 {
+  "logs":
+  {
+    "access":
+    {
+      "enabled": true,
+      "sinks": [
+        {
+          "type": "stdout",
+          "color": true
+        },
+        {
+          "type": "file",
+          "path": "/var/log/access.log",
+          // "format": "$remote_addr - $remote_user [$time_local] \"$request\" $status $body_bytes_sent \"$http_referer\" \"$http_user_agent\"",
+          "max_size": 10485760, // 10 MB
+          "max_files": 5
+        }
+      ]
+    },
+    "error":
+    {
+      "enabled": true,
+      "level": "info", // no log below this level will be recorded
+      "sinks": [
+        {
+          "type": "stderr",
+          "color": true,
+          "level": "error" // override global level for this sink
+        },
+        {
+          "type": "file",
+          "path": "/var/log/error.log",
+          "max_size": 10485760, // 10 MB
+          "max_files": 5
+        },
+        {
+          "type": "syslog",
+          "ident": "myserver",
+          "facility": "local0"
+        }
+      ]
+    }
+  },
   "servers":
   [
     {
@@ -14,7 +57,6 @@
       }
     },
     {
-      "listen_address": "0.0.0.0",
       "listen_port": "4000",
       "ssl":
       {

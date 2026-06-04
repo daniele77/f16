@@ -17,7 +17,7 @@
 
 f16 is a versatile and lightweight C++17 library for building efficient HTTP and HTTPS servers, ideal for REST APIs and custom web applications.
 It provides a simple and intuitive API for defining routes, handling requests, and serving static or dynamic content.
-Additionally, f16 includes a high-performance static web server, f16-server, which leverages the library’s capabilities.
+Additionally, f16 includes a high-performance static web server tool (`f16` command), which leverages the library’s capabilities.
 
 ## Features
 - Supports both HTTP and HTTPS connections.
@@ -287,4 +287,4 @@ run them separately.
 See [f16 library](README_f16lib.md) to learn how to write applications
 using the `f16lib` library,
 and [f16 server](README_f16server.md) to learn how to launch and use the
-`f16 server`.
+`f16` server modes (`serve` mode and `config` mode).

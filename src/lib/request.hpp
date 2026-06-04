@@ -10,7 +10,6 @@
 #include <vector>
 #include <unordered_map>
 #include "http_request.hpp"
-// #include <iostream> // TODO remove
 
 namespace f16::http::server {
 
