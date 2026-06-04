@@ -91,6 +91,29 @@ Each entry in `sinks` must contain `type`.
 - `level` optional (sink-level override)
 - uses rotating file sink
 
+#### `syslog`
+
+```json
+{
+  "type": "syslog",
+  "ident": "f16",
+  "facility": "user",
+  "option": "pid",
+  "enable_formatting": false,
+  "level": "warn"
+}
+```
+
+- Supported on Unix-like platforms (`__unix__` / `__APPLE__`)
+- `ident` optional (default: `"f16"`)
+- `facility` optional (default: `"user"`)
+  - can be string (`auth`, `authpriv`, `cron`, `daemon`, `ftp`, `kern`, `local0`..`local7`, `lpr`, `mail`, `news`, `syslog`, `user`, `uucp`) or integer
+- `option` optional (default: `"pid"`)
+  - can be string (`pid`, `cons`, `ndelay`, `odelay`, `nowait`, `perror`) or integer
+- `options` optional alternative to `option` (array of strings/integers, bitwise OR)
+- `enable_formatting` optional (default: `false`)
+- `level` optional (sink-level override)
+
 ### Level values
 
 Any value accepted by spdlog `from_str`, typically:
@@ -105,7 +128,6 @@ Any value accepted by spdlog `from_str`, typically:
 
 ### Not currently supported in sink config
 
-- `type: "syslog"` — currently skipped with warning.
 - custom access `format` — currently ignored.
 
 ---

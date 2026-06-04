@@ -1,4 +1,6 @@
 find_package(Catch2 REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 include(CTest)
 include(Catch)
@@ -45,6 +47,37 @@ catch_discover_tests(
   tests
   TEST_PREFIX "unittests."
   # REPORTER ${TEST_REPORTER}
+  OUTPUT_DIR .
+  OUTPUT_PREFIX "unittests."
+  OUTPUT_SUFFIX .xml
+)
+
+add_executable(server_logger_tests
+  logger_collection_tests.cpp
+  ../../src/server/logger_collection.cpp
+)
+
+target_include_directories(server_logger_tests
+  PRIVATE
+    ../../src/server
+)
+
+target_link_libraries(server_logger_tests
+  PRIVATE
+    f16_project_options f16_project_warnings
+    catch_main
+    f16lib
+)
+
+target_link_libraries(server_logger_tests
+  PRIVATE
+    spdlog::spdlog
+    nlohmann_json::nlohmann_json
+)
+
+catch_discover_tests(
+  server_logger_tests
+  TEST_PREFIX "unittests."
   OUTPUT_DIR .
   OUTPUT_PREFIX "unittests."
   OUTPUT_SUFFIX .xml

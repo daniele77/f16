@@ -9,12 +9,120 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/stdout_sinks.h>
 #include <spdlog/sinks/rotating_file_sink.h>
-#include <spdlog/sinks/syslog_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/null_sink.h>
+#if defined(__unix__) || defined(__APPLE__)
+#include <spdlog/sinks/syslog_sink.h>
+#include <syslog.h>
+#endif
 #include "spdlog_logger.hpp"
 
 namespace f16::http::server {
+
+namespace {
+
+#if defined(__unix__) || defined(__APPLE__)
+int syslog_facility_from_string(const std::string& facility)
+{
+  if (facility == "auth") return LOG_AUTH;
+#if defined(LOG_AUTHPRIV)
+  if (facility == "authpriv") return LOG_AUTHPRIV;
+#endif
+  if (facility == "cron") return LOG_CRON;
+  if (facility == "daemon") return LOG_DAEMON;
+#if defined(LOG_FTP)
+  if (facility == "ftp") return LOG_FTP;
+#endif
+  if (facility == "kern") return LOG_KERN;
+  if (facility == "local0") return LOG_LOCAL0;
+  if (facility == "local1") return LOG_LOCAL1;
+  if (facility == "local2") return LOG_LOCAL2;
+  if (facility == "local3") return LOG_LOCAL3;
+  if (facility == "local4") return LOG_LOCAL4;
+  if (facility == "local5") return LOG_LOCAL5;
+  if (facility == "local6") return LOG_LOCAL6;
+  if (facility == "local7") return LOG_LOCAL7;
+  if (facility == "lpr") return LOG_LPR;
+  if (facility == "mail") return LOG_MAIL;
+  if (facility == "news") return LOG_NEWS;
+  if (facility == "syslog") return LOG_SYSLOG;
+  if (facility == "user") return LOG_USER;
+  if (facility == "uucp") return LOG_UUCP;
+  throw std::invalid_argument("Unknown syslog facility: " + facility);
+}
+
+int parse_syslog_facility(const nlohmann::json& sink_cfg)
+{
+  if (!sink_cfg.contains("facility"))
+    return LOG_USER;
+
+  const auto& facility_cfg = sink_cfg.at("facility");
+  if (facility_cfg.is_number_integer())
+    return facility_cfg.get<int>();
+  if (facility_cfg.is_string())
+    return syslog_facility_from_string(facility_cfg.get<std::string>());
+
+  throw std::invalid_argument("syslog 'facility' must be an integer or a string");
+}
+
+int syslog_option_from_string(const std::string& option)
+{
+  if (option == "pid") return LOG_PID;
+  if (option == "cons") return LOG_CONS;
+#if defined(LOG_NDELAY)
+  if (option == "ndelay") return LOG_NDELAY;
+#endif
+#if defined(LOG_ODELAY)
+  if (option == "odelay") return LOG_ODELAY;
+#endif
+#if defined(LOG_NOWAIT)
+  if (option == "nowait") return LOG_NOWAIT;
+#endif
+#if defined(LOG_PERROR)
+  if (option == "perror") return LOG_PERROR;
+#endif
+  throw std::invalid_argument("Unknown syslog option: " + option);
+}
+
+int parse_syslog_option(const nlohmann::json& sink_cfg)
+{
+  if (!sink_cfg.contains("option") && !sink_cfg.contains("options"))
+    return LOG_PID;
+
+  if (sink_cfg.contains("option"))
+  {
+    const auto& option_cfg = sink_cfg.at("option");
+    if (option_cfg.is_number_integer())
+      return option_cfg.get<int>();
+    if (option_cfg.is_string())
+      return syslog_option_from_string(option_cfg.get<std::string>());
+    throw std::invalid_argument("syslog 'option' must be an integer or a string");
+  }
+
+  int option_flags = 0;
+  const auto& options_cfg = sink_cfg.at("options");
+  if (!options_cfg.is_array())
+    throw std::invalid_argument("syslog 'options' must be an array");
+
+  for (const auto& entry : options_cfg)
+  {
+    if (entry.is_number_integer())
+    {
+      option_flags |= entry.get<int>();
+      continue;
+    }
+    if (entry.is_string())
+    {
+      option_flags |= syslog_option_from_string(entry.get<std::string>());
+      continue;
+    }
+    throw std::invalid_argument("syslog 'options' entries must be integers or strings");
+  }
+  return option_flags;
+}
+#endif
+
+} // namespace
 
 logger_collection::logger_collection(const nlohmann::json& config) :
   root_config(config),
@@ -114,8 +222,16 @@ std::vector<spdlog::sink_ptr> logger_collection::create_sinks_from_config(const 
       }
       else if (type == "syslog")
       {
-          spdlog::warn("syslog sink currently not supported in f16 server logger config; skipping");
-          continue;
+      #if defined(__unix__) || defined(__APPLE__)
+        const std::string ident = sink_cfg.value("ident", std::string("f16"));
+        const int option = parse_syslog_option(sink_cfg);
+        const int facility = parse_syslog_facility(sink_cfg);
+        const bool enable_formatting = sink_cfg.value("enable_formatting", false);
+        sink = std::make_shared<spdlog::sinks::syslog_sink_mt>(ident, option, facility, enable_formatting);
+      #else
+        spdlog::warn("syslog sink is not supported on this platform; skipping");
+        continue;
+      #endif
       }
       else
       {
