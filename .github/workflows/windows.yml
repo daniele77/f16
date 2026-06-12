@@ -78,12 +78,7 @@ jobs:
 
       - name: Setup conan
         run: |
-          conan install . -of build --build missing \
-            -s:h build_type=${{matrix.build_type}} \
-            -s:h compiler.cppstd=${{ matrix.standard }} \
-            -s:b build_type=${{matrix.build_type}} \
-            -s:b compiler.cppstd=${{ matrix.standard }} \
-            -c tools.cmake.cmaketoolchain:generator="Ninja"
+          conan install . -of build --build missing -s:h build_type=${{matrix.build_type}} -s:h compiler.cppstd=${{ matrix.standard }} -s:b build_type=${{matrix.build_type}} -s:b compiler.cppstd=${{ matrix.standard }} -c tools.cmake.cmaketoolchain:generator="Ninja"
 
 
       # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
