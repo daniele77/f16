@@ -41,10 +41,10 @@ public:
   /// For IPv6, try address: 0::0
   void listen(const std::string& port = "80", const std::string& address = "0.0.0.0");
 
+protected:
+  
   /// Get the logger
   logger_ptr get_logger() const { return log_; }
-
-protected:
 
   virtual connection_ptr create_connection(asio::ip::tcp::socket socket, connection_manager& cm, request_handler& rh);
   virtual std::string protocol_name() const { return "HTTP"; }

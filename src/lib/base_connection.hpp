@@ -96,6 +96,7 @@ protected:
           }
           else if (ec != asio::error::operation_aborted)
           {
+            log_->error("Read error from " + request_.client_ip + ": " + ec.message());
             connection_manager_.stop(this->shared_from_this());
           }
         });
@@ -117,6 +118,8 @@ protected:
 
           if (ec != asio::error::operation_aborted)
           {
+            if (ec)
+              self->log_->warn("Write error: " + ec.message());
             self->connection_manager_.stop(self->shared_from_this());
           }
         });

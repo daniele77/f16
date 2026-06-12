@@ -42,7 +42,10 @@ https_server::https_server(asio::io_context& ioc, const ssl_settings& ssl_s, log
 
   // cache in SSL sessions
   if (ssl_s.session_cache)
+  {
     SSL_CTX_set_session_cache_mode(ssl_context_.native_handle(), SSL_SESS_CACHE_SERVER);
+    get_logger()->debug("SSL session cache enabled (size=" + std::to_string(ssl_s.session_cache_size) + ", timeout=" + std::to_string(ssl_s.session_timeout_secs) + "s)");
+  }
   // Set SSL sessions cache size (in number of sessions)
   if (ssl_s.session_cache_size > 0)
     SSL_CTX_sess_set_cache_size(ssl_context_.native_handle(), ssl_s.session_cache_size);
@@ -50,6 +53,9 @@ https_server::https_server(asio::io_context& ioc, const ssl_settings& ssl_s, log
   // Set timeout SSL sessions (in seconds)
   if (ssl_s.session_timeout_secs > 0)
     SSL_CTX_set_timeout(ssl_context_.native_handle(), ssl_s.session_timeout_secs);
+
+  if (!ssl_s.client_certificate.empty())
+    get_logger()->info("HTTPS mutual TLS enabled (client certificate: " + ssl_s.client_certificate + ")");
 }
 
 connection_ptr https_server::create_connection(asio::ip::tcp::socket socket, connection_manager& cm, request_handler& rh)

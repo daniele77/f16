@@ -31,10 +31,12 @@ void ssl_connection::do_handshake()
       {
         if (!ec)
         {
+          log_->debug("TLS handshake completed");
           do_read();
         }
         else
         {
+          log_->warn("TLS handshake failed: " + ec.message());
           connection_manager_.stop(self);
         }
       });

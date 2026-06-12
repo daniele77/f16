@@ -25,6 +25,7 @@ http_server::~http_server()
   try
   {
     acceptor_.close();
+    log_->info(protocol_name() + " server stopped");
   }
   catch (...)
   {
@@ -63,6 +64,10 @@ void http_server::do_accept()
       {
         connection_manager_.start(create_connection(
           std::move(socket), connection_manager_, request_handler_));
+      }
+      else
+      {
+        log_->error("Accept error: " + ec.message());
       }
 
       do_accept();
