@@ -28,6 +28,11 @@ target_link_libraries(tests
     f16lib
   )
 
+target_include_directories(tests
+  PRIVATE
+    ../../src/lib
+)
+
 # automatically discover tests that are defined in catch based test files you can modify the unittests. Set TEST_PREFIX
 # to whatever you want, or use different for different binaries
 

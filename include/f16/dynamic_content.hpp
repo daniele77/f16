@@ -10,7 +10,7 @@
 #include <memory>
 #include <functional>
 #include <sstream>
-#include "f16/reply.hpp"
+#include "reply.hpp"
 
 namespace f16 {
 struct response_stream : public std::ostringstream {

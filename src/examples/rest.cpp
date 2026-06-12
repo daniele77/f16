@@ -3,11 +3,11 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include "dynamic_content.hpp" // get, post, put
-#include "f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
-#include "http_server.hpp"
-#include "path_router.hpp"
-#include "request.hpp"
+#include "f16/dynamic_content.hpp" // get, post, put
+#include "f16/f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
+#include "f16/http_server.hpp"
+#include "f16/path_router.hpp"
+#include "f16/request.hpp"
 #include <exception>
 #include <iostream>
 #include <utility>

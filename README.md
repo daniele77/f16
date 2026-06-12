@@ -182,6 +182,98 @@ cd ../
     cmake -S . -B ./build -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=RELEASE
     cmake --build .
 
+## Using f16 as an installed library (CMake package)
+
+After building, install f16 to a prefix:
+
+```bash
+cmake --install ./build --prefix /tmp/f16-install
+```
+
+This installs:
+- Library: `/tmp/f16-install/lib/libf16lib.a` (or shared library, depending on your build)
+- Public headers: `/tmp/f16-install/include/f16/*`
+- CMake package files: `/tmp/f16-install/lib/cmake/f16/*`
+
+### Library Structure
+
+f16 maintains a clean **single-source-of-truth** architecture:
+
+- **Public API** (in `include/f16/`): Only the headers your application needs—server creation, routing, request/response handling, and content serving.
+- **Internal implementation** (in `src/lib/`): Connection management, parsing, utilities—not exposed to consumers.
+
+### Using in Your Project
+
+In a consumer project, use `find_package`:
+
+```cmake
+cmake_minimum_required(VERSION 3.16)
+project(my_f16_app LANGUAGES CXX)
+
+find_package(f16 CONFIG REQUIRED)
+
+add_executable(my_f16_app main.cpp)
+target_link_libraries(my_f16_app PRIVATE f16::f16lib)
+```
+
+Configure and build for the consumer (adjust prefixes as needed):
+
+```bash
+cmake -S . -B build \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_PREFIX_PATH="/tmp/f16-install;/path/to/asio/package"
+
+cmake --build build
+```
+
+In your code, include only public headers:
+
+```cpp
+#include <f16/http_server.hpp>
+#include <f16/path_router.hpp>
+#include <f16/dynamic_content.hpp>
+
+int main() {
+    f16::http::server::http_server server;
+    // Your application...
+}
+```
+
+### Dependency Resolution
+
+The `f16` package config resolves transitive dependencies with `find_dependency()`:
+- **asio**: Network library
+- **OpenSSL** (optional): For HTTPS support
+- **Threads**: For multi-threaded operations
+
+Ensure CMake can find these dependencies via:
+- Installation prefixes in `CMAKE_PREFIX_PATH`
+- System package managers (e.g., `apt`, `brew`)
+- Custom `conanfile.txt` or `vcpkg.json`
+
+## Library Architecture
+
+f16 follows a **clean separation** of concerns:
+
+**Public API** (`include/f16/`):
+- Server setup (`http_server.hpp`, `https_server.hpp`)
+- Request routing (`path_router.hpp`)
+- Request/response types (`http_request.hpp`, `reply.hpp`)
+- Content handlers (`dynamic_content.hpp`, `static_content.hpp`)
+- Configuration (`logger.hpp`, supporting types)
+
+**Internal implementation** (`src/lib/`):
+- Connection management (lifecycle, persistence)
+- Request parsing (HTTP protocol handling)
+- Socket operations (raw I/O with ASIO)
+- Utility functions (URL encoding, MIME types, date formatting)
+
+This separation ensures:
+- Clear API contracts
+- Easy library versioning
+- Reduced compilation dependencies for consumers
+- Maintainability without header duplication
+
 ## Building with cmake presets
 
     cmake --list-presets

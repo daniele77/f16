@@ -4,7 +4,7 @@
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <unordered_map>
-#include "mime_types.hpp"
+#include "f16/mime_types.hpp"
 
 namespace f16::http::server::mime_types {
 

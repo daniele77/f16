@@ -6,7 +6,7 @@
 #ifndef F16_HTTP_SERVER_SPDLOG_LOGGER_HPP
 #define F16_HTTP_SERVER_SPDLOG_LOGGER_HPP
 
-#include "logger.hpp"
+#include "f16/logger.hpp"
 #include <spdlog/spdlog.h>
 #include <memory>
 #include <cassert>

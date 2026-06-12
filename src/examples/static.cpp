@@ -3,10 +3,10 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include "f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
-#include "http_server.hpp"
-#include "path_router.hpp"
-#include "static_content.hpp"
+#include "f16/f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
+#include "f16/http_server.hpp"
+#include "f16/path_router.hpp"
+#include "f16/static_content.hpp"
 #include <iostream>
 
 int main(int /*argc*/, const char** /*argv*/)

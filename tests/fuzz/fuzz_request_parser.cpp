@@ -6,7 +6,7 @@
 #include <string>
 #include <cstdint>
 #include "request_parser.hpp"
-#include "http_request.hpp"
+#include "f16/http_request.hpp"
 
 // cppcheck-suppress unusedFunction symbolName=LLVMFuzzerTestOneInput
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)

@@ -5,7 +5,7 @@
 
 #include <string>
 #include <cstdint>
-#include "mime_types.hpp"
+#include "f16/mime_types.hpp"
 
 [[nodiscard]] auto GetExtension(const uint8_t* data, size_t size)
 {

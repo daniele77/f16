@@ -10,8 +10,6 @@
 #include <vector>
 #include <unordered_map>
 #include <variant>
-#include "f16/http_request.hpp"
-#include "f16/reply.hpp"
 
 #include "static_content.hpp"
 #include "dynamic_content.hpp"

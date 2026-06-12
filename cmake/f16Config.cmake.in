@@ -1,0 +1,31 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(asio)
+find_dependency(OpenSSL)
+find_dependency(Threads)
+
+if(NOT TARGET openssl::openssl)
+  if(TARGET OpenSSL::SSL)
+    add_library(openssl::openssl INTERFACE IMPORTED)
+    if(TARGET OpenSSL::Crypto)
+      target_link_libraries(openssl::openssl INTERFACE OpenSSL::SSL OpenSSL::Crypto)
+    else()
+      target_link_libraries(openssl::openssl INTERFACE OpenSSL::SSL)
+    endif()
+  endif()
+endif()
+
+if(NOT TARGET f16_project_options)
+  add_library(f16_project_options INTERFACE IMPORTED)
+endif()
+
+if(NOT TARGET f16_project_warnings)
+  add_library(f16_project_warnings INTERFACE IMPORTED)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/f16libTargets.cmake")
+
+if(NOT TARGET f16::f16lib)
+  message(FATAL_ERROR "f16::f16lib target not found")
+endif()

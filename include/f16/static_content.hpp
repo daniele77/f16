@@ -8,10 +8,12 @@
 
 #include <string>
 #include <filesystem>
-#include "f16/http_request.hpp"
-#include "f16/reply.hpp"
 
 namespace f16::http::server {
+
+// Forward declarations
+struct http_request;
+struct reply;
 
 class static_content
 {

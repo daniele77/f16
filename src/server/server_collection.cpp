@@ -6,11 +6,13 @@
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 #include "server_collection.hpp"
-#include "http_server.hpp"
-#include "https_server.hpp"
-#include "http_request.hpp"
-#include "reply.hpp"
-#include "mime_types.hpp"
+#include "f16/http_server.hpp"
+#include "f16/https_server.hpp"
+#include "f16/http_request.hpp"
+#include "f16/path_router.hpp"
+#include "f16/reply.hpp"
+#include "f16/static_content.hpp"
+#include "f16/mime_types.hpp"
 #include "logger_collection.hpp"
 
 namespace f16::http::server {

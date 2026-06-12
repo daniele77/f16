@@ -3,8 +3,10 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include "http_server.hpp"
+#include "f16/http_server.hpp"
 #include "plain_connection.hpp"
+#include "connection_manager.hpp"
+#include "request_handler.hpp"
 #include <memory>
 #include <string>
 #include <system_error>
@@ -16,8 +18,15 @@ namespace f16::http::server
 http_server::http_server(asio::io_context& ioc, logger_ptr log)
   : io_context_(ioc)
   , acceptor_(io_context_)
+  , connection_manager_(std::make_unique<connection_manager>())
+  , request_handler_(std::make_unique<request_handler>())
   , log_(log ? log : std::make_shared<null_logger>())
 {
+}
+
+void http_server::set(handler_fn handler)
+{
+  request_handler_->set(std::move(handler));
 }
 
 http_server::~http_server()
@@ -62,8 +71,8 @@ void http_server::do_accept()
 
       if (!ec)
       {
-        connection_manager_.start(create_connection(
-          std::move(socket), connection_manager_, request_handler_));
+        connection_manager_->start(create_connection(
+          std::move(socket), *connection_manager_, *request_handler_));
       }
       else
       {

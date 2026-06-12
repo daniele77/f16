@@ -3,7 +3,7 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include "f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
+#include "f16/f16asio.hpp" // NB: the asio header must be included *before* iostream to avoid sanity check error
 #include <csignal>
 #include <exception>
 #include <fstream>
@@ -20,15 +20,15 @@
 
 #include <nlohmann/json.hpp>
 
-#include "http_server.hpp"
-#include "https_server.hpp"
+#include "f16/http_server.hpp"
+#include "f16/https_server.hpp"
 #include "nlohmann/json_fwd.hpp"
 #include "spdlog_logger.hpp"
 
-#include "static_content.hpp"
+#include "f16/static_content.hpp"
 
-#include "http_request.hpp"
-#include "mime_types.hpp"
+#include "f16/http_request.hpp"
+#include "f16/mime_types.hpp"
 
 #include "server_collection.hpp"
 #include "logger_collection.hpp"
