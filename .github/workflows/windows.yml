@@ -1,24 +1,25 @@
 name: Windows CI
+
 on:
   pull_request:
+
   release:
     types: [published]
+
   push:
-    # tags: [v*.*.*] # Uncomment and specify valid tags if needed, or remove this line
     branches:
       - main
       - develop
 
 env:
-  # Conan cache environment variables
   CONAN_SYSREQUIRES_MODE: enabled
-  CONAN_USER_HOME: "${{ github.workspace }}/conan-cache"
-  CONAN_USER_HOME_SHORT: "${{ github.workspace }}/conan-cache/short"
+  CONAN_USER_HOME: ${{ github.workspace }}/conan-cache
+  CONAN_USER_HOME_SHORT: ${{ github.workspace }}/conan-cache/short
 
 jobs:
   Test:
     runs-on: ${{ matrix.os }}
-    
+
     strategy:
       fail-fast: false
 
@@ -26,20 +27,18 @@ jobs:
         os:
           - windows-2022
           - windows-2025-vs2026
-        include:
-          - os: windows-2022
-            generator: "Visual Studio 17 2022"
 
-          - os: windows-2025-vs2026
-            generator: "Visual Studio 18 2026"
         compiler:
           - msvc
+
         build_type:
           - Release
           - Debug
+
         developer_mode:
           - ON
           - OFF
+
         standard:
           - 17
           - 20
@@ -62,7 +61,7 @@ jobs:
           build_type: ${{ matrix.build_type }}
           developer_mode: ${{ matrix.developer_mode }}
 
-      - name: Setup Cpp
+      - name: Setup C++
         uses: aminya/setup-cpp@v1
         with:
           vcvarsall: true
@@ -77,17 +76,19 @@ jobs:
           opencppcoverage: true
 
       - name: Detect default Conan profile
-        run: |
-          conan profile detect  # Create ~/.conan2/profiles/default
+        run: conan profile detect
 
-      - name: Setup conan
-        run: |
-          conan install . -of build --build missing -s:h build_type=${{matrix.build_type}} -s:h compiler.cppstd=${{ matrix.standard }} -s:b build_type=${{matrix.build_type}} -s:b compiler.cppstd=${{ matrix.standard }} -c tools.cmake.cmaketoolchain:generator="Ninja"
+      - name: Install dependencies
+        run: >
+          conan install . -of build
+          --build missing
+          -s:h build_type=${{ matrix.build_type }}
+          -s:h compiler.cppstd=${{ matrix.standard }}
+          -s:b build_type=${{ matrix.build_type }}
+          -s:b compiler.cppstd=${{ matrix.standard }}
+          -c tools.cmake.cmaketoolchain:generator=Ninja
 
-
-      # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
-      # has meaningful results
-      - name: Configure CMake (with Retry for External Downloads)
+      - name: Configure CMake
         uses: nick-invision/retry@v3
         with:
           max_attempts: 3
@@ -97,43 +98,44 @@ jobs:
           command: |
             cmake \
               -S . \
-              -B ./build \
-              -G "${{matrix.generator}}" \
-              -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake" \
-              -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
-              -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} \
-              -DENABLE_COVERAGE:BOOL=$([[ "${{matrix.build_type}}" == "Debug" ]] && echo "ON" || echo "OFF") \
+              -B build \
+              -G Ninja \
+              -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DENABLE_DEVELOPER_MODE=${{ matrix.developer_mode }} \
+              -DENABLE_COVERAGE=$([[ "${{ matrix.build_type }}" == "Debug" ]] && echo ON || echo OFF) \
               -DCMAKE_CXX_STANDARD=${{ matrix.standard }} \
-              -DGIT_SHA:STRING=${{ github.sha }}
+              -DGIT_SHA=${{ github.sha }}
 
       - name: Build
-        run: |
-          cmake --build ./build --config ${{matrix.build_type}} --verbose
+        run: cmake --build build --verbose
 
       - name: Test and coverage
-        working-directory: ./build
+        if: matrix.build_type == 'Debug'
+        working-directory: build
+        shell: pwsh
         run: |
-          OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- ctest -C ${{matrix.build_type}}
+          OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- `
+            ctest --output-on-failure
 
       - name: CPack
         if: matrix.package_generator != ''
-        working-directory: ./build
+        working-directory: build
         run: |
-          cpack -C ${{matrix.build_type}} -G ${{matrix.package_generator}}
+          cpack -C ${{ matrix.build_type }} -G ${{ matrix.package_generator }}
 
       - name: Publish Tagged Release
-        uses: softprops/action-gh-release@v1
-        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.package_generator != '' }}
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
         with:
-          files: |
-            build/*-*${{ matrix.build_type }}*-*.*
+          files: build/*-*${{ matrix.build_type }}*-*.*
 
-      - name: Publish to codecov
-        uses: codecov/codecov-action@v4
+      - name: Publish to Codecov
+        if: matrix.build_type == 'Debug'
+        uses: codecov/codecov-action@v5
         with:
-          flags: ${{ runner.os }}
-          name: ${{ runner.os }}-coverage
-          files: ./build/coverage.xml
-          token: ${{ secrets.CODECOV_TOKEN }} # required
-          verbose: true # optional (default = false)
-          fail_ci_if_error: false # optional (default = false)
+          files: build/coverage.xml
+          flags: windows
+          name: windows-coverage
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
