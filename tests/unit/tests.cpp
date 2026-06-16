@@ -200,31 +200,48 @@ TEST_CASE("reply converts to buffer", "[reply]")
   reply rep("body", reply::ok, mime_types::extension_to_type(".html"));
   const auto buffers = rep.to_buffers();
 
-  REQUIRE(buffers.size() == 19);
+  // 7 headers x 4 buffers each + status line + blank line + body = 31
+  REQUIRE(buffers.size() == 31);
 
   CheckEqual(buffers[0], "HTTP/1.0 200 OK\r\n");
 
-  CheckEqual(buffers[1], "Date");
-  CheckEqual(buffers[2], ": ");
-  CheckEqual(buffers[4], "\r\n");
+  CheckEqual(buffers[1],  "Date");
+  CheckEqual(buffers[2],  ": ");
+  // buffers[3] = date value (runtime-dependent, not checked)
+  CheckEqual(buffers[4],  "\r\n");
 
-  CheckEqual(buffers[5], "Connection");
-  CheckEqual(buffers[6], ": ");
-  CheckEqual(buffers[7], "close");
-  CheckEqual(buffers[8], "\r\n");
+  CheckEqual(buffers[5],  "Connection");
+  CheckEqual(buffers[6],  ": ");
+  CheckEqual(buffers[7],  "close");
+  CheckEqual(buffers[8],  "\r\n");
 
-  CheckEqual(buffers[9], "Content-Length");
+  CheckEqual(buffers[9],  "X-Content-Type-Options");
   CheckEqual(buffers[10], ": ");
-  CheckEqual(buffers[11], "4");
+  CheckEqual(buffers[11], "nosniff");
   CheckEqual(buffers[12], "\r\n");
-  CheckEqual(buffers[13], "Content-Type");
+
+  CheckEqual(buffers[13], "X-Frame-Options");
   CheckEqual(buffers[14], ": ");
-  CheckEqual(buffers[15], "text/html");
+  CheckEqual(buffers[15], "DENY");
   CheckEqual(buffers[16], "\r\n");
 
-  CheckEqual(buffers[17], "\r\n");
+  CheckEqual(buffers[17], "Cache-Control");
+  CheckEqual(buffers[18], ": ");
+  CheckEqual(buffers[19], "no-store");
+  CheckEqual(buffers[20], "\r\n");
 
-  CheckEqual(buffers[18], "body");
+  CheckEqual(buffers[21], "Content-Length");
+  CheckEqual(buffers[22], ": ");
+  CheckEqual(buffers[23], "4");
+  CheckEqual(buffers[24], "\r\n");
+
+  CheckEqual(buffers[25], "Content-Type");
+  CheckEqual(buffers[26], ": ");
+  CheckEqual(buffers[27], "text/html");
+  CheckEqual(buffers[28], "\r\n");
+
+  CheckEqual(buffers[29], "\r\n");
+  CheckEqual(buffers[30], "body");
 }
 
 TEST_CASE("parser works properly", "[request_parser]") // NOLINT

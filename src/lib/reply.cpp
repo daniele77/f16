@@ -267,7 +267,10 @@ std::string to_string(reply::status_type status)
 reply::reply()
   : headers{
       {"Date", http_date()},
-      {"Connection", "close"}
+      {"Connection", "close"},
+      {"X-Content-Type-Options", "nosniff"},
+      {"X-Frame-Options", "DENY"},
+      {"Cache-Control", "no-store"}
     }
 {
 }
@@ -278,6 +281,9 @@ reply::reply(std::string _content, status_type _status, const std::string& conte
     headers{
       {"Date", http_date()},
       {"Connection", "close"},
+      {"X-Content-Type-Options", "nosniff"},
+      {"X-Frame-Options", "DENY"},
+      {"Cache-Control", "no-store"},
       {"Content-Length", std::to_string(this->content.size())},
       {"Content-Type", content_type}
     }
