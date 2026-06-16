@@ -276,18 +276,12 @@ reply::reply()
 }
 
 reply::reply(std::string _content, status_type _status, const std::string& content_type)
-  : status(_status),
-    content(std::move(_content)),
-    headers{
-      {"Date", http_date()},
-      {"Connection", "close"},
-      {"X-Content-Type-Options", "nosniff"},
-      {"X-Frame-Options", "DENY"},
-      {"Cache-Control", "no-store"},
-      {"Content-Length", std::to_string(this->content.size())},
-      {"Content-Type", content_type}
-    }
+  : reply()  // delegate to default ctor for common headers
 {
+  status = _status;
+  content = std::move(_content);
+  headers.emplace_back("Content-Length", std::to_string(content.size()));
+  headers.emplace_back("Content-Type", content_type);
 }
 
 reply reply::stock_reply(reply::status_type status)
