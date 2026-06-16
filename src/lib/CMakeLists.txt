@@ -24,7 +24,9 @@ add_library(f16lib
 
 # link project_options/warnings
 target_link_libraries(f16lib
-  PRIVATE f16_project_options f16_project_warnings
+  PRIVATE
+    $<BUILD_INTERFACE:f16_project_options>
+    $<BUILD_INTERFACE:f16_project_warnings>
 )
 
 target_include_directories(f16lib
