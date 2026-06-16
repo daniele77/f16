@@ -265,7 +265,10 @@ std::string to_string(reply::status_type status)
 } // namespace stock_replies
 
 reply::reply()
-  : headers{{"Date", http_date()}}
+  : headers{
+      {"Date", http_date()},
+      {"Connection", "close"}
+    }
 {
 }
 
@@ -274,6 +277,7 @@ reply::reply(std::string _content, status_type _status, const std::string& conte
     content(std::move(_content)),
     headers{
       {"Date", http_date()},
+      {"Connection", "close"},
       {"Content-Length", std::to_string(this->content.size())},
       {"Content-Type", content_type}
     }

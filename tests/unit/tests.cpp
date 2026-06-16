@@ -200,25 +200,31 @@ TEST_CASE("reply converts to buffer", "[reply]")
   reply rep("body", reply::ok, mime_types::extension_to_type(".html"));
   const auto buffers = rep.to_buffers();
 
-  REQUIRE(buffers.size() == 15);
+  REQUIRE(buffers.size() == 19);
 
   CheckEqual(buffers[0], "HTTP/1.0 200 OK\r\n");
 
   CheckEqual(buffers[1], "Date");
   CheckEqual(buffers[2], ": ");
   CheckEqual(buffers[4], "\r\n");
-  CheckEqual(buffers[5], "Content-Length");
+
+  CheckEqual(buffers[5], "Connection");
   CheckEqual(buffers[6], ": ");
-  CheckEqual(buffers[7], "4");
+  CheckEqual(buffers[7], "close");
   CheckEqual(buffers[8], "\r\n");
-  CheckEqual(buffers[9], "Content-Type");
+
+  CheckEqual(buffers[9], "Content-Length");
   CheckEqual(buffers[10], ": ");
-  CheckEqual(buffers[11], "text/html");
+  CheckEqual(buffers[11], "4");
   CheckEqual(buffers[12], "\r\n");
+  CheckEqual(buffers[13], "Content-Type");
+  CheckEqual(buffers[14], ": ");
+  CheckEqual(buffers[15], "text/html");
+  CheckEqual(buffers[16], "\r\n");
 
-  CheckEqual(buffers[13], "\r\n");
+  CheckEqual(buffers[17], "\r\n");
 
-  CheckEqual(buffers[14], "body");
+  CheckEqual(buffers[18], "body");
 }
 
 TEST_CASE("parser works properly", "[request_parser]") // NOLINT
