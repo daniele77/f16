@@ -87,7 +87,6 @@ jobs:
           -s:b build_type=${{ matrix.build_type }}
           -s:b compiler.cppstd=${{ matrix.standard }}
           -c tools.cmake.cmaketoolchain:generator=Ninja
-          shell: pwsh
 
       - name: Configure CMake
         uses: nick-invision/retry@v3
