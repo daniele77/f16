@@ -16,11 +16,17 @@ namespace f16::http::server
 {
 
 http_server::http_server(asio::io_context& ioc, logger_ptr log)
+  : http_server(ioc, server_options{}, std::move(log))
+{
+}
+
+http_server::http_server(asio::io_context& ioc, server_options options, logger_ptr log)
   : io_context_(ioc)
   , acceptor_(io_context_)
   , connection_manager_(std::make_unique<connection_manager>())
   , request_handler_(std::make_unique<request_handler>())
   , log_(log ? log : std::make_shared<null_logger>())
+  , options_(std::move(options))
 {
 }
 
@@ -85,7 +91,7 @@ void http_server::do_accept()
 
 connection_ptr http_server::create_connection(asio::ip::tcp::socket socket, connection_manager& cm, request_handler& rh)
 {
-  return std::make_shared<plain_connection>(std::move(socket), cm, rh, log_);
+  return std::make_shared<plain_connection>(std::move(socket), cm, rh, log_, options_);
 }
 
 } // namespace f16::http::server

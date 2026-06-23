@@ -13,8 +13,8 @@ namespace f16::http::server {
 
 ssl_connection::ssl_connection(asio::ip::tcp::socket socket,
     connection_manager& manager, request_handler& handler,
-    asio::ssl::context& ctx, logger_ptr log)
-  : base_connection({std::move(socket), ctx}, manager, handler, std::move(log)) 
+    asio::ssl::context& ctx, logger_ptr log, server_options options)
+  : base_connection({std::move(socket), ctx}, manager, handler, std::move(log), std::move(options))
 {
 }
 

@@ -8,6 +8,7 @@
 
 #include <array>
 #include "connection_manager.hpp"
+#include "f16/http_server.hpp"
 #include "f16/http_request.hpp"
 #include "request_parser.hpp"
 #include "request_handler.hpp"
@@ -31,11 +32,12 @@ public:
 
 protected:
 
-  base_connection(SocketType socket, connection_manager& manager, request_handler& handler, logger_ptr log)
+  base_connection(SocketType socket, connection_manager& manager, request_handler& handler, logger_ptr log, server_options options)
     : socket_(std::move(socket)),
       connection_manager_(manager),
       request_handler_(handler),
       log_(log),
+      options_(std::move(options)),
       buffer_{},
       request_{},
       reply_{}
@@ -135,6 +137,9 @@ protected:
 
   /// Logger
   logger_ptr log_;
+
+  /// Runtime server options
+  server_options options_;
 
   /// Buffer for incoming data.
   std::array<char, 8192> buffer_;

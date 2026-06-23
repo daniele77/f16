@@ -12,7 +12,12 @@ namespace f16::http::server
 {
 
 https_server::https_server(asio::io_context& ioc, const ssl_settings& ssl_s, logger_ptr log)
-  : http_server{ ioc, log }
+  : https_server(ioc, ssl_s, server_options{}, std::move(log))
+{
+}
+
+https_server::https_server(asio::io_context& ioc, const ssl_settings& ssl_s, server_options options, logger_ptr log)
+  : http_server{ ioc, std::move(options), std::move(log) }
   , ssl_context_{ asio::ssl::context::tlsv13 }
 {
   ssl_context_.set_options(
@@ -60,7 +65,7 @@ https_server::https_server(asio::io_context& ioc, const ssl_settings& ssl_s, log
 
 connection_ptr https_server::create_connection(asio::ip::tcp::socket socket, connection_manager& cm, request_handler& rh)
 {
-  return std::make_shared<ssl_connection>(std::move(socket), cm, rh, ssl_context_, get_logger());
+  return std::make_shared<ssl_connection>(std::move(socket), cm, rh, ssl_context_, get_logger(), get_options());
 }
 
 } // namespace f16::http::server

@@ -48,6 +48,9 @@ public:
   /// Construct the server
   https_server(asio::io_context& ioc, const ssl_settings& ssl_s, logger_ptr log = nullptr);
 
+  /// Construct the server with explicit options and optional logger
+  https_server(asio::io_context& ioc, const ssl_settings& ssl_s, server_options options, logger_ptr log = nullptr);
+
 protected:
 
   connection_ptr create_connection(asio::ip::tcp::socket socket, connection_manager& cm, request_handler& rh) override;
