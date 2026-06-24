@@ -41,9 +41,9 @@ Each example is built as an executable named `example-<name>` (for example `exam
 ## Build and run an example
 
 ```shell
-cmake -S . -B ./build_conan
-cmake --build ./build_conan --target example-rest
-./build_conan/src/examples/example-rest
+cmake -S . -B ./build
+cmake --build ./build --target example-rest
+./build/src/examples/example-rest
 ```
 
 ## Black-box validation sample
@@ -61,7 +61,7 @@ This sample is validated end-to-end by Python tests in `tests/blackbox/test_blac
 Run only the black-box suite:
 
 ```shell
-cd ./build_conan
+cd ./build
 ctest -R blackbox --output-on-failure
 cd ../
 ```
@@ -73,7 +73,7 @@ cd ../
 After building the project, install f16 to a prefix:
 
 ```bash
-cmake --install ./build_conan --prefix /path/to/install
+cmake --install ./build --prefix /path/to/install
 ```
 
 This installs:
