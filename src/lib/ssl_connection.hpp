@@ -7,6 +7,7 @@
 #define F16_HTTP_SSL_CONNECTION_HPP
 
 #include "f16/f16asio.hpp"
+#include <chrono>
 #include <asio/ssl.hpp>
 #include "base_connection.hpp"
 
@@ -32,6 +33,10 @@ public:
 protected:
 
   void do_handshake();
+
+private:
+  asio::steady_timer handshake_timer_;
+  bool handshake_timeout_triggered_;
 };
 
 } // namespace f16::http::server

@@ -26,6 +26,7 @@ Additionally, f16 includes a high-performance static web server tool (`f16` comm
 - Extracts query parameters and path variables from requests.
 - Serves static content from the filesystem.
 - Enables generation of dynamic content using lambda functions.
+- Includes default request hardening limits and timeouts (`400`/`408`/`413` handling).
 
 ## Supported RFC
 The f16 project supports the following RFCs:
@@ -374,6 +375,17 @@ run them separately.
 
 
 ## Usage
+
+
+### Security and hardening defaults
+
+`f16lib` applies default request guardrails through `server_options`:
+
+- request-line/header/body limits,
+- header/body read timeouts,
+- TLS handshake timeout.
+
+See [README_f16lib.md](README_f16lib.md) for full default values and tuning examples.
 
 
 See [f16 library](README_f16lib.md) to learn how to write applications

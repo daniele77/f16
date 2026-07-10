@@ -17,9 +17,17 @@ namespace f16::http::server
 {
 
 request_parser::request_parser()
+  : request_parser(limits{})
+{
+}
+
+request_parser::request_parser(limits parser_limits)
   : state_(method_start)
+  , parser_limits_(parser_limits)
   , content_length_(std::nullopt)
   , body_bytes_remaining_(0)
+  , request_line_bytes_(0)
+  , header_section_bytes_(0)
 {
 }
 
@@ -34,6 +42,17 @@ void request_parser::reset()
 
 request_parser::result_type request_parser::consume(http_request& req, char input) // NOLINT
 {
+  if (state_ <= expecting_newline_1)
+  {
+    if (!count_request_line_byte())
+      return too_large;
+  }
+  else if (state_ >= header_line_start && state_ <= expecting_newline_3)
+  {
+    if (!count_header_section_byte())
+      return too_large;
+  }
+
   switch (state_)
   {
   case method_start:
@@ -208,6 +227,8 @@ request_parser::result_type request_parser::consume(http_request& req, char inpu
     }
     else
     {
+      if (req.headers.size() >= parser_limits_.max_headers_count)
+        return too_large;
       req.headers.emplace_back();
       req.headers.back().name.push_back(input);
       state_ = header_name;
@@ -277,6 +298,8 @@ request_parser::result_type request_parser::consume(http_request& req, char inpu
         const auto result = std::from_chars(begin, end, parsed_value);
         if (result.ec != std::errc{} || result.ptr != end)
           return bad;
+        if (parsed_value > parser_limits_.max_body_bytes)
+          return too_large;
         content_length_ = parsed_value;
       }
 
@@ -316,6 +339,8 @@ request_parser::result_type request_parser::consume(http_request& req, char inpu
       return indeterminate;
     }
   case body:
+    if (req.body.size() >= parser_limits_.max_body_bytes)
+      return too_large;
     req.body.push_back(input);
     --body_bytes_remaining_;
     if (body_bytes_remaining_ == 0)
@@ -368,6 +393,18 @@ constexpr bool request_parser::is_tspecial(int c)
 constexpr bool request_parser::is_digit(int c)
 {
   return c >= '0' && c <= '9';
+}
+
+bool request_parser::count_request_line_byte()
+{
+  ++request_line_bytes_;
+  return request_line_bytes_ <= parser_limits_.max_request_line_bytes;
+}
+
+bool request_parser::count_header_section_byte()
+{
+  ++header_section_bytes_;
+  return header_section_bytes_ <= parser_limits_.max_header_section_bytes;
 }
 
 } // namespace f16::http::server

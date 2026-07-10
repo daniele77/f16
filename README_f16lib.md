@@ -125,6 +125,49 @@ int main() {
 - Ensure your environment can find both `asio` and `OpenSSL` (if using HTTPS).
 - The library uses C++17 and requires a compatible compiler.
 
+## Hardening defaults
+
+Starting from the 1.0 hardening work, `http_server` and `https_server` include built-in request guardrails via `server_options`.
+
+Default values:
+
+- `max_request_line_bytes`: `8192`
+- `max_header_section_bytes`: `32768`
+- `max_headers_count`: `100`
+- `max_body_bytes`: `1048576` (1 MiB)
+- `read_header_timeout`: `15s`
+- `read_body_timeout`: `30s`
+- `tls_handshake_timeout`: `10s`
+
+Behavior:
+
+- Invalid request syntax returns `400 Bad Request`.
+- Request limits exceeded returns `413 Request Entity Too Large`.
+- Read timeout expiry returns `408 Request Timeout`.
+
+## Tuning example
+
+For internet-facing deployments, tighten limits and timeouts based on your API profile:
+
+```cpp
+#include <chrono>
+#include <f16/http_server.hpp>
+
+asio::io_context ioc;
+
+f16::http::server::server_options options;
+options.max_request_line_bytes = 4096;
+options.max_header_section_bytes = 16384;
+options.max_headers_count = 64;
+options.max_body_bytes = 256 * 1024;
+options.read_header_timeout = std::chrono::seconds(5);
+options.read_body_timeout = std::chrono::seconds(10);
+
+f16::http::server::http_server server(ioc, options);
+```
+
+For trusted internal traffic, you can relax these values where needed.
+
 ## Related docs
 
 - Main project guide: [README.md](README.md)

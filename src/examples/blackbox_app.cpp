@@ -9,6 +9,7 @@
 #include "f16/path_router.hpp"
 #include "f16/request.hpp"
 #include "f16/static_content.hpp"
+#include <chrono>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -65,7 +66,10 @@ int main(int argc, char* argv[])
     asio::io_context ioc;
 
     using namespace f16::http::server;
-    http_server app(ioc);
+    server_options options;
+    options.read_header_timeout = std::chrono::milliseconds(1000);
+    options.read_body_timeout = std::chrono::milliseconds(1000);
+    http_server app(ioc, options);
 
     path_router router;
 

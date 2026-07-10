@@ -41,6 +41,10 @@ static const std::string forbidden = // NOLINT
   "HTTP/1.0 403 Forbidden\r\n";
 static const std::string not_found = // NOLINT
   "HTTP/1.0 404 Not Found\r\n";
+static const std::string request_timeout = // NOLINT
+  "HTTP/1.0 408 Request Timeout\r\n";
+static const std::string request_entity_too_large = // NOLINT
+  "HTTP/1.0 413 Request Entity Too Large\r\n";
 static const std::string internal_server_error = // NOLINT
   "HTTP/1.0 500 Internal Server Error\r\n";
 static const std::string not_implemented = // NOLINT
@@ -82,6 +86,10 @@ asio::const_buffer to_buffer(reply::status_type status)
     return asio::buffer(forbidden);
   case reply::not_found:
     return asio::buffer(not_found);
+  case reply::request_timeout:
+    return asio::buffer(request_timeout);
+  case reply::request_entity_too_large:
+    return asio::buffer(request_entity_too_large);
   case reply::internal_server_error:
     return asio::buffer(internal_server_error);
   case reply::not_implemented:
@@ -188,6 +196,16 @@ static const std::string not_found = // NOLINT
   "<head><title>Not Found</title></head>"
   "<body><h1>404 Not Found</h1></body>"
   "</html>";
+static const std::string request_timeout = // NOLINT
+  "<html>"
+  "<head><title>Request Timeout</title></head>"
+  "<body><h1>408 Request Timeout</h1></body>"
+  "</html>";
+static const std::string request_entity_too_large = // NOLINT
+  "<html>"
+  "<head><title>Request Entity Too Large</title></head>"
+  "<body><h1>413 Request Entity Too Large</h1></body>"
+  "</html>";
 static const std::string internal_server_error = // NOLINT
   "<html>"
   "<head><title>Internal Server Error</title></head>"
@@ -247,6 +265,10 @@ std::string to_string(reply::status_type status)
     return forbidden;
   case reply::not_found:
     return not_found;
+  case reply::request_timeout:
+    return request_timeout;
+  case reply::request_entity_too_large:
+    return request_entity_too_large;
   case reply::internal_server_error:
     return internal_server_error;
   case reply::not_implemented:
@@ -305,6 +327,8 @@ reply::status_type reply::status_from_string(const std::string& s)
     {"unauthorized", reply::unauthorized},
     {"forbidden", reply::forbidden},
     {"not_found", reply::not_found},
+    {"request_timeout", reply::request_timeout},
+    {"request_entity_too_large", reply::request_entity_too_large},
     {"internal_server_error", reply::internal_server_error},
     {"not_implemented", reply::not_implemented},
     {"bad_gateway", reply::bad_gateway},

@@ -97,6 +97,16 @@ For the complete configuration reference, see [README_f16server_config.md](READM
 
 Each server entry should define one of `return` or `locations`.
 
+### Request hardening behavior
+
+The server uses `f16lib` request hardening defaults:
+
+- malformed request syntax -> `400 Bad Request`
+- request limits exceeded -> `413 Request Entity Too Large`
+- read timeout expired -> `408 Request Timeout`
+
+At the moment, request/body/header limits and read timeouts are configured through the library API (`server_options`) and are not yet exposed as CLI flags or JSON fields in `f16 config` mode.
+
 ### Command-line options
 
 ```sh

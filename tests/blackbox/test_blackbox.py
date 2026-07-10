@@ -312,6 +312,59 @@ class BlackBoxHttpServerTests(unittest.TestCase):
         )
         self.assertIn(b"400 Bad Request", response)
 
+    def test_request_too_large_for_oversized_request_line(self) -> None:
+        """Test that an oversized request line is rejected with 413 Request Entity Too Large."""
+        oversized_path = b"/" + (b"a" * 9000)
+        response = self._raw_request(
+            b"GET " + oversized_path + b" HTTP/1.1\r\n"
+            b"Host: localhost\r\n"
+            b"\r\n"
+        )
+        self.assertIn(b"413 Request Entity Too Large", response)
+
+    def test_request_too_large_for_oversized_header_section(self) -> None:
+        """Test that an oversized header section is rejected with 413 Request Entity Too Large."""
+        huge_header = b"x" * 33000
+        response = self._raw_request(
+            b"GET /health HTTP/1.1\r\n"
+            b"Host: localhost\r\n"
+            b"X-Big: " + huge_header + b"\r\n"
+            b"\r\n"
+        )
+        self.assertIn(b"413 Request Entity Too Large", response)
+
+    def test_request_too_large_for_oversized_content_length(self) -> None:
+        """Test that Content-Length above configured max body size is rejected with 413 Request Entity Too Large."""
+        response = self._raw_request(
+            b"POST /echo HTTP/1.1\r\n"
+            b"Host: localhost\r\n"
+            b"Content-Length: 1048577\r\n"
+            b"\r\n"
+        )
+        self.assertIn(b"413 Request Entity Too Large", response)
+
+    def test_request_timeout_for_incomplete_headers(self) -> None:
+        """Test that an incomplete request is timed out and rejected with 408 Request Timeout."""
+        with socket.create_connection((self.host, self.port), timeout=3) as sock:
+            sock.settimeout(4)
+            sock.sendall(
+                b"GET /health HTTP/1.1\r\n"
+                b"Host: localhost\r\n"
+            )
+            chunks = []
+            while True:
+                try:
+                    part = sock.recv(4096)
+                except socket.timeout:
+                    self.fail("Expected timeout response, but no response was received")
+                if not part:
+                    break
+                chunks.append(part)
+
+        response = b"".join(chunks)
+        self._assert_raw_response_has_valid_date(response)
+        self.assertIn(b"408 Request Timeout", response)
+
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run black-box tests for f16 sample app")

@@ -323,6 +323,124 @@ TEST_CASE("parser works properly with wrong body size", "[request_parser]") // N
   CHECK(std::get<0>(result) == request_parser::indeterminate);
 }
 
+TEST_CASE("parser enforces request line size limits", "[request_parser][limits]")
+{
+  const std::string request = "GET / HTTP/1.1\r\n\r\n";
+  const auto request_line_size = std::string("GET / HTTP/1.1\r\n").size();
+
+  SECTION("accepts request line at exact limit")
+  {
+    request_parser::limits parser_limits;
+    parser_limits.max_request_line_bytes = request_line_size;
+
+    request_parser grammar(parser_limits);
+    http_request req;
+    const auto result = grammar.parse(req, request.begin(), request.end());
+
+    CHECK(std::get<0>(result) == request_parser::good);
+  }
+
+  SECTION("rejects request line above limit")
+  {
+    request_parser::limits parser_limits;
+    parser_limits.max_request_line_bytes = request_line_size - 1;
+
+    request_parser grammar(parser_limits);
+    http_request req;
+    const auto result = grammar.parse(req, request.begin(), request.end());
+
+    CHECK(std::get<0>(result) == request_parser::too_large);
+  }
+}
+
+TEST_CASE("parser enforces header section size limits", "[request_parser][limits]")
+{
+  const std::string request = "GET / HTTP/1.1\r\nX: y\r\n\r\n";
+  const auto header_section_size = std::string("X: y\r\n\r\n").size();
+
+  SECTION("accepts header section at exact limit")
+  {
+    request_parser::limits parser_limits;
+    parser_limits.max_header_section_bytes = header_section_size;
+
+    request_parser grammar(parser_limits);
+    http_request req;
+    const auto result = grammar.parse(req, request.begin(), request.end());
+
+    CHECK(std::get<0>(result) == request_parser::good);
+  }
+
+  SECTION("rejects header section above limit")
+  {
+    request_parser::limits parser_limits;
+    parser_limits.max_header_section_bytes = header_section_size - 1;
+
+    request_parser grammar(parser_limits);
+    http_request req;
+    const auto result = grammar.parse(req, request.begin(), request.end());
+
+    CHECK(std::get<0>(result) == request_parser::too_large);
+  }
+}
+
+TEST_CASE("parser enforces header count limits", "[request_parser][limits]")
+{
+  const std::string request = "GET / HTTP/1.1\r\nA: 1\r\nB: 2\r\n\r\n";
+
+  SECTION("accepts header count at exact limit")
+  {
+    request_parser::limits parser_limits;
+    parser_limits.max_headers_count = 2;
+
+    request_parser grammar(parser_limits);
+    http_request req;
+    const auto result = grammar.parse(req, request.begin(), request.end());
+
+    CHECK(std::get<0>(result) == request_parser::good);
+  }
+
+  SECTION("rejects header count above limit")
+  {
+    request_parser::limits parser_limits;
+    parser_limits.max_headers_count = 1;
+
+    request_parser grammar(parser_limits);
+    http_request req;
+    const auto result = grammar.parse(req, request.begin(), request.end());
+
+    CHECK(std::get<0>(result) == request_parser::too_large);
+  }
+}
+
+TEST_CASE("parser enforces body size limits", "[request_parser][limits]")
+{
+  const std::string request = "POST /upload HTTP/1.1\r\nContent-Length: 4\r\n\r\nABCD";
+
+  SECTION("accepts body size at exact limit")
+  {
+    request_parser::limits parser_limits;
+    parser_limits.max_body_bytes = 4;
+
+    request_parser grammar(parser_limits);
+    http_request req;
+    const auto result = grammar.parse(req, request.begin(), request.end());
+
+    CHECK(std::get<0>(result) == request_parser::good);
+  }
+
+  SECTION("rejects body size above limit")
+  {
+    request_parser::limits parser_limits;
+    parser_limits.max_body_bytes = 3;
+
+    request_parser grammar(parser_limits);
+    http_request req;
+    const auto result = grammar.parse(req, request.begin(), request.end());
+
+    CHECK(std::get<0>(result) == request_parser::too_large);
+  }
+}
+
 TEST_CASE("path_router routes simple requests", "[path_router]") // NOLINT
 {
   std::vector<std::pair<int, std::string>> calls;

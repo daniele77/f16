@@ -7,6 +7,7 @@
 #define F16_HTTP_BASE_CONNECTION_HPP
 
 #include <array>
+#include <chrono>
 #include "connection_manager.hpp"
 #include "f16/http_server.hpp"
 #include "f16/http_request.hpp"
@@ -27,6 +28,7 @@ public:
 
   void stop() override
   {
+    cancel_read_timeout();
     socket_.lowest_layer().close();
   }
 
@@ -38,18 +40,32 @@ protected:
       request_handler_(handler),
       log_(log),
       options_(std::move(options)),
+      read_timer_(socket_.get_executor()),
+      read_timeout_triggered_(false),
       buffer_{},
       request_{},
+      request_parser_({
+        options_.max_request_line_bytes,
+        options_.max_header_section_bytes,
+        options_.max_headers_count,
+        options_.max_body_bytes
+      }),
       reply_{}
   {
   }
 
   void do_read()
   {
+    arm_read_timeout();
     auto self{this->shared_from_this()};
     socket_.async_read_some(asio::buffer(buffer_),
         [this, self](std::error_code ec, std::size_t bytes_transferred)
         {
+          cancel_read_timeout();
+
+          if (read_timeout_triggered_)
+            return;
+
           if (!ec)
           {
             // Populate client IP from socket (once per read cycle)
@@ -86,11 +102,9 @@ protected:
               do_write();
             }
             else if (result == request_parser::bad)
-            {
-              reply_ = reply::stock_reply(reply::bad_request);
-              log_->warn("Bad request from " + request_.client_ip);
-              do_write();
-            }
+              reject_request(reply::bad_request, "bad-request");
+            else if (result == request_parser::too_large)
+              reject_request(reply::request_entity_too_large, "request-too-large");
             else
             {
               do_read();
@@ -106,6 +120,7 @@ protected:
 
   void do_write()
   {
+    cancel_read_timeout();
     auto self{this->shared_from_this()};
     asio::async_write(socket_, reply_.to_buffers(),
         [self](std::error_code ec, std::size_t)
@@ -127,6 +142,46 @@ protected:
         });
   }
 
+  void arm_read_timeout()
+  {
+    read_timer_.expires_after(current_read_timeout());
+    auto self{this->shared_from_this()};
+    read_timer_.async_wait([this, self](const std::error_code& ec)
+      {
+        if (ec == asio::error::operation_aborted)
+          return;
+
+        read_timeout_triggered_ = true;
+        reject_request(reply::request_timeout, request_parser_.is_reading_body() ? "body-timeout" : "header-timeout");
+      });
+  }
+
+  void cancel_read_timeout()
+  {
+    asio::error_code ignored_ec;
+    read_timer_.cancel(ignored_ec);
+  }
+
+  std::chrono::milliseconds current_read_timeout() const
+  {
+    if (request_parser_.is_reading_body())
+      return options_.read_body_timeout;
+    return options_.read_header_timeout;
+  }
+
+  void reject_request(reply::status_type status, const char* reason)
+  {
+    reply_ = reply::stock_reply(status);
+
+    const std::string client_ip = request_.client_ip.empty() ? "unknown" : request_.client_ip;
+    const std::string method = request_.method.empty() ? "?" : request_.method;
+    const std::string uri = request_.uri.empty() ? "?" : request_.uri;
+    log_->warn(std::string("Request rejected (") + reason + ") from " + client_ip +
+      " method=" + method + " uri=" + uri);
+
+    do_write();
+  }
+
   SocketType socket_;
 
   /// The manager for this connection.
@@ -140,6 +195,12 @@ protected:
 
   /// Runtime server options
   server_options options_;
+
+  /// Timer used to enforce read timeouts
+  asio::steady_timer read_timer_;
+
+  /// Indicates that the read timeout was hit for this connection
+  bool read_timeout_triggered_;
 
   /// Buffer for incoming data.
   std::array<char, 8192> buffer_;
